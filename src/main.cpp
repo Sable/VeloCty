@@ -27,6 +27,16 @@ string readFile(const string& fname) {
         f.close();
         return buf.str();
 }
+ string readDataIntoString(const string& fname){
+      ifstream ifile(fname.c_str());
+      stringstream ss;
+      string line;
+      while(!ifile.eof()){
+          getline(ifile,line);
+          ss<<line<<endl;
+      }
+      return ss.str();
+  }
 void writeFile(const string& fname , vector<string>& data){
 	ofstream f(fname.c_str());
 	for(int i=0;i<data.size();i++){
@@ -55,6 +65,7 @@ int main(int argc,char * argv[]){
 	bool genFile =false;
 	std::string fname;
 	std::string optionStr="";
+    initRaptor();
 	for(int i = 1; i < argc ; i++) {
 		int optionIndex = -1;
 		if(argv[i][0]=='-') {
@@ -83,7 +94,8 @@ int main(int argc,char * argv[]){
 	//string fname(argv[1]);
 //	std::cout<<"File name "<<getFileNameNoExt(fname);
 	std::string fCopy = fname;
-	string s =readFile(fname);
+    std::cout<<"file name "<<fname<<std::endl; 
+	string s =readDataIntoString(fname);
 	VModule *m=NULL;
 	m= VModule::readFromString(s);
 	if(m!=NULL){

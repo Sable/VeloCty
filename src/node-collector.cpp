@@ -1,10 +1,11 @@
 #include <node-collector.hpp>
+#include<iostream>
 #include<vector>
 #define DEBUG
 using namespace VRaptor;
-void NodeCollector::caseNode(Node* node){
-    return;
-}
+/* void NodeCollector::caseNode(Node* node){ */
+/*     return; */
+/* } */
 void NodeCollector::caseModule(VModule * node){
 #ifdef DEBUG
     std::cout<<"Analysing Module"<<node->getName()<<std::endl;
@@ -45,7 +46,7 @@ void NodeCollector::caseExpr(ExpressionPtr node){
         caseIndexExpr(static_cast<IndexExprPtr>(node));
         break;
     case Expression::NEGATE_EXPR: //Negate expr
-        caseNegateExpr(static_cast<NegateExprPtr>(node));
+        /* caseNegateExpr(static_cast<NegateExprPtr>(node)); */
         break;
     case Expression::GT_EXPR:  // greater than
         caseGtExpr(static_cast<GtExprPtr>(node));
@@ -66,7 +67,7 @@ void NodeCollector::caseExpr(ExpressionPtr node){
         caseOrExpr(static_cast<OrExprPtr>(node));
         break;
     case Expression::NOT_EXPR: // not expression
-        caseNotExpr(static_cast<NotExprPtr>(node));
+        /* caseNotExpr(static_cast<NotExprPtr>(node)); */
         break;
     case Expression::EQ_EXPR: //equal expression
         caseEqExpr(static_cast<EqExprPtr>(node));
@@ -100,8 +101,8 @@ void NodeCollector::caseExpr(ExpressionPtr node){
     case Expression::REAL_EXPR: // real expressions
         caseRealExpr(static_cast<RealExprPtr>(node));
         break;
-    case Expression::REDUCE_EXPR: // reduce expressions
-        break;
+    /* case Expression::REDUCE_EXPR: // reduce expressions */
+    /*     break; */
     case Expression::CAST_EXPR: // cast expression
         caseCastExpr(static_cast<CastExprPtr>(node));
         break;
@@ -155,15 +156,15 @@ void NodeCollector::caseAndExpr(AndExprPtr node){
 void NodeCollector::caseOrExpr(OrExprPtr node){
     caseBinaryExpr(node);
 }
-void NodeCollector::caseUnaryExpr(UnaryExprPtr node){
-    caseExpr(node->getBaseExpr());
-}
-void NodeCollector::caseNotExpr(NotExprPtr node){
-    caseUnaryExpr(node);
-}
-void NodeCollector::caseNegateExpr(NegateExprPtr node){
-    caseUnaryExpr(node);
-}
+/* void NodeCollector::caseUnaryExpr(UnaryExprPtr node){ */
+/*     caseExpr(node->getBaseExpr()); */
+/* } */
+/* void NodeCollector::caseNotExpr(NotExprPtr node){ */
+/*     caseUnaryExpr(node); */
+/* } */
+/* void NodeCollector::caseNegateExpr(NegateExprPtr node){ */
+/*     caseUnaryExpr(node); */
+/* } */
 void NodeCollector::caseFuncallExpr(FunCallExprPtr node){
     for(int i = 0; i < node->getNargs(); i++){
         caseExpr(node->getArg(i));
@@ -209,9 +210,9 @@ void NodeCollector::caseDomainExpr(DomainExprPtr node){
 void NodeCollector::caseTupleExpr(TupleExprPtr node){
 
 }
-void NodeCollector::caseMapExpr(MapExprPtr){
+/* void NodeCollector::caseMapExpr(MapExprPtr){ */
 
-}
+/* } */
 void NodeCollector::caseDimExpr(DimExprPtr expr){
 
 }
@@ -264,12 +265,12 @@ void NodeCollector::caseStmt(StmtPtr node){
     case Statement::STMT_RETURN : //return
         caseReturnStmt(static_cast<ReturnStmtPtr>(node));
         break;
-    case Statement::STMT_REFINCR: // statement refincr
-        caseRefOpStmt(static_cast<RefOpStmtPtr>(node));
-        break;
-    case Statement::STMT_REFDECR: // refDecr
-        caseRefOpStmt(static_cast<RefOpStmtPtr>(node));
-        break;
+    /* case Statement::STMT_REFINCR: // statement refincr */
+    /*     caseRefOpStmt(static_cast<RefOpStmtPtr>(node)); */
+    /*     break; */
+    /* case Statement::STMT_REFDECR: // refDecr */
+    /*     caseRefOpStmt(static_cast<RefOpStmtPtr>(node)); */
+    /*     break; */
     case Statement::STMT_LIBCALL: // libcall
         break;
     default:
@@ -320,9 +321,9 @@ void NodeCollector::caseBreakStmt(BreakStmtPtr node){
 void NodeCollector::caseContinueStmt(ContinueStmtPtr node){
     return ;
 }
-void NodeCollector::caseRefOpStmt(RefOpStmtPtr node){
-    return;
-}
+/* void NodeCollector::caseRefOpStmt(RefOpStmtPtr node){ */
+/*     return; */
+/* } */
 void NodeCollector::caseReturnStmt(ReturnStmtPtr node){
     return ;
 }

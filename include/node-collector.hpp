@@ -4,9 +4,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-using std::unordered_set;
-using std::unordered_map;
-
+using namespace std;
+using namespace VRaptor;
 namespace VRaptor{
       typedef std::unordered_set<IndexExprPtr> IndexSet;
       typedef std::unordered_map<StmtPtr,IndexSet*> IndexMap;
@@ -21,7 +20,7 @@ namespace VRaptor{
       void addToColonSet(IndexExprPtr index);
 	  void addToLhsSet(IndexExprPtr index);
     public :
-      void caseNode(Node* node);
+      /* void caseNode(Node* node); */
       void caseModule(VModule * node);
       void caseFunction(VFunction *node);
       void caseExpr(ExpressionPtr node);
@@ -40,7 +39,7 @@ namespace VRaptor{
       void caseNeqExpr(NeqExprPtr node);
       void caseAndExpr(AndExprPtr node);
       void caseOrExpr(OrExprPtr node);
-      void caseUnaryExpr(UnaryExprPtr node);
+      /* void caseUnaryExpr(UnaryExprPtr node); */
       void caseNotExpr(NotExprPtr node);
       void caseNegateExpr(NegateExprPtr node);
       void caseFuncallExpr(FunCallExprPtr node);
@@ -48,7 +47,7 @@ namespace VRaptor{
       void caseIndexExpr(IndexExprPtr node);
       void caseDomainExpr(DomainExprPtr node);
       void caseTupleExpr(TupleExprPtr node);
-      void caseMapExpr(MapExprPtr);
+      /* void caseMapExpr(MapExprPtr); */
       void caseLibCallExpr(LibCallExprPtr expr);
       void caseDimExpr(DimExprPtr expr);
       void caseDimVecExpr(DimvecExprPtr expr);
@@ -66,7 +65,7 @@ namespace VRaptor{
       void caseWhileStmt(WhileStmtPtr node);
       void caseBreakStmt(BreakStmtPtr node);
       void caseContinueStmt(ContinueStmtPtr node);
-      void caseRefOpStmt(RefOpStmtPtr node);
+      /* void caseRefOpStmt(RefOpStmtPtr node); */
       void caseReturnStmt(ReturnStmtPtr node);
       void prettyPrint();
       bool containsStmt( StmtPtr stmt ) {

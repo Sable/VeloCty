@@ -65,8 +65,8 @@ void VCompiler::initLibCallSet() {
     libCallSet.insert(LibCallExpr::LIB_MULT);
     libCallSet.insert(LibCallExpr::LIB_DIV);
     libCallSet.insert(LibCallExpr::LIB_TRANS);
-    libCallSet.insert(LibCallExpr::LIB_MLDIV);
-    libCallSet.insert(LibCallExpr::LIB_MRDIV);
+    /* libCallSet.insert(LibCallExpr::LIB_MLDIV); */
+    /* libCallSet.insert(LibCallExpr::LIB_MRDIV); */
 }
 
 Context VCompiler::moduleCodeGen(VModule *vm) {
@@ -546,7 +546,8 @@ Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
 	cout << getOpenmpFlag() << endl;
 #endif
 	if (getOpenmpFlag()) {
-		vector<int> privateVec = stmt->getPrivateVars();
+        //TODO: Rewrite once private variables are used. 
+		vector<int> privateVec ;//= stmt->getPrivateVars();
 		ompStr = "#pragma omp parallel for";
 		if (privateVec.size() > 0) {
 			string priVar = symTable->getName(privateVec[0]);
@@ -845,8 +846,8 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 		break;
 	case Expression::REAL_EXPR: // real expressions
 		break;
-	case Expression::REDUCE_EXPR: // reduce expressions
-		break;
+	/* case Expression::REDUCE_EXPR: // reduce expressions */
+	/* 	break; */
 	case Expression::CAST_EXPR: // cast expression
 		break;
 	default:
@@ -858,11 +859,12 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 
 Context VCompiler::dimExprCodeGen(DimExprPtr expr, SymTable *symTable) {
     Context cntxt;
-    std::string outStr = "size";
-    int id  = expr->getArray();
-    outStr += "(" + symTable->getName(id)+ ",";
-    outStr += exprTypeCodeGen(expr->getDimExpr(),symTable).getAllStmt()[0] + ")";
-    cntxt.addStmt(outStr);
+    //TODO: Modify
+    /* std::string outStr = "size"; */
+    /* int id  = expr->getArray(); */
+    /* outStr += "(" + symTable->getName(id)+ ","; */
+    /* outStr += exprTypeCodeGen(expr->getDimExpr(),symTable).getAllStmt()[0] + ")"; */
+    /* cntxt.addStmt(outStr); */
     return cntxt;
 }
 
@@ -988,10 +990,10 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 	case LibCallExpr::LIB_TRANS:
 		return matTransCallCodeGen(expr,symTable);
 		break;
-	case LibCallExpr::LIB_MLDIV :
-		return matLDivCallCodeGen(expr, symTable,lExpr);
-	case LibCallExpr::LIB_MRDIV :
-		return matRDivCallCodeGen(expr,symTable,lExpr);
+	/* case LibCallExpr::LIB_MLDIV : */
+	/* 	return matLDivCallCodeGen(expr, symTable,lExpr); */
+	/* case LibCallExpr::LIB_MRDIV : */
+	/* 	return matRDivCallCodeGen(expr,symTable,lExpr); */
 	default:
 		cout << "error in library call expression \n function not found"<<expr->getLibFunType()
 		     <<"Exiting"<<std::endl;

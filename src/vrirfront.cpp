@@ -38,15 +38,15 @@ void doParseStuff(const std::string& data){
     if(mod!=NULL) delete mod;
 }
 
-int main(int argc,char **argv){
-    if(argc!=3){
-        cout<<"Usage: vrirfront OPTION FILE"<<endl;
-    }
-    initRaptor();
+/* int main(int argc,char **argv){ */
+/*     if(argc!=3){ */
+/*         cout<<"Usage: vrirfront OPTION FILE"<<endl; */
+/*     } */
+/*     initRaptor(); */
 
-    std::string option(argv[1]);
-    std::string fname(argv[2]);
-    std::string data(readDataIntoString(fname));
-     if(option.compare("-p")==0) doParseStuff(data);
+/*     std::string option(argv[1]); */
+/*     std::string fname(argv[2]); */
+/*     std::string data(readDataIntoString(fname)); */
+/*      if(option.compare("-p")==0) doParseStuff(data); */
 
-}
+/* } */

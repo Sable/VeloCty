@@ -1469,6 +1469,10 @@ std::vector<VCompiler::LoopDirection> VCompiler::getLoopDirections(DomainExprPtr
 	std::vector<VCompiler::LoopDirection> loopVec;
 	for(int i=0;i<expr->getNdims(); i++) {
 		ExpressionPtr stepExpr = expr->getStepExpr(i);
+		if(stepExpr == NULL) {
+			loopVec.push_back(VCompiler::COUNT_UP);
+			continue;
+		}
 		if(stepExpr->getExprType()==Expression::CONST_EXPR) {
 			ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
 			if(constExpr->getDoubleVal()>0) {

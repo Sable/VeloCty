@@ -680,7 +680,6 @@ Context VCompiler::ifStmtCodeGen(IfStmtPtr stmt, SymTable *symTable) {
 		cntxt.addStmt("else\n");
 		cntxt.addStmt("{\n");
 		StmtPtr elseBlockStmt = stmt->getElseBranch();
-		std::cout<<"num children"<<static_cast<StmtListPtr>(elseBlockStmt)->getNumChildren()<<std::endl;
 		Context elseCntxt = stmtTypeCodeGen(elseBlockStmt, symTable);
 		for (int i = 0; i < elseCntxt.getAllStmt().size(); i++) {
 			cntxt.addStmt(elseCntxt.getAllStmt()[i]);
@@ -708,7 +707,6 @@ Context VCompiler::whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable) {
 }
 Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
-
 	switch (stmt->getStmtType()) {
 	case Statement::STMT_ASSIGN: //Assignment Statement
 		cntxt = assignStmtCodeGen(static_cast<AssignStmtPtr> (stmt), symTable);
@@ -778,7 +776,6 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 		cntxt = nameExprCodeGen(static_cast<NameExprPtr>(expr), symTable);
 		break;
 	case Expression::PLUS_EXPR: //Plus expression
-		//cout << "plus expression reached" << endl;
 		cntxt = plusExprCodeGen(static_cast<PlusExprPtr>(expr), symTable);
 		break;
 	case Expression::MINUS_EXPR: //minus expression
@@ -869,136 +866,135 @@ Context VCompiler::dimExprCodeGen(DimExprPtr expr, SymTable *symTable) {
 }
 
 Context VCompiler::tupleExprCodeGen(TupleExprPtr expr, SymTable* symTable) {
-	Context cntxt;
-	int ndims = expr->getNdims();
-	for(int i = 0; i < ndims; i++) {
-		Context tempCntxt = exprTypeCodeGen(expr->getChild(i), symTable);
-		std::vector<string> vec = tempCntxt.getAllStmt();
-		for(int j = 0; j < vec.size(); j++) {
-			cntxt.addStmt(vec[j]);
+		Context cntxt;
+		int ndims = expr->getNdims();
+		for(int i = 0; i < ndims; i++) {
+				Context tempCntxt = exprTypeCodeGen(expr->getChild(i), symTable);
+				std::vector<string> vec = tempCntxt.getAllStmt();
+				for(int j = 0; j < vec.size(); j++) {
+						cntxt.addStmt(vec[j]);
+				}
 		}
-	}
-	return cntxt;
+		return cntxt;
 }
 Context VCompiler::allocExprCodeGen(AllocExprPtr expr, SymTable* symTable){
-	Context cntxt;
-	switch(expr->getTag()){
-		case AllocExpr::ALLOC_ZEROS:
-			{
-            std::string typeStr = "";
-            if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
-                 typeStr = scalarTypeCodeGen(static_cast<ArrayTypePtr>(expr->getType())->getElementType()).getAllStmt()[0];
-            } 
-			string args=generateArgs(expr->getArgs(),symTable,true,"int");
-			cntxt.addStmt("zeros_"+typeStr+"("+itoa(expr->getNargs())+","+args+")");
-			break;
-			}
-		case AllocExpr::ALLOC_ONES:
-			 cntxt.addStmt("ones("+itoa(expr->getNargs())+","+generateArgs(expr->getArgs(),symTable,true,"int")+")");
-			 break;
-		case AllocExpr::ALLOC_EMPTY:
-			std::cout<<"Empty allocation not supported"<<std::endl;
-			break;
-		default:
+		Context cntxt;
+		switch(expr->getTag()){
+				case AllocExpr::ALLOC_ZEROS:
+						{
+								std::string typeStr = "";
+								if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
+										typeStr = scalarTypeCodeGen(static_cast<ArrayTypePtr>(expr->getType())->getElementType()).getAllStmt()[0];
+								} 
+								string args=generateArgs(expr->getArgs(),symTable,true,"int");
+								cntxt.addStmt("zeros_"+typeStr+"("+itoa(expr->getNargs())+","+args+")");
+								break;
+						}
+				case AllocExpr::ALLOC_ONES:
+						cntxt.addStmt("ones("+itoa(expr->getNargs())+","+generateArgs(expr->getArgs(),symTable,true,"int")+")");
+						break;
+				case AllocExpr::ALLOC_EMPTY:
+						break;
+				default:
 #ifdef DEBUG
-			std::cout<<"default case in allocExprCodeGen"<<std::endl;
+						std::cout<<"default case in allocExprCodeGen"<<std::endl;
 #endif	
-			break;
-	}	
-	return cntxt;
+						break;
+		}	
+		return cntxt;
 }
 Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr) {
-	Context cntxt;
-	string funcName;
-	switch (expr->getLibFunType()) {
-	case LibCallExpr::LIB_SQRT:
-		funcName = "sqrt";
-		break;
-	case LibCallExpr::LIB_LOG2:
-		funcName = "log2";
-		break;
-	case LibCallExpr::LIB_LOG10:
-		funcName = "log10";
-		break;
-	case LibCallExpr::LIB_LOGE:
-		funcName = "log";
-		break;
-	case LibCallExpr::LIB_EXPE:
-		if(isComplex(expr)){
-		  funcName = "cexp";
-		}
-		else{
-		  funcName = "exp";
-		}
-		break;
-	case LibCallExpr::LIB_EXP10:
-		funcName = "exp10";
-		break;
-	case LibCallExpr::LIB_SIN:
-		funcName = "sin";
-		break;
-	case LibCallExpr::LIB_COS:
-		funcName = "cos";
-		break;
-	case LibCallExpr::LIB_TAN:
-		funcName = "tan";
-		break;
-	case LibCallExpr::LIB_ASIN:
-		funcName = "asin";
-		break;
-	case LibCallExpr::LIB_ACOS:
-		funcName = "acos";
-		break;
-	case LibCallExpr::LIB_ATAN:
-		funcName = "atan";
-		break;
-	case LibCallExpr::LIB_POW:
-		funcName="pow";
-		break;
-	case LibCallExpr::LIB_ABS: 
-		{
-		VTypePtr type = expr->getArg(0)->getType(); 
-		if(type->getBasicType()==VType::SCALAR_TYPE 
-		&& (static_cast<ScalarTypePtr>(type)->getScalarTag() == ScalarType::SCALAR_FLOAT64 
-		|| static_cast<ScalarTypePtr>(type)->getScalarTag() == ScalarType::SCALAR_FLOAT32)){
-			if(isComplex(expr->getArg(0))) {
-			  funcName = "cabs";
-			}else{
-			  funcName = "fabs";
-			}
-		}
-		else {
-			funcName = "abs";
-		}
-		break;
-		}
-	case LibCallExpr::LIB_MATMULT:
-		return matMultCallCodeGen(expr,symTable,lExpr);
-		break;
-	case LibCallExpr::LIB_PLUS:
-		return matPlusCallCodeGen(expr,symTable,lExpr);
-		break;
-	case LibCallExpr::LIB_MINUS:
-		return matMinusCallCodeGen(expr,symTable,lExpr);
-		break;
-	case LibCallExpr::LIB_MULT:
-		return elemMultCallCodeGen(expr,symTable,lExpr);
-		break;
-	case LibCallExpr::LIB_DIV:
-		return elemDivCallCodeGen(expr, symTable,lExpr);
-		break;
-	case LibCallExpr::LIB_TRANS:
-		return matTransCallCodeGen(expr,symTable);
-		break;
-	/* case LibCallExpr::LIB_MLDIV : */
-	/* 	return matLDivCallCodeGen(expr, symTable,lExpr); */
-	/* case LibCallExpr::LIB_MRDIV : */
-	/* 	return matRDivCallCodeGen(expr,symTable,lExpr); */
-	default:
-		cout << "error in library call expression \n function not found"<<expr->getLibFunType()
-		     <<"Exiting"<<std::endl;
-		exit(0);
-		break;
+		Context cntxt;
+		string funcName;
+		switch (expr->getLibFunType()) {
+				case LibCallExpr::LIB_SQRT:
+						funcName = "sqrt";
+						break;
+				case LibCallExpr::LIB_LOG2:
+						funcName = "log2";
+						break;
+				case LibCallExpr::LIB_LOG10:
+						funcName = "log10";
+						break;
+				case LibCallExpr::LIB_LOGE:
+						funcName = "log";
+						break;
+				case LibCallExpr::LIB_EXPE:
+						if(isComplex(expr)){
+								funcName = "cexp";
+						}
+						else{
+								funcName = "exp";
+						}
+						break;
+				case LibCallExpr::LIB_EXP10:
+						funcName = "exp10";
+						break;
+				case LibCallExpr::LIB_SIN:
+						funcName = "sin";
+						break;
+				case LibCallExpr::LIB_COS:
+						funcName = "cos";
+						break;
+				case LibCallExpr::LIB_TAN:
+						funcName = "tan";
+						break;
+				case LibCallExpr::LIB_ASIN:
+						funcName = "asin";
+						break;
+				case LibCallExpr::LIB_ACOS:
+						funcName = "acos";
+						break;
+				case LibCallExpr::LIB_ATAN:
+						funcName = "atan";
+						break;
+				case LibCallExpr::LIB_POW:
+						funcName="pow";
+						break;
+				case LibCallExpr::LIB_ABS: 
+						{
+								VTypePtr type = expr->getArg(0)->getType(); 
+								if(type->getBasicType()==VType::SCALAR_TYPE 
+												&& (static_cast<ScalarTypePtr>(type)->getScalarTag() == ScalarType::SCALAR_FLOAT64 
+														|| static_cast<ScalarTypePtr>(type)->getScalarTag() == ScalarType::SCALAR_FLOAT32)){
+										if(isComplex(expr->getArg(0))) {
+												funcName = "cabs";
+										}else{
+												funcName = "fabs";
+										}
+								}
+								else {
+										funcName = "abs";
+								}
+								break;
+						}
+				case LibCallExpr::LIB_MATMULT:
+						return matMultCallCodeGen(expr,symTable,lExpr);
+						break;
+				case LibCallExpr::LIB_PLUS:
+						return matPlusCallCodeGen(expr,symTable,lExpr);
+						break;
+				case LibCallExpr::LIB_MINUS:
+						return matMinusCallCodeGen(expr,symTable,lExpr);
+						break;
+				case LibCallExpr::LIB_MULT:
+						return elemMultCallCodeGen(expr,symTable,lExpr);
+						break;
+				case LibCallExpr::LIB_DIV:
+						return elemDivCallCodeGen(expr, symTable,lExpr);
+						break;
+				case LibCallExpr::LIB_TRANS:
+						return matTransCallCodeGen(expr,symTable);
+						break;
+				case LibCallExpr::LIB_MLDIV : 
+						return matLDivCallCodeGen(expr, symTable,lExpr); 
+				case LibCallExpr::LIB_MRDIV : 
+						return matRDivCallCodeGen(expr,symTable,lExpr); 
+				default:
+						cout << "error in library call expression \n function not found"<<expr->getLibFunType()
+								<<"Exiting"<<std::endl;
+						exit(0);
+						break;
 
 	}
 	Context tempCntxt; 
@@ -1166,7 +1162,6 @@ Context VCompiler::matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 
 Context VCompiler::matPlusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr) {
 	Context cntxt;
-    std::cout<<"plus"<<std::endl;
 	if(expr->getArg(0)->getType()->getBasicType()==VType::ARRAY_TYPE&&expr->getArg(1)->getType()->getBasicType()==VType::ARRAY_TYPE){
 	 cntxt.addStmt(generateMatClassStr(expr,symTable)+"::vec_add"+"("+getNdims(static_cast<ArrayTypePtr>(expr->getType()))+","+generateArgs(expr->getArgs(),symTable)+(lExpr != NULL?",&"+exprTypeCodeGen(lExpr,symTable).getAllStmt()[0]:"")+")");
 	return cntxt;
@@ -1235,7 +1230,6 @@ Context VCompiler::matMinusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,E
 
 Context VCompiler::matLDivCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr) {
   Context cntxt;
-    std::cout<<" ldiv "<<std::endl;
   if(expr->getArg(0)->getType()->getBasicType() == VType::ARRAY_TYPE &&
     expr->getArg(1)->getType()->getBasicType() == VType::ARRAY_TYPE) {
  	cntxt.addStmt(generateMatClassStr(expr,symTable)+"::mat_ldiv"+"("+genCblasOrder(static_cast<ArrayTypePtr>(expr->getType()))+","+generateArgs(expr->getArgs(),symTable)+(lExpr != NULL?",&"+exprTypeCodeGen(lExpr, symTable).getAllStmt()[0]:"")+")");
@@ -1257,7 +1251,6 @@ Context VCompiler::matRDivCallCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 }
 Context VCompiler::elemDivCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr) {
 Context cntxt;	 
-    std::cout<<" elem div"<<std::endl;
   if(expr->getArg(0)->getType()->getBasicType()==VType::ARRAY_TYPE&&expr->getArg(1)->getType()->getBasicType()==VType::ARRAY_TYPE){
 		cntxt.addStmt(generateMatClassStr(expr,symTable)+"::elem_div"+"("+generateArgs(expr->getArgs(),symTable)+(lExpr != NULL?",&"+exprTypeCodeGen(lExpr, symTable).getAllStmt()[0]:"")+")");
 		return cntxt;
@@ -1519,7 +1512,7 @@ Context VCompiler::domainExprCodeGen(DomainExprPtr expr, SymTable *symTable) {
 		}
 		ExpressionPtr endExpr = expr->getStopExpr(j);
         if (endExpr == NULL) {
-            std::cout<<"wtf dude"<<std::endl;
+            std::cout<<"End Expression cannot be NULL"<<std::endl;
             exit(0);
         }
 		tempCntxt = exprTypeCodeGen(endExpr, symTable);
@@ -1907,15 +1900,21 @@ bool VCompiler::isSlice(IndexExprPtr expr) {
 }
 
 std::string VCompiler::genRangeFuncStr(VRange * range,SymTable * symTable) {
-  Context tempCntxt;
-  string rangeStr="VrIndex(";
-  tempCntxt= exprTypeCodeGen(range->m_start, symTable);
-  rangeStr += tempCntxt.getAllStmt()[0]+",";
-  tempCntxt = exprTypeCodeGen(range->m_stop, symTable);
-  rangeStr += tempCntxt.getAllStmt()[0]+",";
-  tempCntxt = exprTypeCodeGen(range->m_step, symTable);
-  rangeStr += tempCntxt.getAllStmt()[0]+")";
-  return rangeStr;
+		Context tempCntxt;
+		string rangeStr="VrIndex(";
+		tempCntxt= exprTypeCodeGen(range->m_start, symTable);
+		rangeStr += tempCntxt.getAllStmt()[0]+",";
+		tempCntxt = exprTypeCodeGen(range->m_stop, symTable);
+		rangeStr += tempCntxt.getAllStmt()[0]+",";
+		if(range->m_step != NULL) {
+				tempCntxt = exprTypeCodeGen(range->m_step, symTable);
+				rangeStr += tempCntxt.getAllStmt()[0];
+		} else {
+			rangeStr += "1";
+
+		}
+			rangeStr += ")";
+		return rangeStr;
 }
 
 std::string VCompiler::genRangeFuncStr(ExpressionPtr expr, SymTable *symTable) {
@@ -1924,7 +1923,6 @@ std::string VCompiler::genRangeFuncStr(ExpressionPtr expr, SymTable *symTable) {
 
 std::string VCompiler::genSliceStr(IndexExprPtr expr, SymTable *symTable) {
   std::string sliceStr;
-  
   IndexVec vec = expr->getIndices();
   std::string arrayName = symTable->getName(expr->getArrayId());
   for (int i=0;i<vec.size();i++) {

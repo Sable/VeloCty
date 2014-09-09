@@ -19,3 +19,6 @@
 *.exe
 *.out
 *.app
+*.mexa64
+#swap files 
+*.swp

@@ -122,8 +122,8 @@ int main(int argc,char * argv[]){
 // //#ifdef GEN_CODE_FILE
 	if(genFile) {
 		std::string fNameNoExt = getFileNameNoExt(fCopy);
-		writeFile(fNameNoExt+".cpp",vec_cpp);	
-		writeFile(fNameNoExt+".hpp",vec_hpp);
+		writeFile(fNameNoExt+"Impl.cpp",vec_cpp);	
+		writeFile(fNameNoExt+"Impl.hpp",vec_hpp);
 	}
 //#endif
 }

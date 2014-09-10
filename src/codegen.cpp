@@ -671,6 +671,7 @@ Context VCompiler::ifStmtCodeGen(IfStmtPtr stmt, SymTable *symTable) {
 	// if block
 	StmtPtr ifBlockStmt = stmt->getIfBranch();
 	Context ifCntxt = stmtTypeCodeGen(ifBlockStmt, symTable);
+    std::cout<<"if statement size "<<ifCntxt.getAllStmt().size()<<std::endl;
 	for (int i = 0; i < ifCntxt.getAllStmt().size(); i++) {
 		cntxt.addStmt(ifCntxt.getAllStmt()[i]);
 	}
@@ -846,6 +847,7 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 	/* case Expression::REDUCE_EXPR: // reduce expressions */
 	/* 	break; */
 	case Expression::CAST_EXPR: // cast expression
+        cntxt = castExprCodeGen(static_cast<CastExprPtr>(expr),symTable); 
 		break;
 	default:
 		break;
@@ -853,7 +855,11 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 	}
 	return cntxt;
 }
-
+Context VCompiler::castExprCodeGen(CastExprPtr expr, SymTable *symTable) {
+    Context cntxt;
+    cntxt.addStmt("static_cast<"+vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0] + ">("+exprTypeCodeGen(expr->getBaseExpr(),symTable).getAllStmt()[0] +")");
+    return cntxt;
+}
 Context VCompiler::dimExprCodeGen(DimExprPtr expr, SymTable *symTable) {
     Context cntxt;
     //TODO: Modify
@@ -1482,7 +1488,19 @@ std::vector<VCompiler::LoopDirection> VCompiler::getLoopDirections(DomainExprPtr
 				loopVec.push_back(VCompiler::COUNT_DOWN);
 				continue;
 			}
-		}
+		} else if(stepExpr->getExprType() == Expression::CAST_EXPR && 
+                    static_cast<CastExprPtr>(stepExpr)->getBaseExpr()->getExprType() ==  Expression::CONST_EXPR) {
+           ConstExprPtr constExpr = static_cast<ConstExprPtr>(static_cast<CastExprPtr>(stepExpr)->getBaseExpr());
+			if(constExpr->getDoubleVal()>0) {
+				loopVec.push_back(VCompiler::COUNT_UP);
+				continue;
+			}else {
+                std::cout<<"Const value "<<constExpr->getDoubleVal()<<std::endl;
+				loopVec.push_back(VCompiler::COUNT_DOWN);
+				continue;
+            }
+            
+        }
 		else if(stepExpr->getExprType()==Expression::NEGATE_EXPR) {
 			NegateExprPtr nExpr = static_cast<NegateExprPtr>(stepExpr);
 			if(nExpr->getBaseExpr()->getExprType()==Expression::CONST_EXPR) {
@@ -1971,7 +1989,8 @@ std::string VCompiler::genIterVar() {
 	return tempIterStr + itoa(maxTempIterId++);
 }
 
-Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { Context cntxt;
+Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
+    Context cntxt;
 	StmtPtr sPtr = stmt->getBody();
 	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
 	ExpressionPtr domainPtr = stmt->getDomain();
@@ -2369,13 +2388,13 @@ IndexSet* VCompiler::getIndexSet(StmtPtr stmt) {
 
 Context VCompiler::stmtListCodeGen(StmtListPtr stmt, SymTable *symTable) {
 	Context cntxt;
-
+    std::cout<<"Stmt list size "<<stmt->getNumChildren()<<std::endl;
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 
 		StmtPtr childStmt = stmt->getChild(i);
 		Context tempCntxt = stmtTypeCodeGen(childStmt, symTable);
-		for (int i = 0; i < tempCntxt.getAllStmt().size(); i++) {
-			cntxt.addStmt(tempCntxt.getAllStmt()[i]);
+		for (int j = 0; j < tempCntxt.getAllStmt().size(); j++) {
+			cntxt.addStmt(tempCntxt.getAllStmt()[j]);
 		}
 	}
 	return cntxt;

@@ -328,6 +328,7 @@ public:
     bool isSpecLibCall(AssignStmtPtr stmt);
     void initLibCallSet();
     Context castExprCodeGen(CastExprPtr expr,SymTable *symTable);
+    LoopDirection getLoopDirectionEnum(ExpressionPtr expr);
 	void setCollector(NodeCollector& nc) {
 		collector = nc;
 	}

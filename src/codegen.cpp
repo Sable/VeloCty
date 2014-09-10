@@ -1414,106 +1414,101 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
 }
 
 Context VCompiler::notExprCodeGen(NotExprPtr expr, SymTable *symTable) {
-	Context cntxt;
-	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
-	string baseStr = baseCntxt.getAllStmt()[0];
-	cntxt.addStmt("(!" + baseStr + "");
-	return cntxt;
+    Context cntxt;
+    Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
+    string baseStr = baseCntxt.getAllStmt()[0];
+    cntxt.addStmt("(!" + baseStr + "");
+    return cntxt;
 }
 Context VCompiler::negateExprCodeGen(NegateExprPtr expr, SymTable *symTable) {
-	Context cntxt;
-	std::string exprStr = "";
-	Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
-	if(expr->getBaseExpr()->getType()->getBasicType() == VType::ARRAY_TYPE) {
-		exprStr = generateMatClassStr(expr->getType()) + "::scal_mult" +"("+
-					getNdims(static_cast<ArrayTypePtr>(expr->getBaseExpr()->getType()))+
-					","+baseCntxt.getAllStmt()[0] +",-1)";
-	} else {
-		string baseStr = baseCntxt.getAllStmt()[0];
-		exprStr = "(-" + baseStr + ")";
-	}
-	cntxt.addStmt(exprStr);
-	return cntxt;
+    Context cntxt;
+    std::string exprStr = "";
+    Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
+    if(expr->getBaseExpr()->getType()->getBasicType() == VType::ARRAY_TYPE) {
+        exprStr = generateMatClassStr(expr->getType()) + "::scal_mult" +"("+
+            getNdims(static_cast<ArrayTypePtr>(expr->getBaseExpr()->getType()))+
+            ","+baseCntxt.getAllStmt()[0] +",-1)";
+    } else {
+        string baseStr = baseCntxt.getAllStmt()[0];
+        exprStr = "(-" + baseStr + ")";
+    }
+    cntxt.addStmt(exprStr);
+    return cntxt;
 }
 Context VCompiler::constExprCodeGen(ConstExprPtr expr, SymTable *symTable) {
-	Context cntxt;
-	ostringstream convert;
-	ScalarTypePtr sc = static_cast<ScalarTypePtr> (expr->getType());
-	convert.str("");
-	int intVal;
-	double float64Val;
-	float float32Val;
-	std::string constStr;
-	switch (sc->getScalarTag()) {
-	case ScalarType::SCALAR_INT32:
-		intVal = expr->getIntVal();
-		convert << intVal;
-		constStr = convert.str();
-		break;
-	case ScalarType::SCALAR_FLOAT64:
-		float64Val = expr->getDoubleVal();
-		convert << float64Val;
-		constStr = convert.str();
-		if(constStr.find(".") == std::string::npos && constStr.find("E") == std::string::npos &&
-           constStr.find("e") == std::string::npos) {
-			constStr += ".0f";	
-		}
-		break;
-	case ScalarType::SCALAR_FLOAT32:
-		float32Val=expr->getFloatVal();
-		convert<<float32Val;
-		constStr = convert.str();
-	case ScalarType::SCALAR_INT64:
-		long longVal=expr->getLongVal();
-		convert<<longVal;
-		constStr = convert.str();
-	}
-	cntxt.addStmt(constStr);
-	return cntxt;
-}
-std::vector<VCompiler::LoopDirection> VCompiler::getLoopDirections(DomainExprPtr expr, SymTable *symTable){
-	std::vector<VCompiler::LoopDirection> loopVec;
-	for(int i=0;i<expr->getNdims(); i++) {
-		ExpressionPtr stepExpr = expr->getStepExpr(i);
-		if(stepExpr == NULL) {
-			loopVec.push_back(VCompiler::COUNT_UP);
-			continue;
-		}
-		if(stepExpr->getExprType()==Expression::CONST_EXPR) {
-			ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
-			if(constExpr->getDoubleVal()>0) {
-				loopVec.push_back(VCompiler::COUNT_UP);
-				continue;
-			}else {
-				loopVec.push_back(VCompiler::COUNT_DOWN);
-				continue;
-			}
-		} else if(stepExpr->getExprType() == Expression::CAST_EXPR && 
-                    static_cast<CastExprPtr>(stepExpr)->getBaseExpr()->getExprType() ==  Expression::CONST_EXPR) {
-           ConstExprPtr constExpr = static_cast<ConstExprPtr>(static_cast<CastExprPtr>(stepExpr)->getBaseExpr());
-			if(constExpr->getDoubleVal()>0) {
-				loopVec.push_back(VCompiler::COUNT_UP);
-				continue;
-			}else {
-                std::cout<<"Const value "<<constExpr->getDoubleVal()<<std::endl;
-				loopVec.push_back(VCompiler::COUNT_DOWN);
-				continue;
+    Context cntxt;
+    ostringstream convert;
+    ScalarTypePtr sc = static_cast<ScalarTypePtr> (expr->getType());
+    convert.str("");
+    int intVal;
+    double float64Val;
+    float float32Val;
+    std::string constStr;
+    switch (sc->getScalarTag()) {
+        case ScalarType::SCALAR_INT32:
+            intVal = expr->getIntVal();
+            convert << intVal;
+            constStr = convert.str();
+            break;
+        case ScalarType::SCALAR_FLOAT64:
+            float64Val = expr->getDoubleVal();
+            convert << float64Val;
+            constStr = convert.str();
+            if(constStr.find(".") == std::string::npos && constStr.find("E") == std::string::npos &&
+                    constStr.find("e") == std::string::npos) {
+                constStr += ".0f";	
             }
-            
+            break;
+        case ScalarType::SCALAR_FLOAT32:
+            float32Val=expr->getFloatVal();
+            convert<<float32Val;
+            constStr = convert.str();
+        case ScalarType::SCALAR_INT64:
+            long longVal=expr->getLongVal();
+            convert<<longVal;
+            constStr = convert.str();
+    }
+    cntxt.addStmt(constStr);
+    return cntxt;
+}
+
+VCompiler::LoopDirection VCompiler::getLoopDirectionEnum(ExpressionPtr expr) {
+        ExpressionPtr  stepExpr = NULL;
+        if(stepExpr == NULL) {
+            return VCompiler::COUNT_UP;
+        }
+       if(expr->getExprType() == Expression::CAST_EXPR) {
+            stepExpr = static_cast<CastExprPtr>(stepExpr)->getBaseExpr();
+        } else {
+            stepExpr = expr;
+        }
+        if(stepExpr->getExprType()==Expression::CONST_EXPR) {
+            ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
+            if(constExpr->getDoubleVal()>0) {
+                return (VCompiler::COUNT_UP);
+            }else {
+                return (VCompiler::COUNT_DOWN);
+            }
         }
 		else if(stepExpr->getExprType()==Expression::NEGATE_EXPR) {
 			NegateExprPtr nExpr = static_cast<NegateExprPtr>(stepExpr);
 			if(nExpr->getBaseExpr()->getExprType()==Expression::CONST_EXPR) {
 				ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
 				if(constExpr->getDoubleVal()<0) {
-					loopVec.push_back(VCompiler::COUNT_UP);
+					return (VCompiler::COUNT_UP);
 				}else{
-					loopVec.push_back(VCompiler::COUNT_DOWN);
+					return (VCompiler::COUNT_DOWN);
 				}
-				continue;
 			}
-		}
-		loopVec.push_back(VCompiler::UNKNOWN);
+     }
+    return VCompiler::UNKNOWN;
+}
+
+std::vector<VCompiler::LoopDirection> VCompiler::getLoopDirections(DomainExprPtr expr, SymTable *symTable){
+    std::vector<VCompiler::LoopDirection> loopVec;
+    for(int i=0;i<expr->getNdims(); i++) {
+        ExpressionPtr stepExpr = expr->getStepExpr(i);
+        loopVec.push_back(getLoopDirectionEnum(stepExpr));
 	}
 	return loopVec;
 }

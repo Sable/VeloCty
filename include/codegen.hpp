@@ -327,6 +327,7 @@ public:
     std::string genNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool isSpecLibCall(AssignStmtPtr stmt);
     void initLibCallSet();
+    Context castExprCodeGen(CastExprPtr expr,SymTable *symTable);
 	void setCollector(NodeCollector& nc) {
 		collector = nc;
 	}

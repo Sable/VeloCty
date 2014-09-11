@@ -1358,59 +1358,63 @@ bool VCompiler::isBuiltin(const std::string & funcName) {
 }
 
 Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
-	Context cntxt;
-	Context tempCntxt;
-	string fnName =expr->getName();
-	string name =fnName;
-	if(name.compare("horzcat") == 0 || name.compare("vertcat") == 0) {
-	  return catCallCodeGen(expr,symTable);
-	}
-	if(name.compare("true") == 0 || name.compare("false") == 0) {
-		cntxt.addStmt(name);
-		return cntxt;
-	}
-	name +="(";
-	if(isBuiltin(fnName) && mapper.getBuiltin(fnName).hasVarArgs()) {
-	  name +=itoa(expr->getNargs())+",";
-	}
-	if(expr->getNargs()>0){
-		tempCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
-		if (tempCntxt.getAllStmt().size() > 0) {
-			std::string argStr = tempCntxt.getAllStmt()[0];
-			if(!isBuiltin(fnName) && 
-				expr->getArg(0)->getType()->getBasicType() != VType::SCALAR_TYPE
-                && (expr->getArg(0)->getExprType() != Expression::FUNCALL_EXPR && expr->getArg(0)->getExprType() != Expression::LIBCALL_EXPR)) {
-				Context typeCntxt = vTypeCodeGen(expr->getArg(0)->getType(),symTable);
-				std::string typeStr = typeCntxt.getAllStmt()[0]; 
-				argStr = typeStr + "(&" + argStr + ")";				
-			}	
-           	name += argStr;
+    Context cntxt;
+    Context tempCntxt;
+    string fnName =expr->getName();
+    string name =fnName;
+    if(name.compare("horzcat") == 0 || name.compare("vertcat") == 0) {
+        return catCallCodeGen(expr,symTable);
+    }
+    if(name.compare("true") == 0 || name.compare("false") == 0) {
+        cntxt.addStmt(name);
+        return cntxt;
+    }
+    name +="(";
+    if(isBuiltin(fnName) && mapper.getBuiltin(fnName).hasVarArgs()) {
+        name +=itoa(expr->getNargs())+",";
+    }
+    if(expr->getNargs()>0){
+        tempCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
+        if (tempCntxt.getAllStmt().size() > 0) {
+            std::string argStr = tempCntxt.getAllStmt()[0];
+            if(!isBuiltin(fnName) && 
+                    expr->getArg(0)->getType()->getBasicType() != VType::SCALAR_TYPE
+                    && (expr->getArg(0)->getExprType() != Expression::FUNCALL_EXPR && expr->getArg(0)->getExprType() != Expression::LIBCALL_EXPR)) {
+                Context typeCntxt = vTypeCodeGen(expr->getArg(0)->getType(),symTable);
+                std::string typeStr = typeCntxt.getAllStmt()[0]; 
+                argStr = typeStr + "(&" + argStr + ")";				
+            }	
+            name += argStr;
         }
-		for (int i = 1; i<expr->getNargs(); i++) {
-			tempCntxt = exprTypeCodeGen(expr->getArg(i), symTable);
-			if (tempCntxt.getAllStmt().size() > 0) {
-				std::string argStr = tempCntxt.getAllStmt()[0];
-				if(!isBuiltin(fnName) && 
-					expr->getArg(i)->getType()->getBasicType() != VType::SCALAR_TYPE 
-                    &&( expr->getArg(i)->getExprType() != Expression::FUNCALL_EXPR ||    
-                    expr->getArg(i)->getExprType() != Expression::LIBCALL_EXPR)) {
-					Context typeCntxt = vTypeCodeGen(expr->getArg(i)->getType(),symTable);
-					std::string typeStr = typeCntxt.getAllStmt()[0]; 
-					argStr = typeStr + "(&" + argStr + ")";
-				}	
-				name += "," + argStr;
-			}
-		}
-	}
-	name += ")";
-	if(mapper.contains(fnName)) {
-	  if (expr->getType()->getBasicType()==VType::SCALAR_TYPE && 
-	    mapper.getBuiltin(fnName).isArrayOutput()) {
-	      name="(*"+genDataMacroStr(expr->getType(),name)+")";
-	  }
-	}
-	cntxt.addStmt(name);
-	return cntxt;
+        for (int i = 1; i<expr->getNargs(); i++) {
+            tempCntxt = exprTypeCodeGen(expr->getArg(i), symTable);
+            if (tempCntxt.getAllStmt().size() > 0) {
+                std::string argStr = tempCntxt.getAllStmt()[0];
+                if(!isBuiltin(fnName) && 
+                        expr->getArg(i)->getType()->getBasicType() != VType::SCALAR_TYPE 
+                        &&( expr->getArg(i)->getExprType() != Expression::FUNCALL_EXPR ||    
+                            expr->getArg(i)->getExprType() != Expression::LIBCALL_EXPR)) {
+                    Context typeCntxt = vTypeCodeGen(expr->getArg(i)->getType(),symTable);
+                    std::string typeStr = typeCntxt.getAllStmt()[0]; 
+                    argStr = typeStr + "(&" + argStr + ")";
+                }	
+                name += "," + argStr;
+            }
+        }
+    }
+    name += ")";
+    if(mapper.contains(fnName)) {
+        if (expr->getType()->getBasicType()==VType::SCALAR_TYPE && 
+                mapper.getBuiltin(fnName).isArrayOutput()) {
+            if(fnName.compare("rand") == 0) {
+                name = fnName +"()";
+            } else{
+                name="(*"+genDataMacroStr(expr->getType(),name)+")";
+            }
+        }
+    }
+    cntxt.addStmt(name);
+    return cntxt;
 }
 
 Context VCompiler::notExprCodeGen(NotExprPtr expr, SymTable *symTable) {

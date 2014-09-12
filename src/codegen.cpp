@@ -1369,6 +1369,14 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
         cntxt.addStmt(name);
         return cntxt;
     }
+    if(name.compare("fix") == 0){
+        Context outTypeCntxt = vTypeCodeGen(expr->getType(),symTable);
+        Context inTypeCntxt = vTypeCodeGen(expr->getArg(0)->getType(), symTable);
+        std::string outStr = outTypeCntxt.getAllStmt()[0];
+        std::string inStr = inTypeCntxt.getAllStmt()[0];
+        cntxt.addStmt("fix<"+inStr+","+outStr+">(" + exprTypeCodeGen(expr->getArg(0),symTable).getAllStmt()[0]);
+        return cntxt;
+    }
     name +="(";
     if(isBuiltin(fnName) && mapper.getBuiltin(fnName).hasVarArgs()) {
         name +=itoa(expr->getNargs())+",";

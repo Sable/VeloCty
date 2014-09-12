@@ -1224,8 +1224,8 @@ Context VCompiler::matMinusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,E
 	  scalExpr = expr->getArg(0); 
 	}else if (expr->getArg(1)->getType()->getBasicType()==VType::SCALAR_TYPE &&
 	          expr->getArg(0)->getType()->getBasicType()==VType::ARRAY_TYPE) {
-	  arrayExpr = expr->getArg(1);
-	  scalExpr = expr->getArg(0);
+	  arrayExpr = expr->getArg(0);
+	  scalExpr = expr->getArg(1);
 	}
 	string arrayStr = exprTypeCodeGen(arrayExpr, symTable).getAllStmt()[0];
 	string scalStr = exprTypeCodeGen(scalExpr, symTable).getAllStmt()[0];

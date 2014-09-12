@@ -2014,10 +2014,14 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 		   || loopVec[i] == VCompiler::COUNT_DOWN){
 			initStmt = var + "=" + domainVec[i];
 			if(loopVec[i]==VCompiler::COUNT_UP) {
-				compStmt = var + "<=" + domainVec[i + count];
+				compStmt = var + "<" ;
 			}else {
-		        	compStmt = var + ">=" + domainVec[i + count];
+		        	compStmt = var + ">";
 			}
+            if(!static_cast<DomainExprPtr>(domainPtr)->getExclude(i)){
+                compStmt += "=";
+            }
+            compStmt +=  " "+domainVec[i + count];
 			iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
 			cntxt.addStmt(
 				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");

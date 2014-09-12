@@ -38,7 +38,6 @@ inline dim_type flatten(dim_type * dims, dim_type start, dim_type ndims) {
 	return prod;
 
 }
-#ifdef __MATLAB__
 
 template<class ArrayType,class DimType> 
 DimType getStep(ArrayType arr,DimType index) {
@@ -48,16 +47,7 @@ DimType getStep(ArrayType arr,DimType index) {
 	}
 	return step;
 }
-#elif defined __PYTHON__
-template<class ArrayType,class DimType> 
-DimType getStep(ArrayType arr,DimType index) {
-	DimType step=1;
-	for(int i =index+1; i < arr.ndims; i++) {
-		step *= arr.dims[i];
-	}
-	return step;
-}
-#endif
+
 template<class ArrayType, class DimType>
 DimType getSize(ArrayType arr, DimType index) {
 	return arr.dims[index];

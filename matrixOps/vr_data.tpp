@@ -11,9 +11,8 @@ DimType getRange(VrIndex indx){
     }
     return 1;
 }
-#ifdef __MATLAB__
 template<class DataType, class DimType>
-DataType* getColData(DimType indx3,const VrIndex& rowIndex, const VrIndex& colIndex, DimType *dims, DimType ndims, DataType *data){
+void getColData(DimType indx3,const VrIndex& rowIndex, const VrIndex& colIndex, DimType *dims, DimType ndims, DataType *data){
     int indx_diff = 0;
     if (!vrZeroBasedIndex) {
         indx_diff=1;
@@ -25,7 +24,7 @@ DataType* getColData(DimType indx3,const VrIndex& rowIndex, const VrIndex& colIn
     if ( colIndex.m_isRange == false && colIndex.m_isArray == false ) {
         memcpy(outArr, getRowData(indx3*dims[1]+colIndex.m_val.const_val-indx_diff, rowIndex,dims,ndims,data),
                 sizeof(DataType)*row_range);
-    } else if( colIndex.m_isArray  == true) {
+    } else if(colIndex.m_isArray  == true) {
         VrArrayPtrF64 arr = colIndex.arr;
         DimType numel  =  total_range;
         for( DimType i = 0; i < numel; i++) {
@@ -45,7 +44,7 @@ DataType* getColData(DimType indx3,const VrIndex& rowIndex, const VrIndex& colIn
 }
 
 template<class DataType, class DimType>
-DataType *getRowData(int col , const VrIndex &  rowIndx,DimType *dims, DimType ndims,DataType *data) {
+void getRowData(int col , const VrIndex &  rowIndx,DimType *dims, DimType ndims,DataType *data) {
     DataType *out_data;
     int indexDiff = 0;
     if (!vrZeroBasedIndex) {
@@ -77,21 +76,14 @@ DataType *getRowData(int col , const VrIndex &  rowIndx,DimType *dims, DimType n
 }
 
 template<class ArrayType,class DataType, class DimType>
-ArrayType arraySlice(ArrayType arr,const VrIndex &indx) {
+ArrayType arraySlice(ArrayType arr,ArrayType outArr,const VrIndex &indx) {
     int indxDiff = 0;
     if(!vrZeroBasedIndex) {
         indxDiff=1;
     }
-    ArrayType outArr;
     DimType width = getRange<DimType>(indx);
-    outArr.data=(DataType*)VR_MALLOC(sizeof(DataType)*width);
-    outArr.dims=(DimType*)VR_MALLOC(sizeof(DimType)*2);
-    outArr.ndims=2;
     if (!indx.m_isRange && ! indx.m_isArray) {
         outArr.data[0] = arr.data[indx.m_val.const_val-indxDiff]; 
-        outArr.dims[0]=1;
-        outArr.dims[1]=1;
-        return outArr;
     } 
     if(indx.m_isArray) {
         for( int i = 0; i < width; i++) {
@@ -122,39 +114,26 @@ ArrayType arraySlice(ArrayType arr,const VrIndex &indx) {
 }
 
 template<class ArrayType,class DataType, class DimType>
-ArrayType arraySlice(ArrayType arr, const VrIndex & rowIndex, const VrIndex &  colIndex) {
+void arraySlice(ArrayType arr,ArrayType outArr, const VrIndex & rowIndex, const VrIndex &  colIndex) {
     int indx_diff = 0;
 	if (!vrZeroBasedIndex) {
 		indx_diff=1;
 	}
-      ArrayType outArr;
       DimType total_range = getRange<DimType>(colIndex);
       DimType row_range = getRange<DimType>(rowIndex);
-      outArr.dims = static_cast<DimType*>(VR_MALLOC(sizeof(DimType)*2));
-      outArr.dims[0] = getRange<DimType>(rowIndex);
-      outArr.dims[1] = getRange<DimType>(colIndex);
       outArr.data = getColData(0,rowIndex, colIndex,arr.dims,arr.ndims,arr.data);
-      outArr.ndims = 2;     
-	return outArr;
 }
 
 template<class ArrayType,class DataType, class DimType>
-ArrayType arraySlice(ArrayType arr, const VrIndex & rowIndex, const VrIndex &  colIndex, const VrIndex & index_3) {
+void  arraySlice(ArrayType arr,ArrayType outArr, const VrIndex & rowIndex, const VrIndex &  colIndex, const VrIndex & index_3) {
     int indx_diff = 0;
 	if (!vrZeroBasedIndex) {
 		indx_diff=1;
 	}
-      ArrayType outArr;
 	  DimType index3_range = getRange<DimType>(index_3);
       DimType col_range = getRange<DimType>(colIndex);
       DimType row_range = getRange<DimType>(rowIndex);
-      outArr.dims = static_cast<DimType*>(VR_MALLOC(sizeof(DimType)*3));
-      outArr.dims[0] = row_range; 
-      outArr.dims[1] = col_range ;
-	  outArr.dims[2] = index3_range;
-      outArr.data = static_cast<DataType*>(VR_MALLOC(sizeof(DataType)*col_range*row_range*index3_range));
-      outArr.ndims = 3;  
-    if ( index_3.m_isRange == false ) {
+    if (index_3.m_isRange == false ) {
       memcpy(outArr.data, getColData(index_3.m_val.const_val - indx_diff,rowIndex, colIndex,arr.dims,arr.ndims,arr.data),
              sizeof(DataType)*row_range*col_range);
     } else {
@@ -224,95 +203,6 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
 		return;
 	}
 }
-#elif defined __PYTHON__ 
-void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType currOffset, DimType *outoffSet,DimType maxIndx,DimType currIndx) {
-    int indx_diff = 0;
-	if (!vrZeroBasedIndex) {
-		indx_diff=1;
-	}
-	if(currIndx == maxIndx) {
-		if(indices[currIndx].m_isRange == false && indices[currIndx].m_isArray ==  false){
-            long indx = indices[currIndx].m_val.const_val - indx_diff; 
-            if( indx < 0 ) { 
-                indx = inArr.dims[currIndx] + indx;
-            }
-			outArr.data[*outoffSet] = inArr.data[currOffset + indx];
-			(*outoffSet)++;
-			return;	
-		}		
-		if(indices[currIndx].m_isRange == true) {
-			DimType start  = indices[0].m_val.range_val[0];
-            if ( start - indx_diff < 0 ) {
-                start = inArr.dims[0] + start - indx_diff;
-            }
-			DimType stop = indices[0].m_val.range_val[1];
-            if ( stop  - indx_diff< 0 ) {
-                stop = inArr.dims[0] + stop - indx_diff;
-            }
-			DimType step = indices[0].m_val.range_val[2];
-            if ( step  - indx_diff< 0 ) {
-                step = inArr.dims[0] + step - indx_diff;
-            }
-			//if(step != 1){
-			for(DimType i = start -indx_diff; i <= stop - indx_diff; i+=step) {
-				outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
-			}
-			//}
-			return;
-		}
-		if( indices[currIndx].m_isArray == true) {
-            printf("here\n");
-			VrArrayPtrF64 arr = indices[currIndx].arr;
-			DimType numel  =  getNumElem(arr.dims,arr.ndims);
-			for( DimType i = 0; i < numel; i++) {
-                DimType indx = static_cast<DimType>(arr.data[i]) - indx_diff;
-                if( indx < 0 ) {
-                    indx = inArr.dims[currIndx] + indx;
-                }
-				outArr.data[(*outoffSet)++] = inArr.data[currOffset + indx];	
-			}
-			return;
-		}
-	}
-	DimType jmp = getStep<ArrayType, DimType>(inArr, currIndx);
-	if(indices[currIndx].m_isRange) {
-		DimType start  = indices[currIndx].m_val.range_val[0];
-            if ( start - indx_diff < 0 ) {
-                start = inArr.dims[currIndx] + start - indx_diff;
-            }
-		DimType stop = indices[currIndx].m_val.range_val[1];
-            if ( stop - indx_diff < 0 ) {
-                stop = inArr.dims[currIndx] + stop - indx_diff;
-            }
-		DimType step = indices[currIndx].m_val.range_val[2];
-            if ( step - indx_diff < 0 ) {
-                step = inArr.dims[currIndx] + step - indx_diff;
-            }
-		for(DimType i = start -indx_diff; i <= stop - indx_diff; i+=step) {
-			arraySlice(inArr,outArr,indices,currOffset + i*jmp,outoffSet,maxIndx,currIndx + 1);
-		}
-		return;
-	} else if (indices[currIndx].m_isArray) {	
-		VrArrayPtrF64 arr = indices[currIndx].arr;
-		DimType numel  =  getNumElem(arr.dims,arr.ndims);
-		for( DimType i = 0; i < numel; i++) {
-                DimType indx = static_cast<DimType>(arr.data[i]) - indx_diff;
-                if( indx < 0 ) {
-                    indx = inArr.dims[currIndx] + indx;
-                }
-			arraySlice(inArr,outArr,indices,currOffset + (indx)*jmp,outoffSet,maxIndx,currIndx + 1);
-		}
-		return;
-	} else {
-		DimType val = indices[currIndx].m_val.const_val - indx_diff;
-            if( val < 0 ) { 
-                val = inArr.dims[currIndx] + val;
-            }
-		arraySlice(inArr,outArr,indices,currOffset + val*jmp,outoffSet,maxIndx, currIndx + 1);
-		return;
-	}
-}
-#endif
 
 template<class ArrayType,  class DimType> 
 void  arraySliceSet(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType currOffset, DimType *outoffSet,DimType currIndx) {
@@ -440,7 +330,11 @@ void setRowData(ArrayType inArr, ArrayType outArr, DimType jmp, VrIndex row,DimT
 		VrArrayPtrF64 arr = row.arr;
 		DimType numel  =  getNumElem(arr.dims,arr.ndims);
 		for( DimType i = 0; i < numel; i++) {
-            outArr.data[jmp + i] = inArr.data[*(currOffset)++];
+            outArr.data[jmp + static_cast<DimType>(arr.data[i])] = inArr.data[*(currOffset)];
+            if(inArr.dims[0] == 1 && inArr.dims[1] == 1 && inArr.ndims == 2) {
+                continue;
+            }
+            (*currOffset)++;
 		}
 		return;
 	} else {
@@ -468,12 +362,12 @@ void  setColData(ArrayType inArr, ArrayType outArr,dim_type jmpVal, VrIndex row,
 		VrArrayPtrF64 arr = col.arr;
 		DimType numel  =  getNumElem(arr.dims,arr.ndims);
 		for( DimType i = 0; i < numel; i++) {
-           setRowData<ArrayType,DataType,DimType>(inArr, outArr, i*outArr.dims[0], row, currOffSet); 
+           setRowData<ArrayType,DataType,DimType>(inArr, outArr,jmpVal + i*outArr.dims[0], row, currOffSet); 
 		}
 		return;
 	} else {
 		DimType val = col.m_val.const_val - indx_diff;
-        setRowData<ArrayType,DataType,DimType>(inArr, outArr, val*outArr.dims[0], row, currOffSet); 
+        setRowData<ArrayType,DataType,DimType>(inArr, outArr, jmpVal + val*outArr.dims[0], row, currOffSet); 
 		return;
 	}
 }
@@ -497,24 +391,25 @@ void  arraySliceSet(ArrayType inArr, ArrayType outArr, VrIndex row,VrIndex col,V
 		indx_diff=1;
 	}
     dim_type currOffSet = 0;
+	DimType jmp = getStep<ArrayType, DimType>(outArr,2);
 	if(index_3.m_isRange) {
 		DimType start = index_3.m_val.range_val[0];
 		DimType stop = index_3.m_val.range_val[1];
 		DimType step = index_3.m_val.range_val[2];
 		for(DimType i = start -indx_diff; i <= stop - indx_diff; i += step) {
-           setColData<ArrayType,DataType,DimType>(inArr, outArr,  i*outArr.dims[0]*outArr.dims[1], row,col,&currOffSet); 
+           setColData<ArrayType,DataType,DimType>(inArr, outArr,  i*jmp, row,col,&currOffSet); 
 		}
 		return;
 	} else if(index_3.m_isArray == true) {
 		VrArrayPtrF64 arr = index_3.arr;
 		DimType numel  =  getNumElem(arr.dims,arr.ndims);
 		for( DimType i = 0; i < numel; i++) {
-           setColData<ArrayType,DataType,DimType>(inArr, outArr, i*outArr.dims[0]*outArr.dims[1], row,col, &currOffSet); 
+           setColData<ArrayType,DataType,DimType>(inArr, outArr, i*jmp, row,col, &currOffSet); 
 		}
 		return;
 	} else {
 		DimType val = index_3.m_val.const_val - indx_diff;
-        setColData<ArrayType,DataType,DimType>(inArr, outArr, val*outArr.dims[0]*outArr.dims[1], row,col, &currOffSet); 
+        setColData<ArrayType,DataType,DimType>(inArr, outArr, val*jmp, row,col, &currOffSet); 
 		return;
 	}
 }

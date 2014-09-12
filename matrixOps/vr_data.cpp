@@ -64,32 +64,48 @@ VrArrayPtrF64 VrArrayF64::sliceArray(int nargs, ...){
 	}
 	va_end(args);
 	dim_type *dims = dimsSliced(indices,nargs);
-#ifdef VR_MIN_TWO_DIMS
  	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
-#else 
- 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs,0,dims);
-#endif
  	VR_FREE(dims);
  	int k=0;
-	#ifdef __MATLAB__
  	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
-	#elif defined __PYTHON__
- 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1,0);
-	#else 
-	VR_PRINT_ERR("Not working dude \n");
-	exit(0);
-	#endif
  	VR_FREE(indices);
 	return outArr;
 }
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row ,VrIndex col) {
-    return arraySlice<VrArrayF64,double,dim_type>(*(this),row,col);
+    int nargs = 2;
+    VrIndex indices[2];
+    indices[0] = row;
+    indices[1] = col;
+	dim_type *dims = dimsSliced(indices,nargs);
+ 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+ 	VR_FREE(dims);
+ 	int k=0;
+ 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+    return outArr;
 }
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row) {
-    return arraySlice<VrArrayF64,double,dim_type>(*(this),row);
+    int nargs = 1;
+    VrIndex indices[1];
+    indices[0] = row;
+	dim_type *dims = dimsSliced(indices,nargs);
+ 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+ 	VR_FREE(dims);
+ 	int k=0;
+ 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+    return outArr;
 }
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row,VrIndex col,VrIndex index_3) {
-    return arraySlice<VrArrayF64,double,dim_type>(*(this),row,col,index_3);
+    int nargs = 3;
+    VrIndex indices[3];
+    indices[0] = row;
+    indices[1] = col;
+    indices[2] = index_3;
+	dim_type *dims = dimsSliced(indices,nargs);
+ 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+ 	VR_FREE(dims);
+ 	int k=0;
+ 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+    return outArr;
 }
 //Set Slice 
 void VrArrayF64::operator()(VrArrayPtrF64 inArr,int nargs, ...) {
@@ -161,17 +177,12 @@ dim_type VrArrayF64::numelSliced(VrIndex * indices,dim_type nIndices) {
 
 dim_type* VrArrayF64::dimsSliced(VrIndex * indices, dim_type nindices) {
 dim_type *dims;
-#ifdef VR_MIN_TWO_DIMS
     if(nindices == 1) {
          dims = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type)*2));
         dims[1] = 1;
     } else {
         dims = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type)*(nindices)));
     }
-#else
-    dims = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type)*(nindices)));
-#endif
-
 	for(int i = 0; i < nindices; i++) {
 		dims[i] = getRange<dim_type>(indices[i]);
 	}

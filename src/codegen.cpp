@@ -1374,7 +1374,7 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
         Context inTypeCntxt = vTypeCodeGen(expr->getArg(0)->getType(), symTable);
         std::string outStr = outTypeCntxt.getAllStmt()[0];
         std::string inStr = inTypeCntxt.getAllStmt()[0];
-        cntxt.addStmt("fix<"+inStr+","+outStr+">(" + exprTypeCodeGen(expr->getArg(0),symTable).getAllStmt()[0]);
+        cntxt.addStmt("fix<"+inStr+","+outStr+">(" + exprTypeCodeGen(expr->getArg(0),symTable).getAllStmt()[0]+ ")");
         return cntxt;
     }
     name +="(";

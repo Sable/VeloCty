@@ -2312,7 +2312,7 @@ Context VCompiler::handleArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr,
     return cntxt;	
 }
 
-bool VCompiler::isScalarLibcall(AssignStmtPtr stmt, SymTable *symTable) {
+bool VCompiler::isScalarLibCall(AssignStmtPtr stmt, SymTable *symTable) {
     //TODO : The check for the matmult statement is temporary . Replace with a set
     return stmt->getRhs()->getExprType() == Expression::LIBCALL_EXPR && stmt->getRhs()->getType()->getBasicType() == VType::SCALAR_TYPE
             && static_cast<LibCallExprPtr>(stmt->getRhs())->getLibFunType() == LibCallExpr::LIB_MATMULT
@@ -2321,8 +2321,8 @@ bool VCompiler::isScalarLibcall(AssignStmtPtr stmt, SymTable *symTable) {
 bool VCompiler::isScalarFunCall(AssignStmtPtr stmt, SymTable *symTable) {
     //TODO : The check for the sum and mean   is temporary . Replace with a set
     return stmt->getRhs()->getExprType() == Expression::FUNCALL_EXPR && stmt->getRhs()->getType()->getBasicType() == VType::SCALAR_TYPE
-            &&( static_cast<FunCallExprPtr>(stmt->getRhs())->getFunName().compare("mean")  == 0 || 
-            static_cast<FunCallExprPtr>(stmt->getRhs())->getFunName().compare("sum")  == 0) 
+            &&( static_cast<FunCallExprPtr>(stmt->getRhs())->getName().compare("mean")  == 0 || 
+            static_cast<FunCallExprPtr>(stmt->getRhs())->getName().compare("sum")  == 0) 
             && stmt->getLhs()[0]->getExprType() == Expression::NAME_EXPR;
 }
 bool VCompiler::isSpecLibCall(AssignStmtPtr stmt) {
@@ -2334,15 +2334,12 @@ bool VCompiler::isSpecLibCall(AssignStmtPtr stmt) {
         return true; 
 }
 
-Context VCompiler::handleScalarLibcall(ExpressionPtr lExpr, ExpressionPtr rExpr, SymTable *symTable) {
-    
-}
 
 Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     ExpressionPtr rExpr = stmt->getRhs();
     string rStr;
-    if(isScalarLibcall( stmt,  symTable)) {
+    if(isScalarLibCall( stmt,  symTable)) {
         Context tmpcntxt = matMultCallCodeGen(static_cast<LibCallExprPtr>(stmt->getRhs()), symTable, stmt->getLhs()[0]); 
         cntxt.addStmt(tmpcntxt.getAllStmt()[0] + ";\n"); 
         return cntxt;

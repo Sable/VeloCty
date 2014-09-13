@@ -189,6 +189,32 @@ void BlasDouble::scal_add(const int ndims, VrArrayPtrF64 X,double scal, VrArrayP
     } 
 }	
 
+void BlasDouble::transpose(VrArrayPtrF64 A,VrArrayPtrF64 *B) {
+    int dims[2];
+    if(VR_GET_DIMS_F64(A)[0]==1 || VR_GET_DIMS_F64(A)[1]==1) {
+	      vec_copy(VR_GET_NDIMS_F64(A),A,B);
+	      dim_type temp= VR_GET_DIMS_F64((*B))[0];
+	      VR_GET_DIMS_F64((*B))[0] = VR_GET_DIMS_F64((*B))[1];
+	      VR_GET_DIMS_F64((*B))[1] = temp;
+	 }
+     if(B->data == NULL || B->dims[0] < A.dims[1] ||  B->dims[1] < A.dims[0]){
+         dims[1]= VR_GET_DIMS_F64(A)[0];
+         dims[0]= VR_GET_DIMS_F64(A)[1];
+         *B =vrAllocArrayF64RM(VR_GET_NDIMS_F64(A),0,dims);
+     } else {
+        memcpy(B->dims,A.dims,sizeof(dim_type) * A.ndims);
+        B->ndims = A.ndims;
+     }
+	 int row= VR_GET_DIMS_F64(A)[0];
+	 int col= VR_GET_DIMS_F64(A)[1];
+	 double *out =VR_GET_DATA_F64((*B));
+	 double *in =VR_GET_DATA_F64(A);
+	 for(int i=0;i<row;i++) {
+	 	for(int j=0;j<col;j++) {	    
+	      		 out[i*col+j] =  in[j*row+i];        
+		}
+	 }
+}
 VrArrayPtrF64 BlasDouble::transpose(VrArrayPtrF64 A) {
     int dims[2];
     VrArrayPtrF64 B;

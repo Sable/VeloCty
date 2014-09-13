@@ -31,6 +31,7 @@ class BlasDouble{
 		static VrArrayPtrF64 scal_add(const int ndims,VrArrayPtrF64 X, double scal, const int incX=1);
 		static void scal_add(const int ndims,VrArrayPtrF64 X, double scal,VrArrayPtrF64 *Y, const int incX=1);
 		static VrArrayPtrF64 transpose(VrArrayPtrF64 A);
+		static void transpose(VrArrayPtrF64 A,VrArrayPtrF64 *B);
 		static VrArrayPtrF64 mat_ldiv(int matrix_order ,VrArrayPtrF64 A , VrArrayPtrF64 B);
 		static VrArrayPtrF64 mat_rdiv(int matrix_order ,VrArrayPtrF64 A , VrArrayPtrF64 B);
 		static VrArrayPtrF64 scal_div(  VrArrayPtrF64 A, double  scal);

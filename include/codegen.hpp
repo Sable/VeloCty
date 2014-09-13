@@ -317,7 +317,8 @@ public:
 	Context handleMultLhs(AssignStmtPtr stmt, SymTable* symtable);
 	Context tupleExprCodeGen(TupleExprPtr expr, SymTable* symTable);
     Context handleScalarLibcall(ExpressionPtr lExpr, ExpressionPtr rExpr, SymTable *symTable);
-    bool isScalarLibcall(AssignStmtPtr stmt, SymTable *symTable);
+    bool isScalarLibCall(AssignStmtPtr stmt, SymTable *symTable);
+    bool isScalarFunCall(AssignStmtPtr stmt, SymTable *symTable);
 	void genHeaderFile(VModule *vm);
 	Context getHeaderContext() { return headerCntxt;}
 	void setHeaderContext(Context cntxt) {headerCntxt = cntxt;}

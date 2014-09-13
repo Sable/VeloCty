@@ -2318,6 +2318,13 @@ bool VCompiler::isScalarLibcall(AssignStmtPtr stmt, SymTable *symTable) {
             && static_cast<LibCallExprPtr>(stmt->getRhs())->getLibFunType() == LibCallExpr::LIB_MATMULT
             && stmt->getLhs()[0]->getExprType() == Expression::NAME_EXPR;
 }
+bool VCompiler::isScalarFunCall(AssignStmtPtr stmt, SymTable *symTable) {
+    //TODO : The check for the sum and mean   is temporary . Replace with a set
+    return stmt->getRhs()->getExprType() == Expression::FUNCALL_EXPR && stmt->getRhs()->getType()->getBasicType() == VType::SCALAR_TYPE
+            &&( static_cast<FunCallExprPtr>(stmt->getRhs())->getFunName().compare("mean")  == 0 || 
+            static_cast<FunCallExprPtr>(stmt->getRhs())->getFunName().compare("sum")  == 0) 
+            && stmt->getLhs()[0]->getExprType() == Expression::NAME_EXPR;
+}
 bool VCompiler::isSpecLibCall(AssignStmtPtr stmt) {
     if(stmt->getLhs().size() != 1 || stmt->getLhs()[0]->getExprType() != Expression::NAME_EXPR) {
        return false; 

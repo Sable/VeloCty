@@ -42,7 +42,6 @@ VrArrayPtrF32 sin(VrArrayPtrF32);
 // VrArrayF32* tan(VrArrayF32*);
 VrArrayPtrF64 pow(VrArrayPtrF64 vec,double val);
 VrArrayPtrF32 pow(VrArrayPtrF32 vec, double  val);
-#ifdef __MATLAB__
 VrArrayPtrF64 max(VrArrayPtrF64 );
 VrArrayPtrF32 max(VrArrayPtrF32 );
 VrArrayPtrCF64 max(VrArrayPtrCF64 );
@@ -52,33 +51,12 @@ VrArrayPtrF32 min(VrArrayPtrF32 );
 VrArrayPtrCF64 min(VrArrayPtrCF64 );
 VrArrayPtrCF32 min(VrArrayPtrCF32 );
 VrArrayPtrF64 sum(VrArrayPtrF64 A);
+void sum(VrArrayPtrF64 A,double *b);
 VrArrayPtrF32 sum(VrArrayPtrF32 A);
 VrArrayPtrCF32 sum(VrArrayPtrCF32 A);
 VrArrayPtrCF64 sum(VrArrayPtrCF64 A);
 VrArrayPtrF64 mean(VrArrayPtrF64 A);
 VrArrayPtrF32 mean(VrArrayPtrF32 A);
-#elif defined __PYTHON__
-double max(VrArrayPtrF64 );
-float max(VrArrayPtrF32 );
-double complex max(VrArrayPtrCF64 );
-float complex max(VrArrayPtrCF32 );
-double  min(VrArrayPtrF64 );
-float min(VrArrayPtrF32 );
-double complex min(VrArrayPtrCF64 );
-float complex min(VrArrayPtrCF32 );
-double sum(VrArrayPtrF64 A);
-float sum(VrArrayPtrF32 A);
-float complex sum(VrArrayPtrCF32 A);
-double complex sum(VrArrayPtrCF64 A);
-double mean(VrArrayPtrF64 A);
-float mean(VrArrayPtrF32 A);
-template<class ArrayType>
-inline long getIndexVal(ArrayType arr, int nIndices, ...);
-template<class ArrayType>
-inline long getIndexVal(ArrayType arr, long, long);
-template<class ArrayType>
-inline long getIndexVal(ArrayType arr,long );
-#endif
 VrArrayPtrF64 prod(VrArrayPtrF64 A);
 VrArrayPtrF32 prod(VrArrayPtrF32 A);
 VrArrayPtrCF32 prod(VrArrayPtrCF32 A);

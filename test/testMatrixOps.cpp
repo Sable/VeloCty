@@ -57,6 +57,12 @@ void testAny(mxArray* plhs[],mxArray*prhs[]) {
 	VrArrayPtrF64 B = getVrArrayF64(prhs[1]);
 	std::cout<<"size "<<size(A,0)<<std::endl;
 }
+void testSumScalar(mxArray* plhs[],mxArray* prhs[]) {
+	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
+    double b;
+	sum(A,&b);
+	plhs[0] = mxCreateDoubleScalar(b);
+}
 void testSum(mxArray* plhs[],mxArray* prhs[]) {
 	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
 	VrArrayPtrF64 B = sum(A);
@@ -205,7 +211,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testCopy(plhs,const_cast<mxArray**>(prhs)); */
 	/* testScalAdd(plhs,const_cast<mxArray**>(prhs)); */
 	/* testVecSub(plhs,const_cast<mxArray**>(prhs)); */
-	testSum(plhs,const_cast<mxArray**>(prhs));
+	/* testSum(plhs,const_cast<mxArray**>(prhs)); */
+	testSumScalar(plhs,const_cast<mxArray**>(prhs));
     
     
 }

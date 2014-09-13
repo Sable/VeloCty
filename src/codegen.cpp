@@ -1357,7 +1357,7 @@ bool VCompiler::isBuiltin(const std::string & funcName) {
   return mapper.contains(funcName);
 }
 
-Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
+Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr) {
     Context cntxt;
     Context tempCntxt;
     string fnName =expr->getName();
@@ -1409,6 +1409,11 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable) {
                 name += "," + argStr;
             }
         }
+    }
+    if(lExpr != NULL) {
+        name += "," + exprTypeCodeGen(lExpr,symTable).getAllStmt()[0] +")";
+        cntxt.addStmt(name);
+        return cntxt;
     }
     name += ")";
     if(mapper.contains(fnName)) {

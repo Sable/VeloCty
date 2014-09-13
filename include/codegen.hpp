@@ -298,8 +298,8 @@ public:
 	Context andExprCodeGen(AndExprPtr expr, SymTable *symTable);
 	Context orExprCodeGen(OrExprPtr expr, SymTable *symTable);
 	Context notExprCodeGen(NotExprPtr expr, SymTable *symTable); //to be written
-	Context funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable);
-	Context libCallExprCodeGen(LibCallExprPtr expr, SymTable *symtable,ExpressionPtr lExpr=NULL);
+	Context funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
+	Context libCallExprCodeGen(LibCallExprPtr expr, SymTable *symtable,ExpressionPtr lExpr = NULL);
 	Context negateExprCodeGen(NegateExprPtr expr, SymTable *symTable);
 	std::string getMatTypeStr(VTypePtr vtype);
 	std::string generateMatClassStr(LibCallExprPtr expr, SymTable *symTable);

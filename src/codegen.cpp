@@ -1411,7 +1411,7 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,Ex
         }
     }
     if(lExpr != NULL) {
-        name += "," + exprTypeCodeGen(lExpr,symTable).getAllStmt()[0] +")";
+        name += ", &" + exprTypeCodeGen(lExpr,symTable).getAllStmt()[0] +")";
         cntxt.addStmt(name);
         return cntxt;
     }

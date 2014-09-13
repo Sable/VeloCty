@@ -37,6 +37,14 @@ void testFloor( mxArray* plhs[],mxArray*prhs[]) {
 	plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxREAL);
 	mxSetPr(plhs[0],B.data);
 } 
+void testTranspose( mxArray* plhs[], mxArray*prhs[]) {
+	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
+	VrArrayPtrF64 B = zeros_double(2,3,3);
+    BlasDouble::transpose(A,&B);
+	plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxREAL);
+	mxSetPr(plhs[0],B.data);
+}
+
 void testmatdiv( mxArray*[],mxArray*[]); 
 VrArrayPtrCF64 testComplexF64(const mxArray*[],mxArray*[]);
 VrArrayPtrCF32 testComplexF32(const mxArray*[],mxArray*[]);
@@ -219,7 +227,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testVecSub(plhs,const_cast<mxArray**>(prhs)); */
 	/* testSum(plhs,const_cast<mxArray**>(prhs)); */
 	/* testSumScalar(plhs,const_cast<mxArray**>(prhs)); */
-	testMeanScalar(plhs,const_cast<mxArray**>(prhs));
+	/* testMeanScalar(plhs,const_cast<mxArray**>(prhs)); */
+	testTranspose(plhs,const_cast<mxArray**>(prhs));
     
     
 }

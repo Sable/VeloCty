@@ -822,7 +822,7 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 		cntxt= eqExprCodeGen(static_cast<EqExprPtr>(expr),symTable);
 		break;
 	case Expression::FUNCALL_EXPR: // function call expression
-		cntxt=funCallExprCodeGen(static_cast<FunCallExprPtr>(expr),symTable);
+		cntxt=funCallExprCodeGen(static_cast<FunCallExprPtr>(expr),symTable,lExpr);
 		break;
 	case Expression::DOMAIN_EXPR: // domain expression
 		cntxt = domainExprCodeGen(static_cast<DomainExprPtr>(expr), symTable);
@@ -2351,6 +2351,11 @@ Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
     }
     if(isSpecLibCall(stmt)) {
         Context tempCntxt =  exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
+        cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
+        return cntxt;
+    }
+    if(isScalarFunCall(stmt,symTable)) {
+        Context tempCntxt = exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
         cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
         return cntxt;
     }

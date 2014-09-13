@@ -55,6 +55,7 @@ void sum(VrArrayPtrF64 A,double *b);
 VrArrayPtrF32 sum(VrArrayPtrF32 A);
 VrArrayPtrCF32 sum(VrArrayPtrCF32 A);
 VrArrayPtrCF64 sum(VrArrayPtrCF64 A);
+void mean(VrArrayPtrF64 A,double *out);
 VrArrayPtrF64 mean(VrArrayPtrF64 A);
 VrArrayPtrF32 mean(VrArrayPtrF32 A);
 VrArrayPtrF64 prod(VrArrayPtrF64 A);

@@ -9,6 +9,12 @@
 #include "complexdatahandler.h"
 #include "library_ops.hpp"
 #include"vr_data.hpp"
+void testMeanScalar(mxArray* plhs[],mxArray* prhs[]) {
+	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
+    double b;
+	mean(A,&b);
+    plhs[0] = mxCreateDoubleScalar(b);
+}
 void testMean(mxArray* plhs[],mxArray* prhs[]) {
 	VrArrayPtrF32 A = getVrArrayF32(prhs[0]);
 	VrArrayPtrF32 B = mean(A);
@@ -212,7 +218,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testScalAdd(plhs,const_cast<mxArray**>(prhs)); */
 	/* testVecSub(plhs,const_cast<mxArray**>(prhs)); */
 	/* testSum(plhs,const_cast<mxArray**>(prhs)); */
-	testSumScalar(plhs,const_cast<mxArray**>(prhs));
+	/* testSumScalar(plhs,const_cast<mxArray**>(prhs)); */
+	testMeanScalar(plhs,const_cast<mxArray**>(prhs));
     
     
 }

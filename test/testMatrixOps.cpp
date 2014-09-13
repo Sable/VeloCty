@@ -58,11 +58,11 @@ void testAny(mxArray* plhs[],mxArray*prhs[]) {
 	std::cout<<"size "<<size(A,0)<<std::endl;
 }
 void testSum(mxArray* plhs[],mxArray* prhs[]) {
-	VrArrayPtrCF64 A = getVrArrayCF64(prhs[0]);
-	VrArrayPtrCF64 B = sum(A);
-	plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxCOMPLEX);
-	//mxSetData(plhs[0],B.data);
-	mat_setComplexDataCF64(plhs[0],B);
+	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
+	VrArrayPtrF64 B = sum(A);
+	plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxREAL);
+	mxSetData(plhs[0],B.data);
+	/* mat_setComplexDataCF64(plhs[0],B); */
 }
 
 void testProd(mxArray* plhs[], mxArray *prhs[]) {
@@ -204,7 +204,9 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testMmult(plhs,const_cast<mxArray**>(prhs)); */
 	/* testCopy(plhs,const_cast<mxArray**>(prhs)); */
 	/* testScalAdd(plhs,const_cast<mxArray**>(prhs)); */
-	testVecSub(plhs,const_cast<mxArray**>(prhs));
+	/* testVecSub(plhs,const_cast<mxArray**>(prhs)); */
+	testSum(plhs,const_cast<mxArray**>(prhs));
+    
     
 }
 void  testHorzcat(const mxArray* prhs[], mxArray* plhs[]) {

@@ -990,7 +990,7 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 						return elemDivCallCodeGen(expr, symTable,lExpr);
 						break;
 				case LibCallExpr::LIB_TRANS:
-						return matTransCallCodeGen(expr,symTable);
+						return matTransCallCodeGen(expr,symTable,lExpr);
 						break;
 				case LibCallExpr::LIB_MLDIV : 
 						return matLDivCallCodeGen(expr, symTable,lExpr); 

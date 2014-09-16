@@ -202,7 +202,8 @@ void BlasDouble::transpose(VrArrayPtrF64 A,VrArrayPtrF64 *B) {
          dims[0]= VR_GET_DIMS_F64(A)[1];
          *B =vrAllocArrayF64RM(VR_GET_NDIMS_F64(A),0,dims);
      } else {
-        memcpy(B->dims,A.dims,sizeof(dim_type) * A.ndims);
+        B->dims[0] = A.dims[1];
+        B->dims[1] = A.dims[0];
         B->ndims = A.ndims;
      }
 	 int row= VR_GET_DIMS_F64(A)[0];
@@ -310,8 +311,7 @@ void BlasDouble::scal_minus(VrArrayPtrF64 A, double scal,VrArrayPtrF64 *B) {
 
 VrArrayPtrF64 BlasDouble::elem_mult(VrArrayPtrF64 A, VrArrayPtrF64 B) {
   if ( !checkdims<VrArrayF64>(A,B) ) {
-    std::cout<<"dimensions do not match. \n Exiting. "<<std::endl;
-    exit(0);
+    VR_PRINT_ERR("dimensions do not match. \n Exiting. ");
   }
   VrArrayPtrF64 C = vec_copy(VR_GET_NDIMS_F64(A),A);
   for (int i = 0; i < getNumElem(VR_GET_DIMS_F64(A),VR_GET_NDIMS_F64(A)); i++) {
@@ -322,8 +322,7 @@ VrArrayPtrF64 BlasDouble::elem_mult(VrArrayPtrF64 A, VrArrayPtrF64 B) {
 
 void BlasDouble::elem_mult(VrArrayPtrF64 A, VrArrayPtrF64 B,VrArrayPtrF64 *C) {
   if ( !checkdims<VrArrayF64>(A,B) ) {
-    std::cout<<"dimensions do not match. \n Exiting. "<<std::endl;
-    exit(0);
+    VR_PRINT_ERR("dimensions do not match. \n Exiting. ");
   }
   vec_copy(VR_GET_NDIMS_F64(A),A,C);
   for (int i = 0; i < getNumElem(VR_GET_DIMS_F64(A),VR_GET_NDIMS_F64(A)); i++) {

@@ -210,12 +210,13 @@ inline  void checkBounds(T* arr,bool onLhs,int nargs,...) {
     indices[i] = va_arg(args,VrIndex);
   }
   va_end(args);
+  printf("onLhs %d\n",onLhs);
   if(VR_GET_DATA_F64((*arr)) ==NULL) {
 	if(!onLhs) {
    		VR_PRINT_ERR("Index exceeds matrix dimensions"); 		
 	} else {
 		growArray<T,dataType>(arr,nargs,indices);
-  		free(indices);
+  		VR_FREE(indices);
 		return;
 	}
   }
@@ -224,16 +225,12 @@ inline  void checkBounds(T* arr,bool onLhs,int nargs,...) {
 			VR_PRINT_ERR(" number of dimension ");
 		}
 	}
-    /* bool minIndx = getMinIndex(nargs, indices, VR_GET_DIMS_F64((*arr))); */
-    /* if(minIndx) { */
-    /*     VR_PRINT_ERR("Indices have to be positive. "); */
-    /* } */ 
     if(exceedsMaxIndex(nargs, indices, VR_GET_DIMS_F64((*arr)),VR_GET_NDIMS_F64((*arr)))) {
         if(!onLhs){
             VR_PRINT_ERR("dimensions exceeded");
         } else {
             growArray<T,dataType>(arr,nargs,indices);
-            free(indices);
+            VR_FREE(indices);
             return;
         }
     }

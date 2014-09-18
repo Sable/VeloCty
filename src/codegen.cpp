@@ -74,10 +74,13 @@ void VCompiler::initLibCallSet() {
     /* libCallSet.insert(LibCallExpr::LIB_MLDIV); */
     /* libCallSet.insert(LibCallExpr::LIB_MRDIV); */
 }
-
+void VCompiler::setOpenMpFlag(bool val){
+	enableOpenMP = true;
+}
 Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
 	mapper.init();
+	setOpenMpFlag(true);
 	cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
 	cntxt.addStmt("#ifdef VR_ZERO_INDEX \n int indexDiff=0; \n#else \n int indexDiff=1; \n#endif \n");
 	vector<VFunction*> funcList = vm->getFns();
@@ -550,18 +553,36 @@ Context VCompiler::stmtCodeGen(StmtPtr stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
+	std::string ompStr = "";
+	if(getOpenMpFlag()) {
+		ompStr = "#pragma omp parallel for ";
+		std::set<int> sharedSet = stmt->getShared();
+		if( sharedSet.size() > 0){
+				ompStr+= "shared(";
+				for(set<int>::iterator it = sharedSet.begin(); it != sharedSet.end(); it++) {
+					std::string varName = symTable->getName(*it);
+					if(it != sharedSet.begin()){
+							ompStr += ", ";
+					}
+					ompStr += varName;
+				}
+				ompStr +=")";
+		}
+		ompStr +="\n";
+	}	
+	cntxt.addStmt(ompStr);
 	StmtPtr sPtr = stmt->getBody();
 	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
 	ExpressionPtr domainPtr = stmt->getDomain();
 	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
 	std::vector<LoopDirection> loopVec;
 	if(domainPtr->getExprType()==Expression::DOMAIN_EXPR) {
-		loopVec = getLoopDirections(static_cast<DomainExprPtr>(domainPtr),symTable); 
+			loopVec = getLoopDirections(static_cast<DomainExprPtr>(domainPtr),symTable); 
 	}
 	else {
-		std::cout<<"getDomain does not return a domain expression"<<std::endl
-		<<"Exiting"<<std::endl;
-		exit(0);
+			std::cout<<"getDomain does not return a domain expression"<<std::endl
+					<<"Exiting"<<std::endl;
+			exit(0);
 	}
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
@@ -569,57 +590,57 @@ Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
 	string var = symTable->getName(iterVar[0]);
 	int count = iterVar.size();
 	for (int i = 0; i < iterVar.size(); i++) {
-		var = symTable->getName(iterVar[i]);
-		if(loopVec[i] == VCompiler::COUNT_UP 
-		   || loopVec[i] == VCompiler::COUNT_DOWN){
-			initStmt = var + "=" + domainVec[i];
-			if(loopVec[i]==VCompiler::COUNT_UP) {
-				compStmt = var + "<" ;
-			}else {
-		        	compStmt = var + ">";
+			var = symTable->getName(iterVar[i]);
+			if(loopVec[i] == VCompiler::COUNT_UP 
+							|| loopVec[i] == VCompiler::COUNT_DOWN){
+					initStmt = var + "=" + domainVec[i];
+					if(loopVec[i]==VCompiler::COUNT_UP) {
+							compStmt = var + "<" ;
+					}else {
+							compStmt = var + ">";
+					}
+					if(!static_cast<DomainExprPtr>(domainPtr)->getExclude(i)){
+							compStmt += "=";
+					}
+					compStmt +=  " "+domainVec[i + count];
+					iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
+					cntxt.addStmt(
+									"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
+					cntxt.addStmt("{\n");
 			}
-            if(!static_cast<DomainExprPtr>(domainPtr)->getExclude(i)){
-                compStmt += "=";
-            }
-            compStmt +=  " "+domainVec[i + count];
-			iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
-			cntxt.addStmt(
-				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-			cntxt.addStmt("{\n");
-		}
-		else {
-			std::string vecStr = genTempVec();
-			std::string iterStr=genIterVar();
-			VTypePtr type = symTable->getType(iterVar[i]);
-			Context typeCntxt;
-			if(type->getBasicType() == VType::SCALAR_TYPE){
-			  typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
+			else {
+					std::string vecStr = genTempVec();
+					std::string iterStr=genIterVar();
+					VTypePtr type = symTable->getType(iterVar[i]);
+					Context typeCntxt;
+					if(type->getBasicType() == VType::SCALAR_TYPE){
+							typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
+					}
+					else if(type->getBasicType() == VType::ARRAY_TYPE){
+							typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
+					}
+					std::string typeStr = typeCntxt.getAllStmt()[0];
+					cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
+									domainVec[i]+","+domainVec[i+count]+","
+									+ domainVec[i+2*count]+");\n");
+					cntxt.addStmt(
+									"for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
+					cntxt.addStmt("{\n");
+					cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
 			}
-			else if(type->getBasicType() == VType::ARRAY_TYPE){
-			  typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
-			}
-			std::string typeStr = typeCntxt.getAllStmt()[0];
-			cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
-				      domainVec[i]+","+domainVec[i+count]+","
-				      + domainVec[i+2*count]+");\n");
-			cntxt.addStmt(
-				"for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
-			cntxt.addStmt("{\n");
-			cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
-		}
 	}
 	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	vector<string> bodyVec = bodyCntxt.getAllStmt();
 	for (int i = 0; i < bodyVec.size(); i++) {
-		cntxt.addStmt(bodyVec[i]);
+			cntxt.addStmt(bodyVec[i]);
 	}
 	for (int i = 0; i < iterVar.size(); i++) {
-		cntxt.addStmt("}\n");
+			cntxt.addStmt("}\n");
 	}
 	return cntxt;
 }
 std::string VCompiler::genStructVarStr(VFunction *func) {
-  return genStructVarStr(genFuncStructName(func));
+		return genStructVarStr(genFuncStructName(func));
 }
 
 std::string VCompiler::genStructVarStr(std::string structType) {
@@ -2448,7 +2469,7 @@ void VCompiler::setSseFlag(bool val) {
 	enableSse = val;
 }
 
-bool VCompiler::getOpenmpFlag() {
+bool VCompiler::getOpenMpFlag() {
 	return enableOpenMP;
 }
 

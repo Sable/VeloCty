@@ -254,7 +254,7 @@ public:
 	}LoopDirection;
 	bool getSseFlag();
 	void setSseFlag(bool);
-	bool getOpenmpFlag();
+	bool getOpenMpFlag();
 	void setOpenMpFlag(bool);
 	Context funcCodeGen(VFunction *func);
 	Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);

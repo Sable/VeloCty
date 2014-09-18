@@ -540,54 +540,64 @@ Context VCompiler::stmtCodeGen(StmtPtr stmt, SymTable *symTable) {
 }
 
 Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
-	Context cntxt;
-	string ompStr;
-#ifdef DEBUG
-	cout << getOpenmpFlag() << endl;
-#endif
-	if (getOpenmpFlag()) {
-        //TODO: Rewrite once private variables are used. 
-		vector<int> privateVec ;//= stmt->getPrivateVars();
-		ompStr = "#pragma omp parallel for";
-		if (privateVec.size() > 0) {
-			string priVar = symTable->getName(privateVec[0]);
-			ompStr += " private(" + priVar;
-			if (symTable->getType(privateVec[0])->getBasicType()
-					== VType::ARRAY_TYPE) {
-				ompStr += "_data";
-			}
-			for (int i = 1; i < privateVec.size(); i++) {
-#ifdef DEBUG
-				cout << "ompStr   " << ompStr << endl;
-#endif	
-			ompStr += "," + symTable->getName(privateVec[i]);
-				if (symTable->getType(privateVec[i])->getBasicType()
-						== VType::ARRAY_TYPE) {
-					ompStr += "_data";
-				}
-			}
-			ompStr += ")";
-		}
-		ompStr += "\n";
-		cntxt.addStmt(ompStr);
-	}
-	StmtPtr bodyStmt = stmt->getBody();
+    Context cntxt;
+	StmtPtr sPtr = stmt->getBody();
+	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
 	ExpressionPtr domainPtr = stmt->getDomain();
 	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
+	std::vector<LoopDirection> loopVec;
+	if(domainPtr->getExprType()==Expression::DOMAIN_EXPR) {
+		loopVec = getLoopDirections(static_cast<DomainExprPtr>(domainPtr),symTable); 
+	}
+	else {
+		std::cout<<"getDomain does not return a domain expression"<<std::endl
+		<<"Exiting"<<std::endl;
+		exit(0);
+	}
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
-	string var;
+	string var = symTable->getName(iterVar[0]);
 	int count = iterVar.size();
 	for (int i = 0; i < iterVar.size(); i++) {
 		var = symTable->getName(iterVar[i]);
-		initStmt = var + "=" + domainVec[i];
-		compStmt = var + "<" + domainVec[i + count];
-		iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
-		cntxt.addStmt(
+		if(loopVec[i] == VCompiler::COUNT_UP 
+		   || loopVec[i] == VCompiler::COUNT_DOWN){
+			initStmt = var + "=" + domainVec[i];
+			if(loopVec[i]==VCompiler::COUNT_UP) {
+				compStmt = var + "<" ;
+			}else {
+		        	compStmt = var + ">";
+			}
+            if(!static_cast<DomainExprPtr>(domainPtr)->getExclude(i)){
+                compStmt += "=";
+            }
+            compStmt +=  " "+domainVec[i + count];
+			iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
+			cntxt.addStmt(
 				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-		cntxt.addStmt("{\n");
-
+			cntxt.addStmt("{\n");
+		}
+		else {
+			std::string vecStr = genTempVec();
+			std::string iterStr=genIterVar();
+			VTypePtr type = symTable->getType(iterVar[i]);
+			Context typeCntxt;
+			if(type->getBasicType() == VType::SCALAR_TYPE){
+			  typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
+			}
+			else if(type->getBasicType() == VType::ARRAY_TYPE){
+			  typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
+			}
+			std::string typeStr = typeCntxt.getAllStmt()[0];
+			cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
+				      domainVec[i]+","+domainVec[i+count]+","
+				      + domainVec[i+2*count]+");\n");
+			cntxt.addStmt(
+				"for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
+			cntxt.addStmt("{\n");
+			cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
+		}
 	}
 	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	vector<string> bodyVec = bodyCntxt.getAllStmt();

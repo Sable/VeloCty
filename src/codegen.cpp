@@ -48,13 +48,19 @@ void VCompiler::genHeaderFile(VModule *vm) {
 	headerCntxt.addStmt("#include\"vrbinding.hpp\"\n");
 	vector<VFunction*> funcList = vm->getFns();
 	for(int i = 0; i<funcList.size(); i++) {
+		if(funcList[i]->getName().compare("pForFunc") == 0) {
+			continue;
+		}
 		if(hasMultRet(funcList[i])) {
 			headerCntxt.addStmt(genRetStruct(funcList[i]));
 		}
 		
 	}
 	for(int i = 0; i < funcList.size(); i++) {
-		headerCntxt.addStmt(genFuncHeader(funcList[i])+ ";\n");
+			if(funcList[i]->getName().compare("pForFunc") == 0) {
+					continue;
+			}
+			headerCntxt.addStmt(genFuncHeader(funcList[i])+ ";\n");
 	}
 }
 
@@ -84,6 +90,9 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 #endif 
 	for (int i = 0; i < funcList.size(); i++) {
 		std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
+		if(funcList[i]->getName().compare("pForFunc") == 0) {
+			continue;
+		}
 		currFunction = funcList[i];
 		Context tempCntxt = funcCodeGen(funcList[i]);
 		for (int j = 0; j < tempCntxt.getAllStmt().size(); j++) {

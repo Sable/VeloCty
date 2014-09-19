@@ -831,7 +831,7 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 		cntxt = divExprCodeGen(static_cast<DivExprPtr>(expr), symTable);
 		break;
 	case Expression::INDEX_EXPR: //index expr
-		cntxt = indexExprCodeGen(static_cast<IndexExprPtr>(expr), symTable);
+		cntxt = indexExprCodeGen(static_cast<IndexExprPtr>(expr), symTable,lExpr);
 		break;
 	case Expression::NEGATE_EXPR: //Negate expr
 		cntxt = negateExprCodeGen(static_cast<NegateExprPtr>(expr), symTable);
@@ -2378,11 +2378,20 @@ bool VCompiler::isSpecLibCall(AssignStmtPtr stmt) {
        return false; 
     }
     if(stmt->getRhs()->getExprType() == Expression::LIBCALL_EXPR && 
-        libCallSet.count(static_cast<LibCallExprPtr>(stmt->getRhs())->getLibFunType()) > 0)
+        libCallSet.count(static_cast<LibCallExprPtr>(stmt->getRhs())->getLibFunType()) > 0) {
         return true; 
+    }
+    return false;
 }
 
-
+bool VCompiler::isSpecSlice(AssignStmtPtr stmt) {
+    if(stmt->getLhs().size() !=1 || stmt->getLhs()[0]->getExprType() != Expression::NAME_EXPR) {
+        return false;
+    }
+    if (stmt->getRhs()->getExprType() == Expression::INDEX_EXPR  && isSlice(static_cast<IndexExprPtr>(stmt->getRhs()))) {
+    return true; 
+    } 
+}
 Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     ExpressionPtr rExpr = stmt->getRhs();
@@ -2399,6 +2408,11 @@ Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
             return cntxt;
         }
         if(isScalarFunCall(stmt,symTable)) {
+            Context tempCntxt = exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
+            cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
+            return cntxt;
+        }
+        if(isSpecSlice(stmt)) {
             Context tempCntxt = exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
             cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
             return cntxt;

@@ -220,6 +220,7 @@ private:
     bool  canSpecialiseNegativeIndex(IndexVec vec); 
     bool canSpecialiseArraySlice(IndexVec vec);
     std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
+    bool isSpecSlice(AssignStmtPtr stmt);
     bool  canSpecBoundCheckStmt(IndexVec vec); 
     bool hasColon(IndexExprPtr expr);
     bool isOnLhs(IndexExprPtr expr);

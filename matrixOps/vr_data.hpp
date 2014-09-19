@@ -42,6 +42,7 @@ typedef struct VrArrayF64{
   VrArrayF64 sliceArray(int nargs, ...);
   void sliceArray(VrArrayF64 *A, int nargs, ...);
   void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col);
+  void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col,VrIndex index_3);
   void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row);
   VrArrayF64 operator()(int nargs, ...);
   void operator()(VrArrayF64 inArr,int nargs, ...);

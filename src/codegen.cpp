@@ -8,8 +8,10 @@
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
 #include<sstream>
-
-#define DIM_TYPE_STR std::string("int")
+#define MEM_OPTMISE
+#ifdef MEM_OPTMISE
+bool memOptmise = true;
+#endif
 using namespace VRaptor;
 using namespace std;
 
@@ -2344,20 +2346,22 @@ Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     ExpressionPtr rExpr = stmt->getRhs();
     string rStr;
-    if(isScalarLibCall( stmt,  symTable)) {
-        Context tmpcntxt = matMultCallCodeGen(static_cast<LibCallExprPtr>(stmt->getRhs()), symTable, stmt->getLhs()[0]); 
-        cntxt.addStmt(tmpcntxt.getAllStmt()[0] + ";\n"); 
-        return cntxt;
-    }
-    if(isSpecLibCall(stmt)) {
-        Context tempCntxt =  exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
-        cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
-        return cntxt;
-    }
-    if(isScalarFunCall(stmt,symTable)) {
-        Context tempCntxt = exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
-        cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
-        return cntxt;
+    if(memOptmise) {
+        if(isScalarLibCall( stmt,  symTable)) {
+            Context tmpcntxt = matMultCallCodeGen(static_cast<LibCallExprPtr>(stmt->getRhs()), symTable, stmt->getLhs()[0]); 
+            cntxt.addStmt(tmpcntxt.getAllStmt()[0] + ";\n"); 
+            return cntxt;
+        }
+        if(isSpecLibCall(stmt)) {
+            Context tempCntxt =  exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
+            cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
+            return cntxt;
+        }
+        if(isScalarFunCall(stmt,symTable)) {
+            Context tempCntxt = exprTypeCodeGen(stmt->getRhs(),symTable,stmt->getLhs()[0]);
+            cntxt.addStmt(tempCntxt.getAllStmt()[0] + ";\n");
+            return cntxt;
+        }
     }
     if(rExpr->getExprType() == Expression::FUNCALL_EXPR) {
         FunCallExprPtr fExpr = static_cast<FunCallExprPtr>(rExpr);

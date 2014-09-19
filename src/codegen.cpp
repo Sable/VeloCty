@@ -2022,7 +2022,7 @@ std::string  VCompiler::handleArraySlicing(IndexExprPtr expr, SymTable *symTable
     std::string arrayName = symTable->getName(expr->getArrayId());
     return "(" + arrayName + ".sliceArray(" +  itoa(vec.size())+ ", "+genSliceStr(expr,symTable) + "))";
 }
-Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable) {
+Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable,ExpressionPtr lhsExpr) {
     Context cntxt;
     int id=expr->getArrayId();
     std::string arrayName=symTable->getName(id); 

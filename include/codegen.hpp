@@ -267,7 +267,7 @@ public:
     Context dimExprCodeGen(DimExprPtr expr, SymTable *symTable); 
 	Context constExprCodeGen(ConstExprPtr expr, SymTable *symTable);
 	Context stmtListCodeGen(StmtListPtr stmt, SymTable *symTable);
-	Context indexExprCodeGen(IndexExprPtr expr, SymTable *symTable);
+	Context indexExprCodeGen(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
 	Context minusExprCodeGen(MinusExprPtr expr, SymTable *symTable);
 	Context matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
 	Context matPlusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr=NULL);

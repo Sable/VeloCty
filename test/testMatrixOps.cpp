@@ -154,7 +154,8 @@ void testSetSlice(mxArray **plhs,mxArray**prhs){
 }
 void testSlice(mxArray **plhs,mxArray**prhs){
 	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
-	VrArrayPtrF64 B = A.sliceArray(2,VrIndex(2,4,2),VrIndex(2,4,2));	
+    VrArrayF64 B = zeros_double(2,2,2);
+	A.sliceArray(&B,2,VrIndex(2,4,2),VrIndex(2,4,2));	
 	plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxREAL);
 	mxSetPr(plhs[0],B.data);
 }
@@ -215,7 +216,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	//testMin(plhs,const_cast<mxArray**>(prhs));
 	//testRange(plhs,const_cast<mxArray**>(prhs));
 	/* testSetSlice(plhs,const_cast<mxArray**>(prhs)); */
-	/* testSlice(plhs,const_cast<mxArray**>(prhs)); */
+	testSlice(plhs,const_cast<mxArray**>(prhs));
 	//testAny(plhs,const_cast<mxArray**>(prhs));
 	//testRandn(plhs,const_cast<mxArray**>(prhs));
 	//testMatDiv(plhs,const_cast<mxArray**>(prhs));
@@ -228,7 +229,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testSum(plhs,const_cast<mxArray**>(prhs)); */
 	/* testSumScalar(plhs,const_cast<mxArray**>(prhs)); */
 	/* testMeanScalar(plhs,const_cast<mxArray**>(prhs)); */
-	testTranspose(plhs,const_cast<mxArray**>(prhs));
+	/* testTranspose(plhs,const_cast<mxArray**>(prhs)); */
     
     
 }

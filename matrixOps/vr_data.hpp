@@ -40,7 +40,7 @@ typedef struct VrArrayF64{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayF64 sliceArray(int nargs, ...);
-  VrArrayF64 sliceArray(VrArrayF64 *A, int nargs, ...);
+  void sliceArray(VrArrayF64 *A, int nargs, ...);
   VrArrayF64 operator()(int nargs, ...);
   void operator()(VrArrayF64 inArr,int nargs, ...);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row, VrIndex col);

@@ -42,7 +42,7 @@ VrArrayPtrF64 VrArrayF64::operator()(int nargs, ...){
 	return outArr;
 }
 
-VrArrayPtrF64 VrArrayF64::sliceArray(VrArrayF64 *A, int nargs, ...){
+void VrArrayF64::sliceArray(VrArrayF64 *outArr, int nargs, ...){
 	if(nargs ==0){
 		VR_PRINT_ERR("number of arguments cannot be 0");
 	}
@@ -54,12 +54,16 @@ VrArrayPtrF64 VrArrayF64::sliceArray(VrArrayF64 *A, int nargs, ...){
 	}
 	va_end(args);
 	dim_type *dims = dimsSliced(indices,nargs);
- 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+    if( nargs > outArr->ndims || getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+        *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+    } else {
+        memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);
+        outArr->ndims = nargs;
+    }
  	VR_FREE(dims);
  	int k=0;
- 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+ 	arraySlice<VrArrayF64,dim_type>(*(this),*outArr,indices,0,&k,nargs -1);
  	VR_FREE(indices);
-	return outArr;
 }
 
 VrArrayPtrF64 VrArrayF64::sliceArray(int nargs, ...){
@@ -197,4 +201,17 @@ dim_type *dims;
 		dims[i] = getRange<dim_type>(indices[i]);
 	}
 	return dims;
+}
+
+template<class ArrayType>
+bool validDims(ArrayType A, ArrayType B) {
+    if(B.ndims < A.ndims) {
+        return false;
+    }
+    for(int i = 0; i < A.ndims; i++) {
+        if(A.dims[i] > B.dims[i]) {
+            return false;
+        }
+    }
+    return true;
 }

@@ -3,10 +3,6 @@
 #ifndef VR_MINIMAL
 #include "vrbinding_llvm.hpp"
 #endif
-//#include <Poco/Types.h>
-//#include<complex.h>
-//#include "complexdatahandler.h"
-//#define VR_ZERO_INDEX
 
 #ifdef VR_ZERO_INDEX 
 const bool vrZeroBasedIndex = true;
@@ -39,8 +35,6 @@ const bool vrAutoCastMatrix = false;
 #define VR_MALLOC(x) mxMalloc(x)
 #define VR_REALLOC(x,y) (mxRealloc(x,y))
 #define VR_FREE(x) mxFree(x)
-/* #define VR_MALLOC(x) GC_MALLOC_ATOMIC(x) */
-/* #define VR_FREE(x) GC_FREE(x) */
 extern "C"{
 #include "mex.h"
 #include "vr_data.hpp"

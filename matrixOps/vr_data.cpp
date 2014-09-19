@@ -34,24 +34,34 @@ VrArrayPtrF64 VrArrayF64::operator()(int nargs, ...){
 	}
 	va_end(args);
 	dim_type *dims = dimsSliced(indices,nargs);
-#ifdef VR_MIN_TWO_DIMS
  	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
-#else 
- 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs,0,dims);
-#endif
  	VR_FREE(dims);
  	int k=0;
-	#ifdef __MATLAB__
  	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
-	#elif defined __PYTHON__
- 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1,0);
-	#else 
-	VR_PRINT_ERR("Not working dude \n");
-	exit(0);
-	#endif
  	VR_FREE(indices);
 	return outArr;
 }
+
+VrArrayPtrF64 VrArrayF64::sliceArray(VrArrayF64 *A, int nargs, ...){
+	if(nargs ==0){
+		VR_PRINT_ERR("number of arguments cannot be 0");
+	}
+	VrIndex *indices = static_cast<VrIndex*>(VR_MALLOC(sizeof(VrIndex)*nargs));
+	va_list args;
+	va_start(args,nargs);
+	for ( int i = 0; i < nargs; i++) {
+		indices[i] = va_arg(args,VrIndex);
+	}
+	va_end(args);
+	dim_type *dims = dimsSliced(indices,nargs);
+ 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+ 	VR_FREE(dims);
+ 	int k=0;
+ 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+ 	VR_FREE(indices);
+	return outArr;
+}
+
 VrArrayPtrF64 VrArrayF64::sliceArray(int nargs, ...){
 	if(nargs ==0){
 		VR_PRINT_ERR("number of arguments cannot be 0");

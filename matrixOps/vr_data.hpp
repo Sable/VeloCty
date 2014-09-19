@@ -1,19 +1,11 @@
 #ifndef __VR_DATA_H__
 #define __VR_DATA_H__
-/* #include<vrbinding.hpp> */
 #include "string.h"
 #include<complex.h>
 #include<cstdlib>
 #include<stdio.h>
-/* #define __PYTHON__ */
-#define __MATLAB__
-#ifdef __MATLAB__
-    #include "mex.h"
-    #define VR_MALLOC(x) mxMalloc(x)
-#elif defined __PYTHON__
-    #include<gc.h>
-    #define VR_MALLOC(x) GC_MALLOC(x)
-#endif
+#include "mex.h"
+#define VR_MALLOC(x) mxMalloc(x)
 typedef int dim_type;
 typedef enum Layout{
   COLUMN_MAJOR,ROW_MAJOR
@@ -37,17 +29,6 @@ typedef struct VrArrayF64{
   VrArrayF64(double* data, int *dims, int ndims ):data(data),dims(dims),ndims(ndims) {
   }
 
-#ifdef __PYTHON__
-//TODO(sameerjagdale) : Maybe inefficient. Should replace with some other option which deals with long and int dimensions. 
-  VrArrayF64(double* data, long *dimensions, int ndims ):data(data),ndims(ndims) {
-		 dims = static_cast<int*>(VR_MALLOC(sizeof(int)*ndims));
-		for (int  i = 0; i < ndims; i++) {
-			dims[i] = static_cast<int>(dimensions[i]);
-		}	
-		//printf("dimensions %d %d \n",dims[0],dims[1]);
-  }
-#endif
-
   VrArrayF64(double scal) :ndims(2) {
   	data = static_cast<double*>(VR_MALLOC(sizeof(double)));
 	*data = scal;
@@ -59,14 +40,13 @@ typedef struct VrArrayF64{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayF64 sliceArray(int nargs, ...);
+  VrArrayF64 sliceArray(VrArrayF64 *A, int nargs, ...);
   VrArrayF64 operator()(int nargs, ...);
   void operator()(VrArrayF64 inArr,int nargs, ...);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row, VrIndex col);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row, VrIndex col,VrIndex index_3);
   void setArraySlice(VrArrayF64 inArr,int nargs, ...);
-  /* VrArrayF64 operator()(VrIndex row,VrIndex col ); */
-  /* void operator()(VrArrayF64 inArr,VrIndex,VrIndex); */
   void operator()(double inArr,int nargs, ...);
   VrArrayF64 sliceArraySpec(VrIndex row,VrIndex col );
   VrArrayF64 sliceArraySpec(VrIndex row);

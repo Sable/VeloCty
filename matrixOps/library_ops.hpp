@@ -36,10 +36,6 @@ VrArrayPtrF64 cos(VrArrayPtrF64);
 VrArrayPtrF32 cos(VrArrayPtrF32);
 VrArrayPtrF64 sin(VrArrayPtrF64);
 VrArrayPtrF32 sin(VrArrayPtrF32);
-// VrArrayF64* tan(VrArrayF64*);
-// VrArrayF32* tan(VrArrayF32*);
-// VrArrayF64* tan(VrArrayF64*);
-// VrArrayF32* tan(VrArrayF32*);
 VrArrayPtrF64 pow(VrArrayPtrF64 vec,double val);
 VrArrayPtrF32 pow(VrArrayPtrF32 vec, double  val);
 VrArrayPtrF64 max(VrArrayPtrF64 );
@@ -92,10 +88,5 @@ dim_type* size(VrArrayPtrF32 arr);
 dim_type size(VrArrayPtrF32 arr,dim_type dimIndex);
 dim_type* size(VrArrayPtrCF32 arr);
 dim_type size(VrArrayPtrCF32 arr,dim_type dimIndex);
-//dim_type flatten(dim_type * dims, dim_type start, dim_type ndims);
-//bool exceedsMaxIndex(dim_type nIndices, VrIndex * indices, dim_type *dims,dim_type ndims);
-//bool checkOneIndices(VrIndex *indices, int start,int ndims);
-//dim_type getMinIndex(dim_type nIndices, VrIndex * indices, dim_type *dims);
-
 #endif
 

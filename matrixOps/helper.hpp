@@ -2,19 +2,11 @@
 #define __HELPER_H__
 #include "vrbinding.hpp"
 int getNumElem(int * dims, int ndims);
-#ifdef __MATLAB__
 VrArrayPtrF64 getVrArrayF64(mxArray*);
 VrArrayPtrF32 getVrArrayF32(mxArray*);
 VrArrayPtrB getVrArrayB(mxArray*);
 VrArrayPtrCF64 getVrArrayCF64(mxArray * arr);
 VrArrayPtrCF32 getVrArrayCF32(mxArray * arr);
-#elif defined __PYTHON__
-VrArrayPtrF64 getVrArrayF64(PyArrayObject*);
-VrArrayPtrF32 getVrArrayF32(PyArrayObject*);
-VrArrayPtrB getVrArrayB(PyArrayObject*);
-VrArrayPtrCF64 getVrArrayCF64(PyArrayObject * arr);
-VrArrayPtrCF32 getVrArrayCF32(PyArrayObject * arr);
-#endif
 bool checkNdims(int ndims_a, int ndims_b);
 bool checkdim(int dim_a, int dim_b);
 template<typename T> //Template should be a structure with ndims and dims field.

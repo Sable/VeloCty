@@ -54,7 +54,7 @@ void VrArrayF64::sliceArray(VrArrayF64 *outArr, int nargs, ...){
 	}
 	va_end(args);
 	dim_type *dims = dimsSliced(indices,nargs);
-    if( nargs > outArr->ndims || getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+    if( getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
         *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
     } else {
         memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);
@@ -85,6 +85,24 @@ VrArrayPtrF64 VrArrayF64::sliceArray(int nargs, ...){
  	VR_FREE(indices);
 	return outArr;
 }
+
+void VrArrayF64::sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col) {
+    int nargs = 2;
+    VrIndex indices[2];
+    indices[0] = row;
+    indices[1] = col;
+	dim_type *dims = dimsSliced(indices,nargs);
+    if( getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+        *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+    } else {
+        memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);
+        outArr->ndims = nargs;
+    }
+ 	VR_FREE(dims);
+ 	int k=0;
+ 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+}
+
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row ,VrIndex col) {
     int nargs = 2;
     VrIndex indices[2];
@@ -97,16 +115,20 @@ VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row ,VrIndex col) {
  	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
     return outArr;
 }
-VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row) {
+void VrArrayF64::sliceArraySpec(VrArrayF64 *outArr, VrIndex row) {
     int nargs = 1;
     VrIndex indices[1];
     indices[0] = row;
 	dim_type *dims = dimsSliced(indices,nargs);
- 	VrArrayPtrF64 outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+    if( getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+        *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
+    } else {
+        memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);
+        outArr->ndims = nargs;
+    }
  	VR_FREE(dims);
  	int k=0;
  	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
-    return outArr;
 }
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row,VrIndex col,VrIndex index_3) {
     int nargs = 3;

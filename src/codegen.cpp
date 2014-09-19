@@ -1880,9 +1880,9 @@ bool VCompiler::canSpecialiseArraySlice(IndexVec vec) {
     return vec.size() <= 3;
 }
 
-std::string VCompiler::genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable) {
+std::string VCompiler::genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr) {
     std::string arrayName = symTable->getName(expr->getArrayId());
-    return "(" + arrayName + ".sliceArraySpec(" + genSliceStr(expr,symTable) + "))";
+    return "(" + arrayName + ".sliceArraySpec(" + (lhsExpr != NULL? "&"+exprTypeCodeGen(lhsExpr, symTable).getAllStmt()[0]:"") +  "," + genSliceStr(expr,symTable) + "))";
 }
 std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable) {
     int id=expr->getArrayId();
@@ -2014,14 +2014,15 @@ std::string VCompiler::genSliceStr(IndexExprPtr expr, SymTable *symTable) {
   return sliceStr;
 }
 
-std::string  VCompiler::handleArraySlicing(IndexExprPtr expr, SymTable *symTable){
+std::string  VCompiler::handleArraySlicing(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr){
     IndexVec vec = expr->getIndices(); 
     if( canSpecialiseArraySlice(vec)) {
-        return genSpecArraySliceStr(expr,symTable);
+        return genSpecArraySliceStr(expr,symTable,lhsExpr);
     }
     std::string arrayName = symTable->getName(expr->getArrayId());
-    return "(" + arrayName + ".sliceArray(" +  itoa(vec.size())+ ", "+genSliceStr(expr,symTable) + "))";
+    return "(" + arrayName + ".sliceArray("+(lhsExpr != NULL? "&"+exprTypeCodeGen(lhsExpr,symTable).getAllStmt()[0]:"" ) + ", "+  itoa(vec.size())+ ", "+genSliceStr(expr,symTable) + "))";
 }
+
 Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable,ExpressionPtr lhsExpr) {
     Context cntxt;
     int id=expr->getArrayId();
@@ -2030,7 +2031,7 @@ Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable,Expre
         string indexStr=genIndexStr(expr,symTable);
         cntxt.addStmt(genDataStr(symTable->getType(id),arrayName)+"["+indexStr+"]");
     } else {
-        cntxt.addStmt(handleArraySlicing(expr,symTable));
+        cntxt.addStmt(handleArraySlicing(expr,symTable,lhsExpr));
     }
     return cntxt;
 }

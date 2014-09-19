@@ -201,7 +201,7 @@ private:
     std::string genRangeFuncStr(ExpressionPtr expr, SymTable *symTable);
     //TODO: remove boolean flag once specialisation for slice set implemented. 
     std::string genSliceStr(IndexExprPtr expr, SymTable *symTable);
-    std::string  handleArraySlicing(IndexExprPtr expr, SymTable *symTable);
+    std::string  handleArraySlicing(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
     bool scalarArgs(FunCallExprPtr expr);
     bool hasArrayArg(FunCallExprPtr expr);
     std::string genTempVec();
@@ -219,7 +219,7 @@ private:
     std::string genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool  canSpecialiseNegativeIndex(IndexVec vec); 
     bool canSpecialiseArraySlice(IndexVec vec);
-    std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable);
+    std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
     bool  canSpecBoundCheckStmt(IndexVec vec); 
     bool hasColon(IndexExprPtr expr);
     bool isOnLhs(IndexExprPtr expr);

@@ -258,6 +258,12 @@ public:
 	void setSseFlag(bool);
 	bool getOpenMpFlag();
 	void setOpenMpFlag(bool);
+    void setCurrModule(VModule *vm){
+        currModule = vm;
+    }
+    VModule* getCurrModule() const {
+        return currModule;
+    }
 	Context funcCodeGen(VFunction *func);
 	Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);
 	Context forStmtCodeGen(ForStmtPtr stmt, SymTable *symtable);

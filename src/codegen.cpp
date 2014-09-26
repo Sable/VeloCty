@@ -1840,7 +1840,7 @@ bool VCompiler::isInt(ExpressionPtr expr) {
 }
 
 std::string VCompiler::getIndexDiffStr(){
-	return "indexDiff";
+	return "1";
 }
 
 bool VCompiler::isRowMajor(int id ,SymTable *symTable) {
@@ -1937,9 +1937,11 @@ std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     for (int i = 0;i < vec.size();i++) {
         if (vec[i].m_isExpr) {		
             exprStr=exprTypeCodeGen(vec[i].m_val.m_expr,symTable).getAllStmt()[0];				
-            exprStr="(" + exprStr + " - "+getIndexDiffStr()+ ")";
+            if(!getCurrModule()->m_zeroIndex){
+                exprStr="(" + exprStr + " - "+getIndexDiffStr()+ ")";
+            }
             if (!isInt(vec[i].m_val.m_expr)) {
-                exprStr="((long) "+exprStr+" )";
+                exprStr="static_cast<long>("+exprStr+")";
             }
             indexStr+=exprStr;
             if (i < (vec.size() - 1)) {

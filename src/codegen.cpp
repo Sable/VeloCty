@@ -85,7 +85,6 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
     currModule = vm;
 	setOpenMpFlag(true);
 	cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
-	cntxt.addStmt("#ifdef VR_ZERO_INDEX \n int indexDiff=0; \n#else \n int indexDiff=1; \n#endif \n");
 	vector<VFunction*> funcList = vm->getFns();
 #ifdef DEBUG
 	std::cout<<"generating header file"<<std::endl;

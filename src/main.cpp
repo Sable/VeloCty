@@ -91,8 +91,6 @@ int main(int argc,char * argv[]){
 			fname = argv[i];
 		}
 	}	
-	//string fname(argv[1]);
-//	std::cout<<"File name "<<getFileNameNoExt(fname);
 	std::string fCopy = fname;
     std::cout<<"file name "<<fname<<std::endl; 
 	string s =readDataIntoString(fname);

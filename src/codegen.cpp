@@ -82,6 +82,7 @@ void VCompiler::setOpenMpFlag(bool val){
 Context VCompiler::moduleCodeGen(VModule *vm) {
 	Context cntxt;
 	mapper.init();
+    currModule = vm;
 	setOpenMpFlag(true);
 	cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
 	cntxt.addStmt("#ifdef VR_ZERO_INDEX \n int indexDiff=0; \n#else \n int indexDiff=1; \n#endif \n");

@@ -123,6 +123,7 @@ private:
 	BuiltinMapper mapper;
 	NodeCollector collector;
     std::set<LibCallExpr::Code> libCallSet;
+    VModule *currModule;
 	//! Generates C++ code for a statement node. 
 	/*! Calls specialised methods depending on the type of the statement
             \fn stmtTypeCodeGen

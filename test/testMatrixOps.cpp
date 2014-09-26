@@ -15,6 +15,11 @@ void testMeanScalar(mxArray* plhs[],mxArray* prhs[]) {
 	mean(A,&b);
     plhs[0] = mxCreateDoubleScalar(b);
 }
+void testOnes(mxArray* plhs[],mxArray* prhs[]) {
+    VrArrayPtrI64 A = ones_int(2,4,4);
+    plhs[0] = mxCreateNumericArray(A.ndims,A.dims,mxINT64_CLASS,mxREAL);
+    mxSetData(plhs[0],A.data);
+}
 void testMean(mxArray* plhs[],mxArray* prhs[]) {
 	VrArrayPtrF32 A = getVrArrayF32(prhs[0]);
 	VrArrayPtrF32 B = mean(A);
@@ -216,7 +221,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	//testMin(plhs,const_cast<mxArray**>(prhs));
 	//testRange(plhs,const_cast<mxArray**>(prhs));
 	/* testSetSlice(plhs,const_cast<mxArray**>(prhs)); */
-	testSlice(plhs,const_cast<mxArray**>(prhs));
+	/* testSlice(plhs,const_cast<mxArray**>(prhs)); */
+	testOnes(plhs,const_cast<mxArray**>(prhs));
 	//testAny(plhs,const_cast<mxArray**>(prhs));
 	//testRandn(plhs,const_cast<mxArray**>(prhs));
 	//testMatDiv(plhs,const_cast<mxArray**>(prhs));

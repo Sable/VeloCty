@@ -72,7 +72,7 @@ VrArrayPtrF64 zeros_double(int nargs,...){
 	return c;
 }
 
-VrArrayPtrF64 ones(int nargs,...){
+VrArrayPtrF64 ones_double(int nargs,...){
 	va_list args;
   int ndims = 0;
   bool zeroFlag = false;
@@ -115,6 +115,48 @@ memset(dims, 0, ndims * sizeof(dim_type));
 	return c;
 }
 
+VrArrayPtrI64 ones_int(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+  if (nargs == 1) {
+    ndims = 2;
+  }else {
+    ndims = nargs;
+  }
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+		dims[i] = va_arg(args,int);
+    if(dims[i] < 0) {
+      std::cout<<"dimensions have to be positive "<<std::endl;
+      exit(0);
+    }
+    if (dims[i] == 0) {
+      zeroFlag = true;
+      break;
+    }
+	}
+  if (nargs == 1 && !zeroFlag) {
+    dims[1] = dims[0]; 
+  }
+  VrArrayPtrI64 c;
+  if (!zeroFlag) {
+    c=vrAllocArrayI64RM(ndims,1,dims);
+  }else {
+    VR_GET_DATA_I64(c) = NULL;
+    VR_GET_DIMS_I64(c) = dims;
+    VR_GET_NDIMS_F64(c) = ndims;
+  }
+	va_end(args);
+	return c;
+}
 VrArrayPtrF64 abs(VrArrayPtrF64 arr){
     int numel=getNumElem(VR_GET_DIMS_F64(arr),VR_GET_NDIMS_F64(arr));
     VrArrayPtrF64 out=vrAllocArrayF64RM(VR_GET_NDIMS_CF64(arr),0,VR_GET_DIMS_CF64(arr));

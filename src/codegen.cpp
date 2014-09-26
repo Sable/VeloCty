@@ -1891,7 +1891,7 @@ bool VCompiler::canSpecialiseArraySlice(IndexVec vec) {
 
 std::string VCompiler::genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr) {
     std::string arrayName = symTable->getName(expr->getArrayId());
-    return "(" + arrayName + ".sliceArraySpec(" + (lhsExpr != NULL? "&"+exprTypeCodeGen(lhsExpr, symTable).getAllStmt()[0]:"") +  "," + genSliceStr(expr,symTable) + "))";
+    return "(" + arrayName + ".sliceArraySpec(" + (lhsExpr != NULL? "&"+exprTypeCodeGen(lhsExpr, symTable).getAllStmt()[0]+",":"") + genSliceStr(expr,symTable) + "))";
 }
 std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable) {
     int id=expr->getArrayId();

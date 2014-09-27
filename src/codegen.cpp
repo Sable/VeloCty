@@ -1091,9 +1091,9 @@ std::string VCompiler::getMatTypeStr(VTypePtr vtype){
     switch(scalarType->getScalarTag()){
     
       case ScalarType::SCALAR_INT32 :
-	    matTypeStr="Double";
+	    matTypeStr="Int";
       case ScalarType::SCALAR_INT64:
-	    matTypeStr="Double";
+	    matTypeStr="Long";
       case ScalarType::SCALAR_FLOAT32:
 	    matTypeStr="Single";
       case ScalarType::SCALAR_FLOAT64:

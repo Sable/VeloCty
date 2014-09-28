@@ -12,7 +12,7 @@ typedef enum Layout{
 }Layout;
 
 struct VrIndex;
-
+struct VrArrayI64;
 typedef struct VrArrayF64{
   double *data;
   dim_type* dims;  
@@ -28,14 +28,15 @@ typedef struct VrArrayF64{
 
   VrArrayF64(double* data, int *dims, int ndims ):data(data),dims(dims),ndims(ndims) {
   }
-
+  VrArrayF64(VrArrayI64);
   VrArrayF64(double scal) :ndims(2) {
-  	data = static_cast<double*>(VR_MALLOC(sizeof(double)));
-	*data = scal;
-	dims  = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type)*2));
-	dims[0] = 1;
-	dims[1] = 1;
+      data = static_cast<double*>(VR_MALLOC(sizeof(double)));
+      *data = scal;
+      dims  = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type)*2));
+      dims[0] = 1;
+      dims[1] = 1;
   }
+
   VrArrayF64(dim_type ndims,dim_type *dims);
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
@@ -44,13 +45,10 @@ typedef struct VrArrayF64{
   void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col);
   void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col,VrIndex index_3);
   void  sliceArraySpec(VrArrayF64 *outArr, VrIndex row);
-  VrArrayF64 operator()(int nargs, ...);
-  void operator()(VrArrayF64 inArr,int nargs, ...);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row, VrIndex col);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row);
   void setArraySliceSpec(VrArrayF64 inArr,VrIndex row, VrIndex col,VrIndex index_3);
   void setArraySlice(VrArrayF64 inArr,int nargs, ...);
-  void operator()(double inArr,int nargs, ...);
   VrArrayF64 sliceArraySpec(VrIndex row,VrIndex col );
   VrArrayF64 sliceArraySpec(VrIndex row);
   VrArrayF64 sliceArraySpec(VrIndex row,VrIndex col,VrIndex index_3);
@@ -78,7 +76,10 @@ typedef struct VrArrayI64{
   int ndims;
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
-  VrArrayI64 operator()(int nargs, ...);
+  VrArrayI64(long* data, int *dims, int ndims ):data(data),dims(dims),ndims(ndims) {
+  }
+  VrArrayI64():data(NULL),dims(NULL),ndims(0) {
+  }
 }VrArrayI64;
 
 typedef struct VrArrayI32{
@@ -108,23 +109,6 @@ typedef struct VrArrayCF32{
   VrArrayCF32 operator()(int nargs, ...);
 }VrArrayCF32;
 
-typedef struct VrArrayCI64{
-  long *data;
-  dim_type* dims;  
-  int ndims;
-  dim_type numelSliced(VrIndex*,dim_type);
-  dim_type* dimsSliced(VrIndex*, dim_type);
-  VrArrayCI64 operator()(int nargs, ...);
-}VrArrayCI64;
-
-typedef struct VrArrayCI32{
-  int *data;
-  dim_type* dims;  
-  int ndims;
-  dim_type numelSliced(VrIndex*,dim_type);
-  dim_type* dimsSliced(VrIndex*, dim_type);
-  VrArrayCI32 operator()(int nargs, ...);
-}VrArrayCI32;
 
 typedef struct VrArrayB{
   bool *data;

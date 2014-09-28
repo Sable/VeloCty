@@ -1092,12 +1092,16 @@ std::string VCompiler::getMatTypeStr(VTypePtr vtype){
     
       case ScalarType::SCALAR_INT32 :
 	    matTypeStr="Int";
+        break;
       case ScalarType::SCALAR_INT64:
 	    matTypeStr="Long";
+        break;
       case ScalarType::SCALAR_FLOAT32:
 	    matTypeStr="Single";
+        break;
       case ScalarType::SCALAR_FLOAT64:
 	    matTypeStr="Double";
+        break;
       default:
 #ifdef DEBUG
 	    std::cout<<"Entering default case in function getMatTypeStr"<<std::endl;

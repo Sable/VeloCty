@@ -72,6 +72,16 @@ VrArrayPtrF64 BlasDouble::scal_mult(int ndims,VrArrayPtrF64 X,double alpha,VrArr
 	return Y;
 }
 
+VrArrayPtrF64 BlasDouble::scal_mult(int ndims,VrArrayPtrI64 X,double alpha,VrArrayPtrF64 *Y) {
+	int N = 1;
+	for(int i = 0; i < X.ndims; i++){
+		N *= VR_GET_DIMS_F64(X)[i];
+	}
+	BlasDouble::vec_copy(ndims,X,Y);
+	cblas_dscal(N,alpha,VR_GET_DATA_F64((*Y)),1);
+	return Y;
+}
+
 VrArrayPtrF64 BlasDouble::scal_mult(int ndims,VrArrayPtrF64 X,double alpha) {
 	int N = 1;
 	for(int i = 0; i < X.ndims; i++){
@@ -133,6 +143,25 @@ void BlasDouble::vec_copy(const int ndims, VrArrayPtrF64 X,VrArrayPtrF64 *Y, con
         *Y=vrAllocArrayF64RM(X.ndims,0,VR_GET_DIMS_F64(X));
     }
     cblas_dcopy (N, VR_GET_DATA_F64(X),incX, VR_GET_DATA_F64((*Y)),incY);
+}
+
+void BlasDouble::vec_copy(const int ndims, VrArrayPtrI64 X,VrArrayPtrF64 *Y, const int incX , const int incY ){
+    int N=1;
+    int N_y =1;
+    for(int i=0;i<X.ndims;i++){
+        N*=VR_GET_DIMS_F64(X)[i];
+    }
+    for(int i=0;i<Y->ndims;i++){
+        N_y*=VR_GET_DIMS_F64((*Y))[i];
+    }
+    if(Y->data ==NULL || Y->ndims < X.ndims || N_y < N){
+        *Y=vrAllocArrayF64RM(X.ndims,0,VR_GET_DIMS_F64(X));
+    } else {
+        memcpy(Y->dims, X.dims,sizeof(dim_type)*X.ndims);
+    }
+    for(int i = 0; i < N; i++) {
+        Y->data[i] = static_cast<double>(X.data[i]);
+    }
 }
 
 VrArrayPtrF64 BlasDouble::vec_sub(int ndims, VrArrayPtrF64 X, VrArrayPtrF64 Y , const double alpha, const int incX, const int incY){
@@ -276,8 +305,7 @@ VrArrayPtrF64 BlasDouble::mat_ldiv(int matrix_order, VrArrayPtrF64 A, VrArrayPtr
 VrArrayPtrF64 BlasDouble::scal_div(VrArrayPtrF64 A, double scal) {
   double *data, *out;
   if (scal == 0) {
-    std::cout<<"divide by zero. Exiting"<<std::endl;
-    exit(0);
+    VR_PRINT_ERR("Divide by zero");
   }
   VrArrayPtrF64 B = vec_copy(VR_GET_NDIMS_F64(A), A);
   data = VR_GET_DATA_F64(A);
@@ -291,8 +319,7 @@ VrArrayPtrF64 BlasDouble::scal_div(VrArrayPtrF64 A, double scal) {
 void BlasDouble::scal_div(VrArrayPtrF64 A, double scal,VrArrayPtrF64 *B) {
   double *data, *out;
   if (scal == 0) {
-    std::cout<<"divide by zero. Exiting"<<std::endl;
-    exit(0);
+    VR_PRINT_ERR("Divide by zero");
   }
    vec_copy(VR_GET_NDIMS_F64(A), A,B);
   data = VR_GET_DATA_F64(A);

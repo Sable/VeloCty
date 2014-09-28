@@ -84,42 +84,40 @@ VrArrayPtrF64 vrAllocArrayF64RM(int ndims,int func,int *sizes){
 	}
 }
 
+
 VrArrayPtrI64 vrAllocArrayI64RM(int ndims,int func,int *sizes){
-	VrArrayPtrI64 arr; 
-	switch(func){
-	case 0: //Zeros
-		{
-		//arr=(VrArrayPtrI64)VR_MALLOC(sizeof(VrArrayI64));
-		VR_GET_DATA_I64(arr)=(long*)VR_MALLOC(sizeof(float)*getNumElem(sizes,ndims));
-		memset(VR_GET_DATA_I64(arr),0,sizeof(double)*getNumElem(sizes,ndims));
-		VR_GET_NDIMS_I64(arr)=ndims;
-		VR_GET_DIMS_I64(arr)=sizes;
-		
-		return arr;
-		}
-	case 1: // Ones
-		{
-		//arr=(VrArrayPtrI64)VR_MALLOC(sizeof(VrArrayI64));  
-		VR_GET_DATA_I64(arr)=(long*)VR_MALLOC(sizeof(long)*getNumElem(sizes,ndims));
-		VR_GET_NDIMS_I64(arr)=ndims;
-		VR_GET_DIMS_I64(arr)=sizes;
-		int numel=getNumElem(sizes,ndims);
-			for(int i=0;i<numel;i++){
-				VR_GET_DATA_I64(arr)[i]=1.0f;
-			}
-		
-		return arr;
-		}
-	case 2 : //Empty Matrix 
-		{
-		//	arr=(VrArrayPtrI64)VR_MALLOC(sizeof(VrArrayI64));
-			VR_GET_DATA_I64(arr) = NULL;
-			VR_GET_NDIMS_I64(arr) = ndims;
-			VR_GET_DIMS_I64(arr)=(dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
-			memcpy(VR_GET_DIMS_I64(arr),sizes,ndims*sizeof(dim_type));
-			return arr;
-		}
-	}
+    VrArrayPtrI64 arr; 
+    switch(func){
+        case 0: //Zeros
+            {
+                VR_GET_DATA_I64(arr)=(long*)VR_MALLOC(sizeof(long)*getNumElem(sizes,ndims));
+                memset(VR_GET_DATA_I64(arr),0,sizeof(int)*getNumElem(sizes,ndims));
+                VR_GET_NDIMS_I64(arr)=ndims;
+                VR_GET_DIMS_I64(arr)=(dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
+                memcpy(VR_GET_DIMS_I64(arr),sizes,ndims*sizeof(dim_type));
+                return arr;
+            }
+        case 1: // Ones
+            {
+                VR_GET_DATA_I64(arr)=(long*)VR_MALLOC(sizeof(long)*getNumElem(sizes,ndims));
+                VR_GET_NDIMS_I64(arr)=ndims;
+                VR_GET_DIMS_I64(arr)=(dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
+                memcpy(VR_GET_DIMS_I64(arr),sizes,ndims*sizeof(dim_type));
+                int numel=getNumElem(sizes,ndims);
+                for(int i=0;i<numel;i++){
+                    VR_GET_DATA_I64(arr)[i]=1.0f;
+                }
+                return arr;
+            }
+        case 2 : //Empty Matrix 
+            {
+                VR_GET_DATA_I64(arr) = NULL;
+                VR_GET_NDIMS_I64(arr) = ndims;
+                VR_GET_DIMS_I64(arr)=(dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
+                memcpy(VR_GET_DIMS_I64(arr),sizes,ndims*sizeof(dim_type));
+                return arr;
+            }
+    }
 }
 
 VrArrayPtrI32 vrAllocArrayI32RM(int ndims,int func,int *sizes){

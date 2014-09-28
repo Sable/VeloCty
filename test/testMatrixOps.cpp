@@ -15,8 +15,16 @@ void testMeanScalar(mxArray* plhs[],mxArray* prhs[]) {
 	mean(A,&b);
     plhs[0] = mxCreateDoubleScalar(b);
 }
+
+void testConstructor(mxArray* plhs[],mxArray* prhs[]) {
+    VrArrayPtrI64 A = ones_long(2,4,4);
+    VrArrayPtrF64 B(A);
+    plhs[0] = mxCreateNumericArray(B.ndims,B.dims,mxDOUBLE_CLASS,mxREAL);
+    mxSetData(plhs[0],B.data);
+    
+}
 void testOnes(mxArray* plhs[],mxArray* prhs[]) {
-    VrArrayPtrI64 A = ones_int(2,4,4);
+    VrArrayPtrI64 A = ones_long(2,4,4);
     plhs[0] = mxCreateNumericArray(A.ndims,A.dims,mxINT64_CLASS,mxREAL);
     mxSetData(plhs[0],A.data);
 }
@@ -182,6 +190,13 @@ void testCopy(mxArray **plhs,mxArray **prhs) {
 	mxSetPr(plhs[0],C.data);
 }
 
+void testScalMult(mxArray **plhs,mxArray**prhs){
+    VrArrayPtrI64 A = getVrArrayI64(prhs[0]);
+    VrArrayPtrI64 C;
+    C = BlasLong::scal_mult(2,A,3);
+    plhs[0] = mxCreateNumericArray(C.ndims,C.dims,mxINT64_CLASS,mxREAL);
+    mxSetData(plhs[0],C.data);
+}
 void testScalAdd(mxArray **plhs,mxArray**prhs){
     VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
     VrArrayPtrF64 C;
@@ -222,7 +237,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	//testRange(plhs,const_cast<mxArray**>(prhs));
 	/* testSetSlice(plhs,const_cast<mxArray**>(prhs)); */
 	/* testSlice(plhs,const_cast<mxArray**>(prhs)); */
-	testOnes(plhs,const_cast<mxArray**>(prhs));
+	/* testOnes(plhs,const_cast<mxArray**>(prhs)); */
 	//testAny(plhs,const_cast<mxArray**>(prhs));
 	//testRandn(plhs,const_cast<mxArray**>(prhs));
 	//testMatDiv(plhs,const_cast<mxArray**>(prhs));
@@ -236,6 +251,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testSumScalar(plhs,const_cast<mxArray**>(prhs)); */
 	/* testMeanScalar(plhs,const_cast<mxArray**>(prhs)); */
 	/* testTranspose(plhs,const_cast<mxArray**>(prhs)); */
+	/* testScalMult(plhs,const_cast<mxArray**>(prhs)); */
+	testConstructor(plhs,const_cast<mxArray**>(prhs));
     
     
 }

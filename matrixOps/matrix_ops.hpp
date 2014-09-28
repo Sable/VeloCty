@@ -20,12 +20,14 @@ class BlasDouble{
 		static VrArrayPtrF64 vec_mult(CBLAS_ORDER order, CBLAS_TRANSPOSE, VrArrayPtrF64 A, VrArrayPtrF64 B, float alpha=1, int incX=1 , int incY=1,float beta=0 ); 
 		static VrArrayPtrF64 scal_mult(int ndims,VrArrayPtrF64 A,double);
 		static VrArrayPtrF64 scal_mult(int ndims,VrArrayPtrF64 A,double,VrArrayPtrF64 *Y);
+		static VrArrayPtrF64 scal_mult(int ndims,VrArrayPtrI64 A,double,VrArrayPtrF64 *Y);
 		static VrArrayPtrF64 vec_add(int ndims, VrArrayPtrF64 X,VrArrayPtrF64 Y,  const double alpha=1, const int incX=1 ,const int incY=1 );
 		static void vec_add(int ndims, VrArrayPtrF64 X,VrArrayPtrF64 Y,VrArrayPtrF64 *Z,  const double alpha=1, const int incX=1 ,const int incY=1 );
 		static double vec_dot(const int , VrArrayPtrF64 X, VrArrayPtrF64 Y, const int incX=1, const int incY=1 );
 		static VrArrayPtrF64 vec_copy(const int, VrArrayPtrF64 X, const int incX=1 , const int incY=1 );
         
         static void vec_copy(const int ndims, VrArrayPtrF64 X,VrArrayPtrF64 *Y, const int incX=1 , const int incY=1 );
+        static void vec_copy(const int ndims, VrArrayPtrI64 X,VrArrayPtrF64 *Y, const int incX=1 , const int incY=1 );
 		static VrArrayPtrF64 vec_sub(const int ndims, VrArrayPtrF64 X, VrArrayPtrF64 Y ,const double alpha=1, const int incX=1 , const int incY=1 );
 		static void vec_sub(const int ndims, VrArrayPtrF64 X, VrArrayPtrF64 Y,VrArrayPtrF64 *Z ,const double alpha=1, const int incX=1 , const int incY=1 );
 		static VrArrayPtrF64 scal_add(const int ndims,VrArrayPtrF64 X, double scal, const int incX=1);
@@ -119,4 +121,8 @@ class BlasComplexSingle{
 	    static VrArrayPtrCF64 mat_rdiv(int matrix_order, VrArrayPtrCF64 A, VrArrayPtrCF64 B); 
 	    
  };
+class BlasLong {
+    public :
+        static VrArrayPtrI64 scal_mult(int ndims,VrArrayPtrI64 X, long alpha);
+};
 #endif

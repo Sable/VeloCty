@@ -46,8 +46,8 @@ typedef VrArrayI64 VrArrayPtrI64;
 typedef VrArrayB VrArrayPtrB;
 typedef VrArrayCF32 VrArrayPtrCF32;
 typedef VrArrayCF64 VrArrayPtrCF64;
-typedef VrArrayCI32 VrArrayPtrCI32;
-typedef VrArrayCI64 VrArrayPtrCI64;
+/* typedef VrArrayCI32 VrArrayPtrCI32; */
+/* typedef VrArrayCI64 VrArrayPtrCI64; */
 //typedef VrArrayCB *VrArrayPtrCB;
 
 typedef long VrDimsInt_t;
@@ -129,8 +129,8 @@ extern VrArrayPtrI64 vrAllocArrayI64RM(int ndims,int func,int *sizes);
 
 extern VrArrayPtrCF32 vrAllocArrayF32CM(int ndims,int func,int *sizes);
 extern VrArrayPtrCF64 vrAllocArrayF64CM(int ndims,int func,int *sizes);
-extern VrArrayPtrCI32 vrAllocArrayI32CM(int ndims,int func,int *sizes);
-extern VrArrayPtrCI64 vrAllocArrayI64CM(int ndims,int func,int *sizes);
+/* extern VrArrayPtrCI32 vrAllocArrayI32CM(int ndims,int func,int *sizes); */
+/* extern VrArrayPtrCI64 vrAllocArrayI64CM(int ndims,int func,int *sizes); */
 
 extern VrArrayPtrF64 vrCloneArrayF64RM(VrArrayPtrF64  );
 enum VrErrCodes {VR_OUT_OF_BOUNDS=0, VR_DIV_BY_ZERO, VR_SHAPE_MISMATCH};

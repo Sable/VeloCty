@@ -16,6 +16,11 @@ bool checkNdims(int ndims_a, int ndims_b) {
 bool checkdim(int dim_a, int dim_b) {
   return dim_a==dim_b;
 }
+
+VrArrayPtrI64 getVrArrayI64(mxArray* arr){
+	VrArrayPtrI64 out(static_cast<long*>(mxGetData(arr)),(dim_type*)mxGetDimensions(arr),mxGetNumberOfDimensions(arr));
+	return out;
+}
 VrArrayPtrF64 getVrArrayF64(mxArray* arr){
 	VrArrayPtrF64 out(mxGetPr(arr),(dim_type*)mxGetDimensions(arr),mxGetNumberOfDimensions(arr));
 	return out;

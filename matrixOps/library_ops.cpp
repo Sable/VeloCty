@@ -115,7 +115,7 @@ memset(dims, 0, ndims * sizeof(dim_type));
 	return c;
 }
 
-VrArrayPtrI64 ones_int(int nargs,...){
+VrArrayPtrI64 ones_long(int nargs,...){
 	va_list args;
   int ndims = 0;
   bool zeroFlag = false;

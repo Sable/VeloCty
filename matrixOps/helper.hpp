@@ -3,6 +3,7 @@
 #include "vrbinding.hpp"
 int getNumElem(int * dims, int ndims);
 VrArrayPtrF64 getVrArrayF64(mxArray*);
+VrArrayPtrI64 getVrArrayI64(mxArray*);
 VrArrayPtrF32 getVrArrayF32(mxArray*);
 VrArrayPtrB getVrArrayB(mxArray*);
 VrArrayPtrCF64 getVrArrayCF64(mxArray * arr);

@@ -29,7 +29,7 @@ VrArrayPtrF64 randi(double max,dim_type,dim_type);
 long length(VrArrayPtrF64);
 VrArrayPtrF64 zeros_double(int,...);
 VrArrayPtrI32 zeros_int(int,...);
-VrArrayPtrI64 ones_int(int,...);
+VrArrayPtrI64 ones_long(int,...);
 VrArrayPtrF64 ones_double(int,...);
 VrArrayPtrF64 abs(VrArrayPtrF64);
 VrArrayPtrF32 abs(VrArrayPtrF32);

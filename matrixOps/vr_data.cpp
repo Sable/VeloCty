@@ -93,7 +93,7 @@ void VrArrayF64::sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col) {
     }
  	VR_FREE(dims);
  	int k=0;
- 	arraySlice<VrArrayF64,dim_type>(*(this),outArr,indices,0,&k,nargs -1);
+ 	arraySlice<VrArrayF64,dim_type>(*(this),*outArr,indices,0,&k,nargs -1);
 }
 
 VrArrayF64 VrArrayF64::sliceArraySpec(VrIndex row ,VrIndex col) {

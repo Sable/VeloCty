@@ -165,11 +165,9 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
 			DimType start  = indices[0].m_val.range_val[0];
 			DimType stop = indices[0].m_val.range_val[1];
 			DimType step = indices[0].m_val.range_val[2];
-			//if(step != 1){
-			for(DimType i = start -indx_diff; i <= stop - indx_diff; i+=step) {
+			for(DimType i = start -1; i <= stop - 1; i+=step) {
 				outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
 			}
-			//}
 			return;
 		}
 		if( indices[currIndx].m_isArray == true) {
@@ -186,7 +184,7 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
 		DimType start  = indices[currIndx].m_val.range_val[0];
 		DimType stop = indices[currIndx].m_val.range_val[1];
 		DimType step = indices[currIndx].m_val.range_val[2];
-		for(DimType i = start -indx_diff; i <= stop - indx_diff; i+=step) {
+		for(DimType i = start - 1; i < stop -1; i+=step) {
 			arraySlice(inArr,outArr,indices,currOffset + i*jmp,outoffSet,currIndx -1);
 		}
 		return;

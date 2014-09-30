@@ -31,7 +31,6 @@ VrArrayF64::VrArrayF64(dim_type ndims,dim_type *dims) {
 	this->dims = dims;
 	this->ndims = ndims;
 	data = static_cast<double*>(VR_MALLOC(sizeof(double) * numel));	
-	memset(data,0,sizeof(double) * numel);
 }
 //Slice
 
@@ -206,6 +205,12 @@ dim_type *dims;
 	return dims;
 }
 
+VrArrayI64::VrArrayI64(dim_type ndims,dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<long*>(VR_MALLOC(sizeof(long) * numel));	
+}
 template<class ArrayType>
 bool validDims(ArrayType A, ArrayType B) {
     if(B.ndims < A.ndims) {

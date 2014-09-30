@@ -145,7 +145,7 @@ void  growArray(T* arr,dim_type nIndices, VrIndex *indices) {
 			dims[1] = dims[0];	
 			dims[0] = 1;
 		}
-		*arr = vrAllocArrayF64RM(ndims,0,dims);	
+		*arr = T(ndims,dims);	
 		return;
 	} else {
 		dim_type ndims = nIndices >= arr->ndims?nIndices:arr->ndims;
@@ -210,7 +210,6 @@ inline  void checkBounds(T* arr,bool onLhs,int nargs,...) {
     indices[i] = va_arg(args,VrIndex);
   }
   va_end(args);
-  printf("onLhs %d\n",onLhs);
   if(VR_GET_DATA_F64((*arr)) ==NULL) {
 	if(!onLhs) {
    		VR_PRINT_ERR("Index exceeds matrix dimensions"); 		

@@ -80,6 +80,7 @@ typedef struct VrArrayI64{
   }
   VrArrayI64():data(NULL),dims(NULL),ndims(0) {
   }
+  VrArrayI64(dim_type ndims,dim_type *dims);
 }VrArrayI64;
 
 typedef struct VrArrayI32{

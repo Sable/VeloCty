@@ -151,55 +151,49 @@ void  arraySlice(ArrayType arr,ArrayType outArr, const VrIndex & rowIndex, const
 
 template<class ArrayType, class DimType> 
 void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType currOffset, DimType *outoffSet,DimType currIndx) {
-    int indx_diff = 0;
-	if (!vrZeroBasedIndex) {
-		indx_diff=1;
-	}
-	if(currIndx == 0) {
-		if(indices[0].m_isRange == false && indices[0].m_isArray ==  false){
-			outArr.data[*outoffSet] = inArr.data[currOffset + indices[0].m_val.const_val-indx_diff];
-			(*outoffSet)++;
-			return;	
-		}		
-		if(indices[currIndx].m_isRange == true) {
-			DimType start  = indices[0].m_val.range_val[0];
-			DimType stop = indices[0].m_val.range_val[1];
-			DimType step = indices[0].m_val.range_val[2];
-			for(DimType i = start -1; i <= stop - 1; i+=step) {
-				outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
-			}
-			return;
-		}
-		if( indices[currIndx].m_isArray == true) {
-			VrArrayPtrF64 arr = indices[currIndx].arr;
-			DimType numel  =  getNumElem(arr.dims,arr.ndims);
-			for( DimType i = 0; i < numel; i++) {
-				outArr.data[(*outoffSet)++] = inArr.data[currOffset + static_cast<DimType>(arr.data[i]) - indx_diff];	
-			}
-			return;
-		}
-	}
-	DimType jmp = getStep<ArrayType, DimType>(inArr, currIndx);
-	if(indices[currIndx].m_isRange) {
-		DimType start  = indices[currIndx].m_val.range_val[0];
-		DimType stop = indices[currIndx].m_val.range_val[1];
-		DimType step = indices[currIndx].m_val.range_val[2];
-		for(DimType i = start - 1; i < stop -1; i+=step) {
-			arraySlice(inArr,outArr,indices,currOffset + i*jmp,outoffSet,currIndx -1);
-		}
-		return;
-	} else if (indices[currIndx].m_isArray) {	
-		VrArrayPtrF64 arr = indices[currIndx].arr;
-		DimType numel  =  getNumElem(arr.dims,arr.ndims);
-		for( DimType i = 0; i < numel; i++) {
-			arraySlice(inArr,outArr,indices,currOffset + (static_cast<DimType>(arr.data[i]) - indx_diff)*jmp,outoffSet,currIndx -1);
-		}
-		return;
-	} else {
-		DimType val = indices[currIndx].m_val.const_val - indx_diff;
-		arraySlice(inArr,outArr,indices,currOffset + val*jmp,outoffSet, currIndx -1);
-		return;
-	}
+    int indx_diff = 1;
+    for( int i = currIndx; i >= 1; i--){
+        DimType jmp = getStep<ArrayType, DimType>(inArr, currIndx);
+        if(indices[currIndx].m_isRange) {
+            DimType start  = indices[currIndx].m_val.range_val[0];
+            DimType stop = indices[currIndx].m_val.range_val[1];
+            DimType step = indices[currIndx].m_val.range_val[2];
+            for(DimType j = start - 1; j < stop -1; j+=step) {
+                currOffset+= j*jmp;
+            }
+        } else if (indices[currIndx].m_isArray) {	
+            VrArrayPtrF64 arr = indices[currIndx].arr;
+            DimType numel  =  getNumElem(arr.dims,arr.ndims);
+            for( DimType j = 0; j < numel; j++) {
+                currOffset += (static_cast<DimType>(arr.data[i]) - indx_diff)*jmp;
+            }
+        } else {
+            DimType val = indices[currIndx].m_val.const_val - indx_diff;
+            currOffset += val*jmp;
+        }
+
+    }
+    if(indices[0].m_isRange == false && indices[0].m_isArray ==  false){
+        outArr.data[*outoffSet] = inArr.data[currOffset + indices[0].m_val.const_val-indx_diff];
+        return;	
+    }		
+    if(indices[currIndx].m_isRange == true) {
+        DimType start  = indices[0].m_val.range_val[0];
+        DimType stop = indices[0].m_val.range_val[1];
+        DimType step = indices[0].m_val.range_val[2];
+        for(DimType i = start -1; i <= stop - 1; i+=step) {
+            outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
+        }
+        return;
+    }
+    if( indices[currIndx].m_isArray == true) {
+        VrArrayPtrF64 arr = indices[currIndx].arr;
+        DimType numel  =  getNumElem(arr.dims,arr.ndims);
+        for( DimType i = 0; i < numel; i++) {
+            outArr.data[(*outoffSet)++] = inArr.data[currOffset + static_cast<DimType>(arr.data[i]) - indx_diff];	
+        }
+        return;
+    }
 }
 
 template<class ArrayType,  class DimType> 

@@ -1897,6 +1897,7 @@ std::string VCompiler::genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTabl
     std::string arrayName = symTable->getName(expr->getArrayId());
     return "(" + arrayName + ".sliceArraySpec(" + (lhsExpr != NULL? "&"+exprTypeCodeGen(lhsExpr, symTable).getAllStmt()[0]+",":"") + genSliceStr(expr,symTable) + "))";
 }
+
 std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable) {
     int id=expr->getArrayId();
     std::string arrayName=symTable->getName(id); 
@@ -1907,7 +1908,7 @@ std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symT
     for( int i = 1; i < vec.size(); i++ ) {
         exprStr += "," + exprTypeCodeGen(vec[i].m_val.m_expr,symTable).getAllStmt()[0];
     }
-    exprStr += ")"; 
+    exprStr += ","+itoa(!isRowMajor(id,symTable))+")"; 
     return exprStr;
 }
 

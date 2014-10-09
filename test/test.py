@@ -4,8 +4,7 @@ def testSlice() :
 	a = numpy.random.rand(3,3)
 	c = testPython.testSlice(a);
     #assert c == a[1,2],'slicing failed'
-	print(c)
-	print(a)
+	print('shape of c'+str(c.shape))
 	#print(a[1,2] == c)
 
 def testSetSlice() :
@@ -51,6 +50,10 @@ def testIndexVal() :
     a = numpy.random.rand(4,4)
     b = testPython.testIndexVal(a)
     assert (a[-1][-2] == a.flatten()[b]), 'IndexVal failed'
+def testBasic() :
+    a = numpy.zeros([3,3],dtype=numpy.int)
+    b = testPython.testBasic(a)
+    print(b)
     
 #testMean()
 #testMax()
@@ -60,5 +63,6 @@ def testIndexVal() :
 #testOnes()
 #testIndexVal()
 #testSlice()
-testSetSlice()
+#testSetSlice()
+testBasic()
 print("all test cases passed successfully ")

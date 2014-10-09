@@ -892,6 +892,7 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
         cntxt = castExprCodeGen(static_cast<CastExprPtr>(expr),symTable); 
 		break;
 	default:
+        std::cout<<"Expression not supported "<<expr->getExprType()<<std::endl;
 		break;
 
 	}
@@ -904,12 +905,11 @@ Context VCompiler::castExprCodeGen(CastExprPtr expr, SymTable *symTable) {
 }
 Context VCompiler::dimExprCodeGen(DimExprPtr expr, SymTable *symTable) {
     Context cntxt;
-    //TODO: Modify
-    /* std::string outStr = "size"; */
-    /* int id  = expr->getArray(); */
-    /* outStr += "(" + symTable->getName(id)+ ","; */
-    /* outStr += exprTypeCodeGen(expr->getDimExpr(),symTable).getAllStmt()[0] + ")"; */
-    /* cntxt.addStmt(outStr); */
+     std::string outStr = "size";
+     int id  = expr->getArray();
+     outStr += "(" + symTable->getName(id)+ ",";
+     outStr += itoa(expr->getDimId()) + ")";
+     cntxt.addStmt(outStr);
     return cntxt;
 }
 

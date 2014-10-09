@@ -4,6 +4,7 @@
 int getNumElem(int * dims, int ndims);
 VrArrayPtrF64 getVrArrayF64(PyArrayObject*);
 VrArrayPtrF32 getVrArrayF32(PyArrayObject*);
+VrArrayPtrI32 getVrArrayI32(PyArrayObject*);
 VrArrayPtrB getVrArrayB(PyArrayObject*);
 VrArrayPtrCF64 getVrArrayCF64(PyArrayObject * arr);
 VrArrayPtrCF32 getVrArrayCF32(PyArrayObject * arr);

@@ -17,15 +17,33 @@ bool checkdim(int dim_a, int dim_b) {
   return dim_a==dim_b;
 }
 VrArrayPtrF64 getVrArrayF64(PyArrayObject* arr){
-	VrArrayPtrF64 out(static_cast<double*>(PyArray_DATA(arr)),(PyArray_DIMS(arr)),PyArray_NDIM(arr));//=(VrArrayPtrF64)VR_MALLOC(sizeof(VrArrayF64));
+    
+    dim_type *dims = (dim_type*)(VR_MALLOC(sizeof(dim_type) * PyArray_NDIM(arr)));
+    for( int i = 0; i < PyArray_NDIM(arr); i++) {
+        dims[i] = PyArray_DIMS(arr)[i];
+    }
+	VrArrayPtrF64 out(static_cast<double*>(PyArray_DATA(arr)),dims,PyArray_NDIM(arr));
 	return out;
 }
 
+VrArrayPtrI32 getVrArrayI32(PyArrayObject* arr){
+	VrArrayPtrI32 out;//=(VrArrayPtrF32)VR_MALLOC(sizeof(VrArrayF32));
+	VR_GET_DATA_I32(out)=(int*)PyArray_DATA(arr);
+	VR_GET_NDIMS_I32(out)=PyArray_NDIM(arr);
+    out.dims = (dim_type*)(VR_MALLOC(sizeof(dim_type) * out.ndims));
+    for( int i = 0; i < out.ndims; i++) {
+        out.dims[i] = PyArray_DIMS(arr)[i];
+    }
+	return out;
+}
 VrArrayPtrF32 getVrArrayF32(PyArrayObject* arr){
 	VrArrayPtrF32 out;//=(VrArrayPtrF32)VR_MALLOC(sizeof(VrArrayF32));
 	VR_GET_DATA_F32(out)=(float*)PyArray_DATA(arr);
 	VR_GET_NDIMS_F32(out)=PyArray_NDIM(arr);
-	VR_GET_DIMS_F32(out)=(dim_type*)PyArray_DIMS(arr);
+    out.dims = (dim_type*)(VR_MALLOC(sizeof(dim_type) * out.ndims));
+    for( int i = 0; i < out.ndims; i++) {
+        out.dims[i] = PyArray_DIMS(arr)[i];
+    }
 	return out;
 }
 

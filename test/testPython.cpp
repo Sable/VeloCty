@@ -7,9 +7,17 @@
 #include<matrix_ops.hpp>
 static PyObject* testBasic(PyObject *self, PyObject *args) 
 {
+    PyArrayObject *obj1;
 	printf("Successful \n");
-	//Py_INCREF(Py_None);
-	return PyLong_FromLong(1);	
+    PyArg_ParseTuple(args, "O!",&PyArray_Type, &obj1);
+    VrArrayPtrI32 C = getVrArrayI32(obj1);
+	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
+	for (int i = 0; i < C.ndims; i++) {
+		dims[i] = C.dims[i];
+        printf("%ld\n",dims[i]);
+	}
+	PyArrayObject* ret = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNewFromData(C.ndims, dims,NPY_INT32,C.data));
+	return PyArray_Return(ret);	
 }
 static PyObject* testMmult(PyObject* self, PyObject *args) {
 	PyArrayObject* obj1, *obj2;

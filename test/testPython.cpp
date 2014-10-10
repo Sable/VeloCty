@@ -42,7 +42,7 @@ static PyObject* testMean(PyObject* self,PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-	double val = mean(A);
+	double val = mean_scalar(A);
 	return PyFloat_FromDouble(val);
 }
 
@@ -52,7 +52,7 @@ static PyObject* testMax(PyObject* self,PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-	double val = max(A);
+	double val = max_scalar(A);
 	return PyFloat_FromDouble(val);
 }
 
@@ -62,7 +62,7 @@ static PyObject* testMin(PyObject* self, PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-	double val = min(A);
+	double val = min_scalar(A);
 	return PyFloat_FromDouble(val);
 }
 

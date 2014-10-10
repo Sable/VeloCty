@@ -14,6 +14,5 @@ void sum(DataType *data, DataType *outData,DimType collapseIndx, DimType collaps
 		for	(int j = 0; j < size; j++) {
 			outData[i] += data[i*size+j*step]; 
 		}
-		
 	}
 }

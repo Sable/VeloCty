@@ -1048,7 +1048,7 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 	}
 	Context tempCntxt; 
 	std::string fnName = funcName;
-	funcName+="(";
+	funcName="(";
 	if(expr->getNargs()>0){
 		tempCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
 		if (tempCntxt.getAllStmt().size() > 0) {
@@ -1067,14 +1067,14 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 	    mapper.getBuiltin(fnName).isArrayOutput()) {
 		  if(mapper.getBuiltin(fnName).isScalOut()){
 		  	if(expr->getArg(0)->getType()->getBasicType() == VType::ARRAY_TYPE) {
-	      		funcName="(*"+genDataMacroStr(expr->getType(),funcName)+")";
+                fnName += "_scalar";
 			}
 		  } else { 
-	      	 funcName="(*"+genDataMacroStr(expr->getType(),funcName)+")";
+            fnName += "_scalar";
 		  }
 	  }
 	}
-	cntxt.addStmt(funcName);	
+	cntxt.addStmt(fnName +funcName);	
 	return cntxt;
 	
 }

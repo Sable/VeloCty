@@ -1,4 +1,6 @@
 #include "library_ops.hpp"
+#include<mean.tpp>
+
 void mean(VrArrayPtrF64 A,double*out){
     dim_type numel = getNumElem(A.dims,A.ndims);
     *out = 0;
@@ -7,6 +9,23 @@ void mean(VrArrayPtrF64 A,double*out){
     }
     *out = (*out)/numel;
 }
+
+double mean_scalar(VrArrayPtrF64 A) {
+    return mean<VrArrayPtrF64,double>(A);
+}
+
+float mean_scalar(VrArrayPtrF32 A) {
+    return mean<VrArrayPtrF32,float>(A);
+}
+
+float complex mean_scalar(VrArrayPtrCF32 A) {
+    return mean<VrArrayPtrCF32,float complex>(A);
+}
+
+double complex mean_scalar(VrArrayPtrCF64 A) {
+    return mean<VrArrayPtrCF64, double complex>(A);
+}
+
 VrArrayPtrF64 mean(VrArrayPtrF64 A) {
 	dim_type collapseDim = getIndexOfFirstNonSingletonDim<VrArrayPtrF64,dim_type>(A);
 	dim_type step = getStep<VrArrayPtrF64,dim_type>(A,collapseDim);

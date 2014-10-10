@@ -17,7 +17,7 @@
 #include<algorithm>
 #include<set>
 #include<map>
-#include<unordered_map>
+#include<tr1/unordered_map>
 #include<iterator>
  #include<node-collector.hpp>
 //#include<memory>
@@ -74,7 +74,7 @@ class BuiltinFunction {
 
 class BuiltinMapper {
 	private :
-		std::unordered_map<std::string, BuiltinFunction> builtinMap;
+		unordered_map<std::string, BuiltinFunction> builtinMap;
 	public :
 	void init() {
 		builtinMap.insert(std::make_pair<std::string,BuiltinFunction>("rand",BuiltinFunction("rand",true,true)));	

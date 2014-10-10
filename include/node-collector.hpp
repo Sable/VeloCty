@@ -1,14 +1,16 @@
 #ifndef __NODE_COLLECTOR__H
 #define __NODE_COLLECTOR__H 
 #include <vraptor.hpp>
-#include <unordered_map>
-#include <unordered_set>
+#include <tr1/unordered_map>
+#include <tr1/unordered_set>
 
-using namespace std;
+// using namespace std;
 using namespace VRaptor;
+using std::tr1::unordered_map;
+using std::tr1::unordered_set;
 namespace VRaptor{
-      typedef std::unordered_set<IndexExprPtr> IndexSet;
-      typedef std::unordered_map<StmtPtr,IndexSet*> IndexMap;
+      typedef unordered_set<IndexExprPtr> IndexSet;
+      typedef unordered_map<StmtPtr,IndexSet*> IndexMap;
   class NodeCollector {
     private :
       IndexMap stmtToIndexExprMap;

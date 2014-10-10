@@ -259,19 +259,9 @@ void NodeCollector::caseStmt(StmtPtr node){
     case Statement::STMT_CONTINUE: // continue statement
         caseContinueStmt(static_cast<ContinueStmtPtr>(node));
         break;
-    case Statement::STMT_BOUNDCHECK: // bound check statement
-        caseBoundCheckStmt(static_cast<BoundCheckStmtPtr>(node));
         break;
     case Statement::STMT_RETURN : //return
         caseReturnStmt(static_cast<ReturnStmtPtr>(node));
-        break;
-    /* case Statement::STMT_REFINCR: // statement refincr */
-    /*     caseRefOpStmt(static_cast<RefOpStmtPtr>(node)); */
-    /*     break; */
-    /* case Statement::STMT_REFDECR: // refDecr */
-    /*     caseRefOpStmt(static_cast<RefOpStmtPtr>(node)); */
-    /*     break; */
-    case Statement::STMT_LIBCALL: // libcall
         break;
     default:
         break;
@@ -283,9 +273,7 @@ void NodeCollector::caseStmtList(StmtListPtr node){
         caseStmt(node->getChild(i));
     }
 }
-void NodeCollector::caseBoundCheckStmt(BoundCheckStmtPtr node){
-    return;
-}
+
 void NodeCollector::caseAssignStmt(AssignStmtPtr node){
     ExpressionPtr rhsExpr = node->getRhs();
     caseExpr(rhsExpr);

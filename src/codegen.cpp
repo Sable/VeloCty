@@ -776,18 +776,8 @@ Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	case Statement::STMT_CONTINUE: // continue statement
 		cntxt = continueStmtCodeGen(static_cast<ContinueStmtPtr> (stmt));
 		break;
-	case Statement::STMT_BOUNDCHECK: // bound check statement
-		break;
 	case Statement::STMT_RETURN : //return
 		cntxt = returnStmtCodeGen(static_cast<ReturnStmtPtr> (stmt), symTable);
-		break;
-	case Statement::STMT_REFINCR: // statement refincr
-		std::cout<<"RefIncr statement not supported"<<std::endl;
-		break;
-	case Statement::STMT_REFDECR: // refDecr
-		std::cout<<"RefDecr statement not supported"<<std::endl;
-		break;
-	case Statement::STMT_LIBCALL: // libcall
 		break;
 	default:
 		break;
@@ -1016,6 +1006,16 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
                 }
                 break;
             }
+        case LibCallExpr::LIB_MIN :
+            {
+                funcName = "min";
+                break;
+            }
+        case LibCallExpr::LIB_MAX :
+            {
+                funcName = "max";
+                break;
+            }
         case LibCallExpr::LIB_MATMULT:
             return matMultCallCodeGen(expr,symTable,lExpr);
             break;
@@ -1038,6 +1038,7 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
             return matLDivCallCodeGen(expr, symTable,lExpr); 
         case LibCallExpr::LIB_MRDIV : 
             return matRDivCallCodeGen(expr,symTable,lExpr); 
+           
         default:
             cout << "error in library call expression \n function not found"<<expr->getLibFunType()
                 <<"Exiting"<<std::endl;
@@ -1485,6 +1486,8 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,Ex
     return cntxt;
 }
 
+
+
 Context VCompiler::notExprCodeGen(NotExprPtr expr, SymTable *symTable) {
     Context cntxt;
     Context baseCntxt = exprTypeCodeGen(expr->getBaseExpr(), symTable);
@@ -1492,6 +1495,7 @@ Context VCompiler::notExprCodeGen(NotExprPtr expr, SymTable *symTable) {
     cntxt.addStmt("(!" + baseStr + "");
     return cntxt;
 }
+
 Context VCompiler::negateExprCodeGen(NegateExprPtr expr, SymTable *symTable) {
     Context cntxt;
     std::string exprStr = "";
@@ -2329,7 +2333,15 @@ Context VCompiler::genBoundCheckStmt(IndexExprPtr expr,SymTable * symTable,bool 
 	cntxt.addStmt(boundFuncStr);
 	return cntxt;
 }
-
+bool VCompiler::requiresCheck(IndexExprPtr expr){
+    IndexVec vec = expr->getIndices();
+    for( int i = 0; i < vec.size(); i++) {
+        if(vec[i].m_isMinBoundsChecked || vec[i].m_isMaxBoundsChecked) {
+            return true;
+        }
+    }
+    return false;
+}
 Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs) {
 	Context cntxt;
 	unordered_set<IndexExprPtr> *indexSet = collector.getIndexSet(stmt);
@@ -2337,7 +2349,7 @@ Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs
 		return cntxt;
 	}
 	else {
-		cntxt.addStmt("#ifdef BOUND_CHECK\n");
+        Context tmpCntxt;
 		unordered_set<IndexExprPtr>::iterator it = indexSet->begin();
 		for(; it !=indexSet->end(); it++) {
 			if(isOnLhs(static_cast<IndexExprPtr>(*it))) {
@@ -2345,8 +2357,12 @@ Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs
 			} else {
 				onLhs = false;
 			}
-			cntxt.addStmtVec(genBoundCheckStmt(*it,symTable,onLhs).getAllStmt());
+            if(requiresCheck(*it)){
+                tmpCntxt.addStmtVec(genBoundCheckStmt(*it,symTable,onLhs).getAllStmt());
+            }
 		}
+		cntxt.addStmt("#ifdef BOUND_CHECK\n");
+        cntxt.addStmtVec(tmpCntxt.getAllStmt());
 		cntxt.addStmt("#endif\n");
 	}
 	return cntxt;

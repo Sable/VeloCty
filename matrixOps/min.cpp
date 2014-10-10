@@ -1,5 +1,15 @@
 #include<library_ops.hpp>
 #include<min.tpp>
+double min_scalar(VrArrayPtrF64 A) {
+    dim_type numel = getNumElem(A.dims,A.ndims);
+    double minVal = DBL_MAX;
+    for(int i = 0; i < numel; i++) {
+       if(A.data[i] < minVal) {
+            minVal = A.data[i];
+        }
+    }
+    return minVal;
+}
 VrArrayPtrF64 min(VrArrayPtrF64 A) {
 	dim_type collapseDim = getIndexOfFirstNonSingletonDim<VrArrayPtrF64,dim_type>(A);
 	dim_type step = getStep<VrArrayPtrF64,dim_type>(A,collapseDim);

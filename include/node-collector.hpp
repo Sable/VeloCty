@@ -57,7 +57,6 @@ namespace VRaptor{
       void caseCastExpr(CastExprPtr expr);
       void caseStmt(StmtPtr node);
       void caseStmtList(StmtListPtr node);
-      void caseBoundCheckStmt(BoundCheckStmtPtr node);
       void caseAssignStmt(AssignStmtPtr node);
       void caseIfStmt(IfStmtPtr node);
       void caseForStmt(ForStmtPtr node);

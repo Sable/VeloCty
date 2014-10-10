@@ -1,5 +1,14 @@
 #include<library_ops.hpp>
 #include<max.tpp>
+
+double max_scalar(VrArrayPtrF64 A) {
+    return max<VrArrayPtrF64,double>(A);     
+}
+
+float max_scalar(VrArrayPtrF32 A) {
+    return max<VrArrayPtrF32,float>(A);     
+}
+
 VrArrayPtrF64 max(VrArrayPtrF64 A) {
 	dim_type collapseDim = getIndexOfFirstNonSingletonDim<VrArrayPtrF64,dim_type>(A);
 	dim_type step = getStep<VrArrayPtrF64,dim_type>(A,collapseDim);

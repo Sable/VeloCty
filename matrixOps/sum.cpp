@@ -8,6 +8,22 @@ void sum(VrArrayPtrF64 a, double *out){
     }
 }
 
+double sum_scalar(VrArrayPtrF64 A) {
+    return sum<VrArrayPtrF64,double>(A);
+}
+
+float sum_scalar(VrArrayPtrF32 A) {
+    return sum<VrArrayPtrF32,float>(A);
+}
+
+float complex sum_scalar(VrArrayPtrCF32 A) {
+    return sum<VrArrayCF32,float complex>(A);
+}
+
+double complex sum_scalar(VrArrayPtrCF64 A){
+    return sum<VrArrayCF64,double complex>(A);    
+}
+
 VrArrayPtrF64 sum(VrArrayPtrF64 A) {
 	dim_type collapseDim = getIndexOfFirstNonSingletonDim<VrArrayPtrF64,dim_type>(A);
 	dim_type step = getStep<VrArrayPtrF64,dim_type>(A,collapseDim);

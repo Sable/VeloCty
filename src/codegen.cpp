@@ -1908,7 +1908,10 @@ std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symT
     for( int i = 1; i < vec.size(); i++ ) {
         exprStr += "," + exprTypeCodeGen(vec[i].m_val.m_expr,symTable).getAllStmt()[0];
     }
-    exprStr += ","+itoa(!isRowMajor(id,symTable))+")"; 
+    if( vec.size() >1) {
+        exprStr += ","+itoa(!isRowMajor(id,symTable)); 
+    }
+    exprStr += ")";
     return exprStr;
 }
 

@@ -135,12 +135,12 @@ static PyObject* testHorzcat(PyObject* self, PyObject *args) {
 }
 
 static PyObject* testZeros(PyObject* self, PyObject *args) {
-    VrArrayF64 C = zeros_double(1,3);
+    VrArrayF32 C = zeros_float(2,3,3);
 	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
 	for (int i = 0; i < C.ndims; i++) {
 		dims[i] = C.dims[i];
 	}
-	PyArrayObject* ret = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNewFromData(C.ndims, dims,NPY_FLOAT64,C.data));
+	PyArrayObject* ret = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNewFromData(C.ndims, dims,NPY_FLOAT32,C.data));
 	Py_INCREF(ret);
 	return PyArray_Return(ret);
 }
@@ -173,7 +173,7 @@ static PyObject* testIndexVal(PyObject* self, PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-    return PyLong_FromLong(getIndexVal<VrArrayPtrF64>(A,2,VrIndex(-1),VrIndex(-2)));
+    return PyLong_FromLong(getIndexVal_spec<VrArrayPtrF64>(A,1,2,0));
     
 }
 static PyMethodDef testPythonMethods[] = 

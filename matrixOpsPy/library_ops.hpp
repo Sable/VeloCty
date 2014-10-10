@@ -28,6 +28,7 @@ VrArrayPtrF64 eye(dim_type m);
 VrArrayPtrF64 randi(double max,dim_type,dim_type);
 long length(VrArrayPtrF64);
 VrArrayPtrF64 zeros_double(int,...);
+VrArrayPtrF32 zeros_float(int,...);
 VrArrayPtrI32 zeros_int(int,...);
 VrArrayPtrF64 ones(int,...);
 VrArrayPtrF64 abs(VrArrayPtrF64);

@@ -39,7 +39,8 @@ def testVertCat() :
     print("vertcat successfully passed")
 def testZeros() :
     a = testPython.testZeros()
-    print(a.ndim)
+    print(a.dtype)
+    print(a)
 def testZeros_int() :
     a = testPython.testZeros_int()
     print(a.ndim)
@@ -47,9 +48,10 @@ def testOnes() :
     a = testPython.testOnes()
     print(a)
 def testIndexVal() :
-    a = numpy.random.rand(4,4)
+    a = numpy.zeros([35,12],order='C')
     b = testPython.testIndexVal(a)
-    assert (a[-1][-2] == a.flatten()[b]), 'IndexVal failed'
+    print(b)
+    #assert (a[-1][-2] == a.flatten()[b]), 'IndexVal failed'
 def testBasic() :
     a = numpy.zeros([3,3],dtype=numpy.int)
     b = testPython.testBasic(a)
@@ -61,8 +63,9 @@ def testBasic() :
 #testVertCat()
 #testZeros_int()
 #testOnes()
-#testIndexVal()
+testIndexVal()
 #testSlice()
 #testSetSlice()
-testBasic()
+#testBasic()
+#testZeros()
 print("all test cases passed successfully ")

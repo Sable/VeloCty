@@ -30,6 +30,39 @@ long length(VrArrayPtrF64 A){
 	}
 	return max;
 }
+VrArrayPtrF32 zeros_float(int nargs,...){
+	va_list args;
+	
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+  
+  ndims = nargs;
+  dim_type *dims= (dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
+  va_start(args,nargs);
+  for(int i = 0; i < nargs; i++){
+      dims[i] = va_arg(args,int);
+      if(dims[i] < 0) {
+          VR_PRINT_ERR("Dimensions have to be greater than 0");
+      }
+      if (dims[i] == 0) {
+          zeroFlag = true;
+      }
+  }
+  va_end(args);
+  VrArrayPtrF32 c;
+  if (!zeroFlag) {
+     c = vrAllocArrayF32RM(ndims,0,dims);
+     
+  }else {
+    c =  vrAllocArrayF32RM(ndims,2,dims);
+  }
+  return c;
+}
+
 VrArrayPtrF64 zeros_double(int nargs,...){
 	va_list args;
 	

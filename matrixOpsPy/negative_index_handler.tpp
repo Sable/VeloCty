@@ -63,7 +63,9 @@ long getIndexVal_spec(ArrayType arr, long row, long col, long index_3, int layou
     // Row major layout
     if(layout == 0) {
         return row *arr.dims[1]* arr.dims[2] + col * arr.dims[1] + index_3;
-    } else { // Column Major layout
+    } else if(layout == 1) { // Column Major layout
         return index_3 *arr.dims[0]* arr.dims[1] + col * arr.dims[0] + row;
+    } else{
+        printf("Not currently supported\n Stride major in getindexVal\n");
     }
 }

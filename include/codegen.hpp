@@ -267,6 +267,7 @@ public:
 	Context funcCodeGen(VFunction *func);
 	Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);
 	Context forStmtCodeGen(ForStmtPtr stmt, SymTable *symtable);
+	Context exprStmtCodeGen(ExprStmtPtr stmt, SymTable *symtable);
 	Context assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable);
 	Context nameExprCodeGen(NameExprPtr expr, SymTable *symTable);
     bool isNegativeConst(IndexStruct index);

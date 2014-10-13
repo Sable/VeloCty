@@ -785,10 +785,19 @@ Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	case Statement::STMT_RETURN : //return
 		cntxt = returnStmtCodeGen(static_cast<ReturnStmtPtr> (stmt), symTable);
 		break;
+    case Statement::STMT_EXPRESSION :
+         cntxt = exprStmtCodeGen(static_cast<ExprStmtPtr>(stmt), symTable);
+         break;
 	default:
 		break;
 	}
 	return cntxt;
+}
+
+Context VCompiler::exprStmtCodeGen(ExprStmtPtr stmt, SymTable* symTable) {
+    Context cntxt;
+    cntxt.addStmt(exprTypeCodeGen(stmt->getExpr(), symTable).getAllStmt()[0] + ";\n");
+    return cntxt;
 }
 
 Context VCompiler::eqExprCodeGen(EqExprPtr expr, SymTable *symTable){

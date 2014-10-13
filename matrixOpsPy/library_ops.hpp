@@ -95,6 +95,8 @@ dim_type* size(VrArrayPtrCF64 arr);
 dim_type size(VrArrayPtrCF64 arr,dim_type dimIndex);
 dim_type* size(VrArrayPtrF32 arr);
 dim_type size(VrArrayPtrF32 arr,dim_type dimIndex);
+dim_type* size(VrArrayPtrI32 arr);
+dim_type size(VrArrayPtrI32 arr,dim_type dimIndex);
 dim_type* size(VrArrayPtrCF32 arr);
 dim_type size(VrArrayPtrCF32 arr,dim_type dimIndex);
 //dim_type flatten(dim_type * dims, dim_type start, dim_type ndims);

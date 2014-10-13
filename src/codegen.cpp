@@ -884,25 +884,39 @@ Context VCompiler::exprTypeCodeGen(ExpressionPtr expr, SymTable *symTable,Expres
 		break; 
 	case Expression::TUPLE_EXPR:
 		cntxt = tupleExprCodeGen(static_cast<TupleExprPtr>(expr),symTable);
-		break;case Expression::ALLOC_EXPR: // alloc expression
+		break;
+    case Expression::ALLOC_EXPR: // alloc expression
 		cntxt=allocExprCodeGen(static_cast<AllocExprPtr>(expr),symTable);
 		break;
 	case Expression::IMAG_EXPR : // imaginary expression
+        std::cout<<"This is an issue"<<std::endl;
+        exit(0);
 		break;
 	case Expression::REAL_EXPR: // real expressions
 		break;
-	/* case Expression::REDUCE_EXPR: // reduce expressions */
-	/* 	break; */
+    case Expression::COMPLEX_EXPR :
+        cntxt = complexExprCodeGen(static_cast<ComplexExprPtr>(expr), symTable); 
+        break;            
 	case Expression::CAST_EXPR: // cast expression
         cntxt = castExprCodeGen(static_cast<CastExprPtr>(expr),symTable); 
 		break;
 	default:
         std::cout<<"Expression not supported "<<expr->getExprType()<<std::endl;
+        exit(0);
 		break;
 
 	}
 	return cntxt;
 }
+
+Context VCompiler::complexExprCodeGen(ComplexExprPtr expr, SymTable *symTable) {
+   Context cntxt;
+    std::string realExprStr = exprTypeCodeGen(expr->getReal(),symTable).getAllStmt()[0]; 
+    std::string imagExprStr = exprTypeCodeGen(expr->getImag(),symTable).getAllStmt()[0];
+    cntxt.addStmt("(" + realExprStr + " + " + imagExprStr+ " * I )");
+    return cntxt;
+}
+
 Context VCompiler::castExprCodeGen(CastExprPtr expr, SymTable *symTable) {
     Context cntxt;
     cntxt.addStmt("static_cast<"+vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0] + ">("+exprTypeCodeGen(expr->getBaseExpr(),symTable).getAllStmt()[0] +")");
@@ -947,6 +961,7 @@ Context VCompiler::allocExprCodeGen(AllocExprPtr expr, SymTable* symTable){
             cntxt.addStmt("ones_"+ typeStr +"("+itoa(expr->getNargs())+","+generateArgs(expr->getArgs(),symTable,true,"int")+")");
             break;
         case AllocExpr::ALLOC_EMPTY:
+            cntxt.addStmt("empty_"+ typeStr +"("+itoa(expr->getNargs())+","+generateArgs(expr->getArgs(),symTable,true,"int")+")");
             break;
         default:
 #ifdef DEBUG

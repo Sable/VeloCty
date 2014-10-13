@@ -29,6 +29,7 @@ inline long getIndexVal_spec(ArrayType arr, long row,  long col,int layout=0) {
     if( row < 0) {
       row = arr.dims[0] - row;  
     }
+
     if(col < 0) {
       col = arr.dims[1] - col;
     }

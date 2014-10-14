@@ -1973,6 +1973,10 @@ std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     IndexVec vec=expr->getIndices();
     string indexStr="";
     std::string exprStr;	
+    if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
+        std::cout<<" Python type indexing not completely supported. Not currently supported"<<std::endl;
+        exit(0);
+    }
     bool rowMajor = isRowMajor(id, symTable);
     if (rowMajor && !isNegativeIndex(expr)) {
         std::reverse(vec.begin(),vec.end());

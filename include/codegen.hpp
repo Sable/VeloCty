@@ -229,6 +229,8 @@ private:
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
 public:
     bool isNegativeIndex( IndexExprPtr expr);
+    std::string genIndexPtrFunc() const;
+    std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);
     std::vector<string> getIndexTemps( int n );
     VCompiler():tempVarStr("vrTempVec"),tempIterStr("vrTempIter"),moduleName("default"){
         scalSet = new set<string>();

@@ -13,7 +13,16 @@
 #define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
+#else 
+bool memOptmise = false;
 #endif
+#define PRELIM_BOUNDS
+#ifdef PRELIM_BOUNDS
+bool prelim_bounds = true;
+#else 
+bool prelim_bounds = true;
+#endif
+
 using namespace VRaptor;
 using namespace std;
 
@@ -1951,7 +1960,7 @@ std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symT
 
 std::string VCompiler::genNegativeIndexStr(IndexExprPtr expr , SymTable *symTable) {
     if(canSpecialiseNegativeIndex(expr->getIndices())) {
-       return genSpecNegativeIndexStr(expr, symTable);
+        return genSpecNegativeIndexStr(expr, symTable);
     } 
     int id=expr->getArrayId();
     std::string arrayName=symTable->getName(id); 
@@ -1966,6 +1975,30 @@ std::string VCompiler::genNegativeIndexStr(IndexExprPtr expr , SymTable *symTabl
     return exprStr;
 }
 
+std::string VCompiler::genIndexPtrFunc() const {
+    return "getIndexPtr"; 
+}
+
+std::string VCompiler::genIndexPtrStr(IndexExprPtr expr, SymTable *symTable) {
+    std::string funcStr = genIndexPtrFunc(); 
+    funcStr += "<" + vTypeCodeGen(expr->getType(), symTable).getAllStmt()[0] + ">";
+    funcStr += "(";
+    IndexVec vec = expr->getIndices();
+    for( int i = 0; i < vec.size(); i++) {
+        if(vec[i].m_isExpr) {
+            funcStr += exprTypeCodeGen(vec[i].m_val.m_expr, symTable).getAllStmt()[0];
+        }
+        else {
+            std::cout<<"Slicing not supported in indexPtrStr"<<std::endl;
+            exit(0);
+        }
+        if( i != vec.size() - 1) {
+            funcStr += ", ";
+        }
+    }
+    funcStr +=")";
+    return funcStr;
+}
 std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     std::string declStr ="";
     int id=expr->getArrayId();
@@ -1974,8 +2007,7 @@ std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     string indexStr="";
     std::string exprStr;	
     if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
-        std::cout<<" Python type indexing not completely supported. Not currently supported"<<std::endl;
-        exit(0);
+        return genIndexPtrStr(expr, symTable);
     }
     bool rowMajor = isRowMajor(id, symTable);
     if (rowMajor && !isNegativeIndex(expr)) {
@@ -1986,7 +2018,7 @@ std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
         exit(0);
     }
     if(isNegativeIndex(expr)) {
-        return genNegativeIndexStr(expr, symTable);
+        return genDataStr(symTable->getType(id),arrayName)+"["+genNegativeIndexStr(expr, symTable)+"]";
     } 
     for (int i = 0;i < vec.size();i++) {
         if (vec[i].m_isExpr) {		
@@ -2014,7 +2046,7 @@ std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     for (int i=0;i<vec.size()-1;i++) {
         indexStr+=")";	 
     }
-    return indexStr;
+    return genDataStr(symTable->getType(id),arrayName)+"["+indexStr+"]";
 }
 
 bool VCompiler::isSlice(IndexExprPtr expr) {
@@ -2086,7 +2118,7 @@ Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable,Expre
     std::string arrayName=symTable->getName(id); 
     if(!isSlice(expr)){
         string indexStr=genIndexStr(expr,symTable);
-        cntxt.addStmt(genDataStr(symTable->getType(id),arrayName)+"["+indexStr+"]");
+        cntxt.addStmt(indexStr);
     } else {
         cntxt.addStmt(handleArraySlicing(expr,symTable,lhsExpr));
     }

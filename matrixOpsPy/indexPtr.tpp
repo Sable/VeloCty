@@ -6,11 +6,11 @@ ArrayType getIndexPtrImpl(ArrayType A, dim_type nIndices, dim_type * indices) {
         multiplier *= A.dims[i];
     }
 
-    for(int i = nIndices - 1; i >=0; i++) {
+    for(int i = nIndices - 1; i >= 0; i--) {
         offset +=  indices[i] * multiplier; 
         multiplier *= A.dims[i];
     } 
-    dim_type * dims  = VR_MALLOC(sizeof(dim_type) * (A.ndims - nIndices));      
+    dim_type * dims  = static_cast<dim_type*>(VR_MALLOC(sizeof(dim_type) * (A.ndims - nIndices)));      
     memcpy(dims,A.dims, sizeof(dim_type) * (A.ndims - nIndices)); 
     return ArrayType(&A.data[offset], dims, A.ndims - nIndices); 
 }
@@ -18,12 +18,13 @@ ArrayType getIndexPtrImpl(ArrayType A, dim_type nIndices, dim_type * indices) {
 template<class ArrayType>
 ArrayType getIndexPtr(ArrayType A, dim_type nIndices, ...) {
     va_list args;     
-    dim_type *indices = VR_MALLOC(sizeof(dim_type) * nIndices);
+    dim_type *indices =static_cast<dim_type*>( VR_MALLOC(sizeof(dim_type) * nIndices));
     va_start(args,nIndices);
     for(int i = 0; i < nIndices; i++) {
         indices[i] = va_arg(args,dim_type);
     }
-    return getIndexPtrImpl(A, nIndices, indices); 
+    va_end(args);
+    return getIndexPtrImpl<ArrayType>(A, nIndices, indices); 
 }
 
 template<class ArrayType>
@@ -31,7 +32,7 @@ ArrayType getIndexPtrSpec(ArrayType A, dim_type row) {
     va_list args;     
     dim_type indices[1];
     indices[0] = row; 
-    return getIndexPtrImpl(A,1, indices); 
+    return getIndexPtrImpl<ArrayType>(A,1, indices); 
 }
 
 template<class ArrayType>

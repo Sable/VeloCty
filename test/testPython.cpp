@@ -36,6 +36,22 @@ static PyObject* testMmult(PyObject* self, PyObject *args) {
 	return PyArray_Return(ret);
 }
 
+static PyObject* testIndexPtr(PyObject* self,PyObject *args) {
+    PyArrayObject *obj1;
+    PyArg_ParseTuple(args, "O!",&PyArray_Type, &obj1);
+    VrArrayF64 A = getVrArrayF64(obj1);
+    printf("%d %d\n",A.ndims, A.dims[1]);
+    VrArrayF64 C = getIndexPtr<VrArrayF64>(A,1,1);
+	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
+	for (int i = 0; i < C.ndims; i++) {
+		dims[i] = C.dims[i];
+	}
+	PyArrayObject* ret = reinterpret_cast<PyArrayObject*>(PyArray_SimpleNewFromData(C.ndims, dims,NPY_FLOAT64,C.data));
+	Py_INCREF(ret);
+	return PyArray_Return(ret);	
+    // Py_INCREF(Py_None);
+    // return Py_None;
+}
 static PyObject* testMean(PyObject* self,PyObject *args) {
 	PyArrayObject* obj1;
 	if(!PyArg_ParseTuple(args, "O!",&PyArray_Type, &obj1)){
@@ -191,6 +207,7 @@ static PyMethodDef testPythonMethods[] =
 	{"testZeros_int", testZeros_int, METH_VARARGS, "Testing Zeros"},
 	{"testOnes", testOnes, METH_VARARGS, "Testing Ones"},
 	{"testIndexVal", testIndexVal, METH_VARARGS, "Testing IndexVal"},
+	{"testIndexPtr", testIndexPtr, METH_VARARGS, "Testing IndexPtr"},
 	{NULL,NULL,0,NULL}
 };
  static struct PyModuleDef testPythonModule = {

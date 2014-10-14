@@ -56,14 +56,20 @@ def testBasic() :
     a = numpy.zeros([3,3],dtype=numpy.int)
     b = testPython.testBasic(a)
     print(b)
-    
+def testIndexPtr() :
+    a = numpy.random.rand(3,3)
+    b = testPython.testIndexPtr(a)
+    #assert a[1] == b, 'IndexPtr failed'     
+    print(a)
+    print(b)
 #testMean()
 #testMax()
 #testMin()
 #testVertCat()
 #testZeros_int()
 #testOnes()
-testIndexVal()
+#testIndexVal()
+testIndexPtr()
 #testSlice()
 #testSetSlice()
 #testBasic()

@@ -88,38 +88,40 @@ void VCompiler::initLibCallSet() {
     /* libCallSet.insert(LibCallExpr::LIB_MRDIV); */
 }
 void VCompiler::setOpenMpFlag(bool val){
-	enableOpenMP = true;
+    enableOpenMP = true;
 }
 Context VCompiler::moduleCodeGen(VModule *vm) {
-	Context cntxt;
-	mapper.init();
+    Context cntxt;
+    mapper.init();
     currModule = vm;
-	setOpenMpFlag(true);
-	cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
-	vector<VFunction*> funcList = vm->getFns();
+    setOpenMpFlag(true);
+    cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
+    vector<VFunction*> funcList = vm->getFns();
 #ifdef DEBUG
-	std::cout<<"generating header file"<<std::endl;
+    std::cout<<"generating header file"<<std::endl;
 #endif
-	genHeaderFile(vm);
+    genHeaderFile(vm);
 #ifdef DEBUG
-	std::cout<<"generating code in module "<<std::endl;
+    std::cout<<"generating code in module "<<std::endl;
 #endif 
-	for (int i = 0; i < funcList.size(); i++) {
-		std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
-		if(funcList[i]->getName().compare("pForFunc") == 0) {
-			continue;
-		}
-		currFunction = funcList[i];
+    for (int i = 0; i < funcList.size(); i++) {
+        std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
+        if(funcList[i]->getName().compare("pForFunc") == 0) {
+            continue;
+        }
+        currFunction = funcList[i];
         std::map<StmtPtr,LoopInfo*> infoMap;
         std::set<StmtPtr>topLoops; 
         LoopInfo::getLoopInfoMap(funcList[i], infoMap, topLoops);
-        VRaptor::prelimBCE(funcList[i], infoMap);
-		Context tempCntxt = funcCodeGen(funcList[i]);
-		for (int j = 0; j < tempCntxt.getAllStmt().size(); j++) {
-			cntxt.addStmt(tempCntxt.getAllStmt()[j]);
-		}
-	}
-	return cntxt;
+        if(prelim_bounds) {
+            VRaptor::prelimBCE(funcList[i], infoMap);
+        }
+        Context tempCntxt = funcCodeGen(funcList[i]);
+        for (int j = 0; j < tempCntxt.getAllStmt().size(); j++) {
+            cntxt.addStmt(tempCntxt.getAllStmt()[j]);
+        }
+    }
+    return cntxt;
 }
 
 std::string VCompiler::genFuncStructName(VFunction * func) {

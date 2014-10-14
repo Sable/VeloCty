@@ -72,7 +72,7 @@ static PyObject* testSlice(PyObject* self, PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-    VrArrayF64 B = ones(1,3);
+    VrArrayF64 B = ones_double(1,3);
 	VrArrayF64 C = A.sliceArraySpec(VrIndex(1,3,1));
 	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
 	for (int i = 0; i < C.ndims; i++) {
@@ -89,7 +89,7 @@ static PyObject* testSetSlice(PyObject* self, PyObject *args) {
 		return NULL;
 	}
 	VrArrayF64 A = getVrArrayF64(obj1);
-    VrArrayF64 B = ones(2,4,3);
+    VrArrayF64 B = ones_double(2,4,3);
     A.setArraySliceSpec(B,VrIndex(1,5,1));
 	VrArrayF64 C  = A; 
 	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
@@ -157,7 +157,7 @@ static PyObject* testZeros_int(PyObject* self, PyObject *args) {
 }
 
 static PyObject* testOnes(PyObject* self, PyObject *args) {
-    VrArrayF64 C = ones(1,3);
+    VrArrayF64 C = ones_double(1,3);
 	long *dims = static_cast<long*>(VR_MALLOC(sizeof(long)*C.ndims));
 	for (int i = 0; i < C.ndims; i++) {
 		dims[i] = C.dims[i];

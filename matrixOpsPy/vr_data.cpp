@@ -18,7 +18,6 @@ VrArrayF64::VrArrayF64(dim_type ndims,dim_type *dims) {
 	this->dims = dims;
 	this->ndims = ndims;
 	data = static_cast<double*>(VR_MALLOC(sizeof(double) * numel));	
-	memset(data,0,sizeof(double) * numel);
 }
 //Slice
 VrArrayPtrF64 VrArrayF64::sliceArray(int nargs, ...){
@@ -126,4 +125,25 @@ dim_type *dims;
 		dims[i] = getRange<dim_type>(indices[i]);
 	}
 	return dims;
+}
+
+VrArrayI64::VrArrayI64(dim_type ndims, dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<long*>(VR_MALLOC(sizeof(long) * numel));	
+}
+
+VrArrayF32::VrArrayF32(dim_type ndims, dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<float*>(VR_MALLOC(sizeof(float) * numel));	
+}
+
+VrArrayI32::VrArrayI32(dim_type ndims, dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<int*>(VR_MALLOC(sizeof(int) * numel));	
 }

@@ -70,6 +70,7 @@ typedef struct VrArrayF32{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayF32 operator()(int nargs, ...);
+  VrArrayF32(dim_type ndims, dim_type* dims);
 }VrArrayF32;
 
 typedef struct VrArrayI64{
@@ -79,6 +80,8 @@ typedef struct VrArrayI64{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayI64 operator()(int nargs, ...);
+  VrArrayI64(dim_type ndims, dim_type* dims);
+  VrArrayI64(){}
 }VrArrayI64;
 
 typedef struct VrArrayI32{
@@ -88,6 +91,8 @@ typedef struct VrArrayI32{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayI32 operator()(int nargs, ...);
+  VrArrayI32(dim_type ndims, dim_type* dims);
+  VrArrayI32(){}
 }VrArrayI32;
 
 typedef struct VrArrayCF64{

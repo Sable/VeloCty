@@ -107,10 +107,6 @@ dim_type* size(VrArrayPtrI32 arr);
 dim_type size(VrArrayPtrI32 arr,dim_type dimIndex);
 dim_type* size(VrArrayPtrCF32 arr);
 dim_type size(VrArrayPtrCF32 arr,dim_type dimIndex);
-//dim_type flatten(dim_type * dims, dim_type start, dim_type ndims);
-//bool exceedsMaxIndex(dim_type nIndices, VrIndex * indices, dim_type *dims,dim_type ndims);
-//bool checkOneIndices(VrIndex *indices, int start,int ndims);
-//dim_type getMinIndex(dim_type nIndices, VrIndex * indices, dim_type *dims);
 
 #endif
 

@@ -220,6 +220,7 @@ private:
     std::string genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool  canSpecialiseNegativeIndex(IndexVec vec); 
     bool canSpecialiseArraySlice(IndexVec vec);
+    bool canElimChecks(ForStmtPtr stmt, SymTable *symTable);
     std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
     bool isSpecSlice(AssignStmtPtr stmt);
     bool  canSpecBoundCheckStmt(IndexVec vec); 

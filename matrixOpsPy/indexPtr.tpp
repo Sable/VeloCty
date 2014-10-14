@@ -49,6 +49,6 @@ ArrayType getIndexPtrSpec(ArrayType A, dim_type row, dim_type col,dim_type index
     dim_type indices[3];
     indices[0] = row; 
     indices[1] = col;
-    indices[2] = index_3
+    indices[2] = index_3;
     return getIndexPtrImpl(A,3, indices); 
 }

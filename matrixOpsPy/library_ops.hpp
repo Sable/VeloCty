@@ -12,6 +12,7 @@
 #include<dim-handler.hpp>
 #include<library_ops.tpp>
 #include<negative_index_handler.tpp>
+#include<indexPtr.tpp>
 #include<boundcheck.tpp>
 #define mod(x,y) ((long)x%(long)y)
 bool isVector(dim_type* dims,dim_type ndims);

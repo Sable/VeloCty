@@ -148,7 +148,7 @@ VrArrayPtrI32 zeros_int(int nargs,...){
   }
   return c;
 }
-VrArrayPtrF64 ones(int nargs,...){
+VrArrayPtrF64 ones_double(int nargs,...){
 	va_list args;
   int ndims = 0;
   bool zeroFlag = false;
@@ -493,5 +493,118 @@ float complex cexp(float complex scalVal) {
   return cexpf(scalVal);
 }
 
+VrArrayPtrF64 empty_double(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
 
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    VrArrayPtrF64 c(nargs,dims);
+    va_end(args);
+    return c;
+}
 
+VrArrayPtrI64 empty_long(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    VrArrayPtrI64 c(nargs,dims);
+    va_end(args);
+    return c;
+}
+
+VrArrayPtrF32 empty_float(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    VrArrayPtrF32 c(nargs,dims);
+    va_end(args);
+    return c;
+}
+
+VrArrayPtrI32 empty_int(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    VrArrayPtrI32 c(nargs,dims);
+    va_end(args);
+    return c;
+}

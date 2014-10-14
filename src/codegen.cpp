@@ -7,9 +7,6 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-#include<vrloopinfo.hpp>
-#include "vrPrelimBCE.hpp"
-#include<sstream>
 #define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
@@ -110,8 +107,6 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
             continue;
         }
         currFunction = funcList[i];
-        std::map<StmtPtr,LoopInfo*> infoMap;
-        std::set<StmtPtr>topLoops; 
         LoopInfo::getLoopInfoMap(funcList[i], infoMap, topLoops);
         if(prelim_bounds) {
             VRaptor::prelimBCE(funcList[i], infoMap);

@@ -19,12 +19,10 @@
 #include<map>
 #include<tr1/unordered_map>
 #include<iterator>
+#include<vrloopinfo.hpp>
+#include "vrPrelimBCE.hpp"
  #include<node-collector.hpp>
-//#include<memory>
 
-#define DIM_OFFSET 32
-#define SIZE_OFFSET 20
-#define DATA_OFFSET 16
 using std::vector;
 using std::string;
 using std::set;
@@ -116,6 +114,8 @@ private:
 	int maxTempIterId;
 	std::string tempVarStr;
 	std::string tempIterStr;
+    std::map<StmtPtr,LoopInfo*> infoMap;
+    std::set<StmtPtr>topLoops; 
 	int structVarId;
 	VFunction *currFunction;
 	Context headerCntxt;

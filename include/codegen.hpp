@@ -27,7 +27,7 @@ using std::vector;
 using std::string;
 using std::set;
 namespace VRaptor {
-
+    typedef  unordered_map<ForStmtPtr, IndexSet> ForToIndexMap;
 
 /*! \brief Class to  hold the generated code.
      The generated code is stored as a vector of strings. A context class object may also stored additional data that can be sent back .
@@ -220,7 +220,7 @@ private:
     std::string genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool  canSpecialiseNegativeIndex(IndexVec vec); 
     bool canSpecialiseArraySlice(IndexVec vec);
-    bool canElimChecks(ForStmtPtr stmt, SymTable *symTable);
+    void getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet );
     std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
     bool isSpecSlice(AssignStmtPtr stmt);
     bool  canSpecBoundCheckStmt(IndexVec vec); 

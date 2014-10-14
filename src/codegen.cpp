@@ -2190,9 +2190,8 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 			cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
 		}
 	}
-    if(canElimChecks(stmt, symTable)) {
-        std::cout<<"success"<<std::endl;
-    }
+    IndexSet indexSet;
+    getIndexElimSet(stmt, symTable, indexSet);
 	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	vector<string> bodyVec = bodyCntxt.getAllStmt();
 	for (int i = 0; i < bodyVec.size(); i++) {
@@ -2204,8 +2203,12 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 	return cntxt;
 }
 
-bool VCompiler::canElimChecks(ForStmtPtr stmt, SymTable *symTable) {
-   return true; 
+void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
+    if(infoMap.find(stmt) != infoMap.end()) {
+       LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+        std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
+    } else {
+    }
 }
 
 Context VCompiler::getOriginalArrStr(NameExprPtr expr, SymTable * symTable){

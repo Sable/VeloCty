@@ -2206,9 +2206,11 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
     if(infoMap.find(stmt) != infoMap.end()) {
        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+        std::vector<int> itervar = stmt->getIterVars();
+        unordered_set<int> itervarSet(itervar.begin(), itervar.end());
+        IndexSet set = getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()));
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
-    } else {
-        return;
+        std::cout<<"Set size "<<set.size()<<std::endl;
     }
 }
 
@@ -2220,9 +2222,34 @@ IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered
             set.insert(indices[i].m_iexpr);
         }
     }
+    return set;
 }
 
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable) {
+    if(!indexInfo.m_isRegularIndex) {
+        std::cout<<"Not a regular index"<<std::endl;
+        return false;
+    } 
+    IndexExprPtr indexExpr = indexInfo.m_iexpr;  
+    IndexVec vec = indexExpr->getIndices();
+    for( int i = 0; i < vec.size(); i++) {
+        if(!vec[i].m_isExpr) {
+            std::cout<<"Not an expr index"<<std::endl;
+            return false;
+        }
+        Expression::ExprType type = vec[i].m_val.m_expr->getExprType();
+        if(type != Expression::NAME_EXPR && type != Expression::CONST_EXPR) {
+            std::cout<<"Not a name expression"<<std::endl;
+            return false;
+        }
+        if(type == Expression::NAME_EXPR) {
+            NameExprPtr nameExpr = static_cast<NameExprPtr>(vec[i].m_val.m_expr);
+            if( itervarSet.find(nameExpr->getId()) ==  itervarSet.end()) {
+                std::cout<<"Not in itervar set "<<nameExpr->getId()<<std::endl;
+                return false;
+            }
+        }
+    }
     return true;
 }
 

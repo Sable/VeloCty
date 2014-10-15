@@ -2208,17 +2208,21 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
         std::vector<int> itervar = stmt->getIterVars();
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
-        IndexSet set = getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()));
+        unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
+        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap);
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
-        std::cout<<"Set size "<<set.size()<<std::endl;
+        // std::cout<<"Set size "<<set.size()<<std::endl;
     }
 }
 
-IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain) {
+void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap) {
     std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
     IndexSet set;
     for(int i = 0; i < indices.size(); i++ ) {
         if(usedIndices.find(indices[i].m_iexpr) != usedIndices.end())  {
+            continue;
+        }
+        if(!requiresCheck(indices[i].m_iexpr)) {
             continue;
         }
         if(isValidIndex(indices[i],itervarSet, domain, symTable, info)) {
@@ -2226,7 +2230,14 @@ IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered
             usedIndices.insert(indices[i].m_iexpr);
         }
     }
-    return set;
+    std::vector<StmtPtr> childLoops  = info->m_childLoops;
+    for (int  i = 0; i < childLoops.size(); i++ ) {
+        if(childLoops[i]->getStmtType() == Statement::STMT_FOR) {
+            ForStmtPtr forStmt = static_cast<ForStmtPtr>(childLoops[i]);
+            std::vector<int> itervar = forStmt->getIterVars();
+            itervarSet.insert(itervar.begin(), itervar.end());
+        }  
+    }   
 }
 
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {

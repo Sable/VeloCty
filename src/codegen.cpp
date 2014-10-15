@@ -2208,7 +2208,22 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
     } else {
+        return;
     }
+}
+
+IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain) {
+    std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
+    IndexSet set;
+    for(int i = 0; i < indices.size(); i++ ) {
+        if(isValidIndex(indices[i],itervarSet, domain, symTable)) {
+            set.insert(indices[i].m_iexpr);
+        }
+    }
+}
+
+bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable) {
+    return true;
 }
 
 Context VCompiler::getOriginalArrStr(NameExprPtr expr, SymTable * symTable){

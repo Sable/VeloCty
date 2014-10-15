@@ -2218,14 +2218,14 @@ IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered
     std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
     IndexSet set;
     for(int i = 0; i < indices.size(); i++ ) {
-        if(isValidIndex(indices[i],itervarSet, domain, symTable)) {
+        if(isValidIndex(indices[i],itervarSet, domain, symTable, info)) {
             set.insert(indices[i].m_iexpr);
         }
     }
     return set;
 }
 
-bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable) {
+bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
     if(!indexInfo.m_isRegularIndex) {
         std::cout<<"Not a regular index"<<std::endl;
         return false;
@@ -2244,7 +2244,8 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
         }
         if(type == Expression::NAME_EXPR) {
             NameExprPtr nameExpr = static_cast<NameExprPtr>(vec[i].m_val.m_expr);
-            if( itervarSet.find(nameExpr->getId()) ==  itervarSet.end()) {
+            if((itervarSet.find(nameExpr->getId()) ==  itervarSet.end()) &&
+                    (info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end())) {
                 std::cout<<"Not in itervar set "<<nameExpr->getId()<<std::endl;
                 return false;
             }

@@ -229,8 +229,8 @@ private:
     bool isOnLhs(IndexExprPtr expr);
     Context handleArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable* symTable);
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
-    void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap);
-    bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
+    void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt);
+    bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info,LoopInfo *currLoopInfo);
 public:
     bool isNegativeIndex( IndexExprPtr expr);
     std::string genIndexPtrFunc() const;

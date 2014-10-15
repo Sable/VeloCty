@@ -172,45 +172,20 @@ void LoopCollector::caseVRange(VRange* node){
     return;
 }
 void LoopCollector::caseIndexExpr(IndexExprPtr node){
-    addToMap(currStmt,node);
-    bool hasColon = false;
-    IndexVec vec = node->getIndices();
-    for(int i =0; i < vec.size(); i++) {
-        if(vec[i].m_isExpr){
-			if(vec[i].m_val.m_expr->getType()->getBasicType()== VType::ARRAY_TYPE) {
-				hasColon = true;
-			}
-            caseExpr(vec[i].m_val.m_expr);
-        }else{
-            caseVRange(vec[i].m_val.m_range);
-            hasColon = true;
-
-        }
-    }
-    if(hasColon) {
-        addToColonSet(node);
-    }
-	if(onLhs) {
-		addToLhsSet(node);
-	}
 
 }
 
 void LoopCollector::caseLibCallExpr(LibCallExprPtr expr){
-	for(int i = 0; i < expr->getNargs(); i++) {
-		caseExpr(expr->getArg(i));
-	}
 }
 
 void LoopCollector::caseDomainExpr(DomainExprPtr node){
 
 }
+
 void LoopCollector::caseTupleExpr(TupleExprPtr node){
 
 }
-/* void LoopCollector::caseMapExpr(MapExprPtr){ */
 
-/* } */
 void LoopCollector::caseDimExpr(DimExprPtr expr){
 
 }
@@ -231,7 +206,6 @@ void LoopCollector::caseCastExpr(CastExprPtr expr){
 }
 
 void LoopCollector::caseStmt(StmtPtr node){
-    currStmt = node;
     switch (node->getStmtType()) {
         case Statement::STMT_ASSIGN: //Assignment Statement
         caseAssignStmt(static_cast<AssignStmtPtr>(node));
@@ -273,15 +247,8 @@ void LoopCollector::caseStmtList(StmtListPtr node){
 }
 
 void LoopCollector::caseAssignStmt(AssignStmtPtr node){
-    ExpressionPtr rhsExpr = node->getRhs();
-    caseExpr(rhsExpr);
-    onLhs = true ;
-    std::vector<ExpressionPtr> lhsVec = node->getLhs();
-    for(int i = 0; i < lhsVec.size(); i++) {
-        caseExpr(lhsVec[i]);
-    }
-    onLhs = false;
 }
+
 void LoopCollector::caseIfStmt(IfStmtPtr node){
     caseExpr(node->getCond());
     caseStmt(node->getIfBranch());
@@ -289,14 +256,25 @@ void LoopCollector::caseIfStmt(IfStmtPtr node){
         caseStmt(node->getElseBranch());
     }
 }
+
 void LoopCollector::caseForStmt(ForStmtPtr node){
-    caseExpr(node->getDomain());
-    caseStmt(node->getBody());
+    std::vector<int> itervars = node->getIterVars();   
+    DomainExprPtr domain = static_cast<DomainExprPtr>(node->getDomain());
+    for(int i = 0; i < itervars.size(); i++) {
+        addToIterMap(itervars[i],domain->getStartExpr(i), domain->getStopExpr(i), domain->getStepExpr(i));  
+        addToExcludeMap(itervars[i], domain->getExclude(i)); 
+    }
 }
+
 void LoopCollector::casePforStmt(PforStmtPtr node){
-    caseExpr(node->getDomain());
-    caseStmt(node->getBody());
+    std::vector<int> itervars = node->getIterVars();   
+    DomainExprPtr domain = static_cast<DomainExprPtr>(node->getDomain());
+    for( int i = 0; i < itervars.size(); i++ ) {
+        addToIterMap(itervars[i],domain->getStartExpr(i), domain->getStopExpr(i), domain->getStepExpr(i));  
+        addToExcludeMap(itervars[i], domain->getExclude(i)); 
+    }
 }
+
 void LoopCollector::caseWhileStmt(WhileStmtPtr node){
     caseExpr(node->getCond());
     caseStmt(node->getBody());
@@ -307,40 +285,26 @@ void LoopCollector::caseBreakStmt(BreakStmtPtr node){
 void LoopCollector::caseContinueStmt(ContinueStmtPtr node){
     return ;
 }
-/* void LoopCollector::caseRefOpStmt(RefOpStmtPtr node){ */
-/*     return; */
-/* } */
+
 void LoopCollector::caseReturnStmt(ReturnStmtPtr node){
     return ;
 }
 
-void LoopCollector::addToMap(StmtPtr currStmt, IndexExprPtr indexExpr){
-    if(stmtToIndexExprMap.count(currStmt) > 0 ){
-        stmtToIndexExprMap.find(currStmt)->second->insert(indexExpr);
-    }else{
-        unordered_set<IndexExprPtr> *set = new unordered_set<IndexExprPtr>();
-        set->insert(indexExpr);
-        stmtToIndexExprMap[currStmt] = set;
-    }
-}
-void LoopCollector::addToColonSet(IndexExprPtr index){
-    indexColonSet.insert(index);
-}
-void LoopCollector::addToLhsSet(IndexExprPtr index) {
-	lhsIndexSet.insert(index);		
-}
-
 void LoopCollector::analyze(VModule * m){
-    onLhs = false;
     caseModule(m);
 }
+
+void LoopCollector::addToIterMap(int iterVar, ExpressionPtr start, ExpressionPtr stop, ExpressionPtr step) {
+    ExpressionPtrVector exprVec;
+    exprVec.push_back(start);
+    exprVec.push_back(stop);
+    exprVec.push_back(step);
+    iterMap.insert(std::pair<int, ExpressionPtrVector>(iterVar, exprVec)); 
+}
+
+void LoopCollector::addToExcludeMap(int iterVar, bool excludeVal) {
+    excludeMap.insert(std::pair<int,bool>(iterVar, excludeVal));
+}
+
 void LoopCollector::prettyPrint() {
-    IndexMap::iterator it = stmtToIndexExprMap.begin();
-    for(int i = 0; it != stmtToIndexExprMap.end(); it++,i++) {
-        IndexSet::iterator it_set = it->second->begin();
-        for(; it_set != it->second->end(); it_set++ ){
-            std::cout<<(*it_set)->getArrayId()<<"\t";
-        }
-        std::cout<<std::endl;
-    }
 }

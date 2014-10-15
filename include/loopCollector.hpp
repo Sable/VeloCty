@@ -9,19 +9,15 @@ using namespace VRaptor;
 using std::tr1::unordered_map;
 using std::tr1::unordered_set;
 namespace VRaptor{
-    typedef unordered_map<int, ExpressionPtrVector> iterToExprMap;
+    typedef unordered_map<int, ExpressionPtrVector> IterToExprMap;
+    typedef unordered_map<int, bool> IterToExcludeMap;
     class LoopCollector {
         private :
-            IndexMap stmtToIndexExprMap;
-            StmtPtr currStmt;
-            bool onLhs;
-            IndexSet lhsIndexSet;
-            IndexSet indexColonSet; 
-            void addToMap(StmtPtr currStmt,IndexExprPtr indexExpr);
-            void addToColonSet(IndexExprPtr index);
-            void addToLhsSet(IndexExprPtr index);
+            IterToExprMap iterMap;
+            IterToExcludeMap excludeMap;
+            void addToExcludeMap(int iterVar, bool excludeVal);
+            void addToIterMap(int iterVar, ExpressionPtr start, ExpressionPtr stop, ExpressionPtr step);
         public :
-            /* void caseNode(Node* node); */
             void caseModule(VModule * node);
             void caseFunction(VFunction *node);
             void caseExpr(ExpressionPtr node);
@@ -40,7 +36,6 @@ namespace VRaptor{
             void caseNeqExpr(NeqExprPtr node);
             void caseAndExpr(AndExprPtr node);
             void caseOrExpr(OrExprPtr node);
-            /* void caseUnaryExpr(UnaryExprPtr node); */
             void caseNotExpr(NotExprPtr node);
             void caseNegateExpr(NegateExprPtr node);
             void caseFuncallExpr(FunCallExprPtr node);
@@ -48,7 +43,6 @@ namespace VRaptor{
             void caseIndexExpr(IndexExprPtr node);
             void caseDomainExpr(DomainExprPtr node);
             void caseTupleExpr(TupleExprPtr node);
-            /* void caseMapExpr(MapExprPtr); */
             void caseLibCallExpr(LibCallExprPtr expr);
             void caseDimExpr(DimExprPtr expr);
             void caseDimVecExpr(DimvecExprPtr expr);
@@ -65,31 +59,34 @@ namespace VRaptor{
             void caseWhileStmt(WhileStmtPtr node);
             void caseBreakStmt(BreakStmtPtr node);
             void caseContinueStmt(ContinueStmtPtr node);
-            /* void caseRefOpStmt(RefOpStmtPtr node); */
             void caseReturnStmt(ReturnStmtPtr node);
             void prettyPrint();
-            bool containsStmt( StmtPtr stmt ) {
-                return stmtToIndexExprMap.count(stmt) > 0;
-            }
-            IndexSet* getIndexSet(StmtPtr stmt){
-                if(containsStmt(stmt)) {
-                    return stmtToIndexExprMap.find(stmt)->second;
-                }
-                return NULL;
-            }
-            bool isOnLhs(IndexExprPtr expr) {
-                return lhsIndexSet.count(expr) > 0;
-            }
-            bool hasColon(IndexExprPtr expr) {
-                return indexColonSet.find(expr) != indexColonSet.end(); 
-            } 
             void analyze(VModule *);
-            ~NodeCollector(){
-                stmtToIndexExprMap.clear();
+            ~LoopCollector(){
+                iterMap.clear();
             }
-            IndexMap getMap()const { return stmtToIndexExprMap;}
-
-  };
+        IterToExprMap getIterMap() const {
+            return iterMap;
+        }
+        
+        IterToExcludeMap getExcludeMap() const {
+            return excludeMap;
+        } 
+        
+        ExpressionPtrVector getLoopExpr(int itervar) const {
+            if(iterMap.find(itervar) != iterMap.end()) {
+                return iterMap.find(itervar)->second;
+            }
+            return ExpressionPtrVector();
+        }
+        
+        bool getLoopExclude(int itervar) const {
+            if(excludeMap.find(itervar) != excludeMap.end()) {
+                return excludeMap.find(itervar)->second;
+            }
+            return false;
+        }
+    };
 
 }
 #endif

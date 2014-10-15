@@ -2209,13 +2209,13 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         std::vector<int> itervar = stmt->getIterVars();
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
-        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap);
+        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt);
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
         // std::cout<<"Set size "<<set.size()<<std::endl;
     }
 }
 
-void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap) {
+void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap, ForStmtPtr currStmt) {
     std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
     IndexSet set;
     for(int i = 0; i < indices.size(); i++ ) {
@@ -2225,7 +2225,7 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
         if(!requiresCheck(indices[i].m_iexpr)) {
             continue;
         }
-        if(isValidIndex(indices[i],itervarSet, domain, symTable, info)) {
+        if(isValidIndex(indices[i],itervarSet, domain, symTable, info,info)) {
             set.insert(indices[i].m_iexpr);
             usedIndices.insert(indices[i].m_iexpr);
         }
@@ -2240,7 +2240,7 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
-bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
+bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info, LoopInfo* currLoopInfo) {
     if(!indexInfo.m_isRegularIndex) {
         std::cout<<"Not a regular index"<<std::endl;
         return false;
@@ -2264,11 +2264,16 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
                 std::cout<<"Not in itervar set "<<nameExpr->getId()<<std::endl;
                 return false;
             }
+            if(itervarSet.find(nameExpr->getId()) != itervarSet.end()) {
+                // check if equivalent start and stop expressions are loop invariant. 
+                
+            }
         }
     }
     return true;
 }
-
+// bool VCompiler::isLoopInVariant(LoopInfo* loopInfo, Loop*Info currLoopInfo, int id){
+// }
 Context VCompiler::getOriginalArrStr(NameExprPtr expr, SymTable * symTable){
 	string name = symTable->getName(expr->getId());
 	Context cntxt;

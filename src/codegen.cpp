@@ -2218,8 +2218,12 @@ IndexSet VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered
     std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
     IndexSet set;
     for(int i = 0; i < indices.size(); i++ ) {
+        if(usedIndices.find(indices[i].m_iexpr) != usedIndices.end())  {
+            continue;
+        }
         if(isValidIndex(indices[i],itervarSet, domain, symTable, info)) {
             set.insert(indices[i].m_iexpr);
+            usedIndices.insert(indices[i].m_iexpr);
         }
     }
     return set;

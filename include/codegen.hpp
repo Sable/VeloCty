@@ -124,6 +124,7 @@ private:
 	NodeCollector collector;
     std::set<LibCallExpr::Code> libCallSet;
     VModule *currModule;
+    IndexSet usedIndices;
 	//! Generates C++ code for a statement node. 
 	/*! Calls specialised methods depending on the type of the statement
             \fn stmtTypeCodeGen
@@ -229,7 +230,7 @@ private:
     Context handleArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable* symTable);
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
     IndexSet getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain);
-    bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable);
+    bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
 public:
     bool isNegativeIndex( IndexExprPtr expr);
     std::string genIndexPtrFunc() const;

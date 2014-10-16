@@ -21,7 +21,8 @@
 #include<iterator>
 #include<vrloopinfo.hpp>
 #include "vrPrelimBCE.hpp"
- #include<node-collector.hpp>
+#include<node-collector.hpp>
+#include<loopCollector.hpp>
 
 using std::vector;
 using std::string;
@@ -125,6 +126,7 @@ private:
     std::set<LibCallExpr::Code> libCallSet;
     VModule *currModule;
     IndexSet usedIndices;
+    LoopCollector lc;
 	//! Generates C++ code for a statement node. 
 	/*! Calls specialised methods depending on the type of the statement
             \fn stmtTypeCodeGen
@@ -231,8 +233,12 @@ private:
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
     void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt);
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info,LoopInfo *currLoopInfo);
+    bool isIndexAffine(IndexStruct index);
+    bool areLoopBoundsValid(IndexStruct index, LoopInfo *);
+    std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:
     bool isNegativeIndex( IndexExprPtr expr);
+    bool isExprInVariant(ExpressionPtr expr, LoopInfo* info);
     std::string genIndexPtrFunc() const;
     std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);
     std::vector<string> getIndexTemps( int n );

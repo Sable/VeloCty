@@ -2,7 +2,6 @@
 #include<iostream>
 #include<vector>
 #define DEBUG
-using namespace VRaptor;
 
 void LoopCollector::caseModule(VModule * node){
 #ifdef DEBUG

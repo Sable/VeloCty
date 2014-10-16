@@ -1,5 +1,5 @@
-#ifndef __NODE_COLLECTOR__H
-#define __NODE_COLLECTOR__H 
+#ifndef __LOOP_COLLECTOR__H
+#define __LOOP_COLLECTOR__H 
 #include <vraptor.hpp>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>

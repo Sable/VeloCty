@@ -101,6 +101,7 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 #ifdef DEBUG
     std::cout<<"generating code in module "<<std::endl;
 #endif 
+    lc.analyze(vm);
     for (int i = 0; i < funcList.size(); i++) {
         std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
         if(funcList[i]->getName().compare("pForFunc") == 0) {
@@ -111,6 +112,7 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
         if(prelim_bounds) {
             VRaptor::prelimBCE(funcList[i], infoMap);
         }
+        
         Context tempCntxt = funcCodeGen(funcList[i]);
         for (int j = 0; j < tempCntxt.getAllStmt().size(); j++) {
             cntxt.addStmt(tempCntxt.getAllStmt()[j]);
@@ -2240,6 +2242,51 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
+bool VCompiler::isIndexAffine(IndexStruct index) {
+    if(!index.m_isExpr) return false;
+    Expression::ExprType type = index.m_val.m_expr->getExprType();
+    if(type != Expression::NAME_EXPR && type != Expression::CONST_EXPR) {
+        std::cout<<"Not a name expression"<<std::endl;
+        return false;
+    }
+    // if(type == Expression::NAME_EXPR) {
+    // }
+    return true;
+}
+
+std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {
+    return lc.getLoopExpr(id);
+}
+
+bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
+    if(expr->getExprType() == Expression::NAME_EXPR) {
+        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
+        return info->m_udmgInfo->m_defs.find(nameExpr->getId()) == info->m_udmgInfo->m_defs.end();
+    }
+    if(expr->getExprType() == Expression::CONST_EXPR) {
+        return true;
+    }
+    return false;
+}
+bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
+    if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
+        || index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
+        return false;
+    }
+    if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
+        NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
+        int id  = nameExpr->getId();
+        ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
+        if(exprVec.size() == 0 ) {
+            return false;
+        }  
+        if(!(isExprInVariant(exprVec[0],info)|| isExprInVariant(exprVec[1], info))) {
+            return false;
+        } 
+    } 
+    return true;
+}
+
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info, LoopInfo* currLoopInfo) {
     if(!indexInfo.m_isRegularIndex) {
         std::cout<<"Not a regular index"<<std::endl;
@@ -2251,23 +2298,6 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
         if(!vec[i].m_isExpr) {
             std::cout<<"Not an expr index"<<std::endl;
             return false;
-        }
-        Expression::ExprType type = vec[i].m_val.m_expr->getExprType();
-        if(type != Expression::NAME_EXPR && type != Expression::CONST_EXPR) {
-            std::cout<<"Not a name expression"<<std::endl;
-            return false;
-        }
-        if(type == Expression::NAME_EXPR) {
-            NameExprPtr nameExpr = static_cast<NameExprPtr>(vec[i].m_val.m_expr);
-            if((itervarSet.find(nameExpr->getId()) ==  itervarSet.end()) &&
-                    (info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end())) {
-                std::cout<<"Not in itervar set "<<nameExpr->getId()<<std::endl;
-                return false;
-            }
-            if(itervarSet.find(nameExpr->getId()) != itervarSet.end()) {
-                // check if equivalent start and stop expressions are loop invariant. 
-                
-            }
         }
     }
     return true;

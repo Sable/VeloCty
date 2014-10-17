@@ -422,9 +422,9 @@ void VCompiler::genScalSet(VFunction* func){
 		}
 	}
 }
+
 Context VCompiler::generateArgs(VFunction *func){
  Context cntxt;
-
   if (func->m_args.size() > 0) {
 		int id = func->m_args[0].m_id;
 		std::string argName = func->getSymTable()->getName(id);
@@ -441,20 +441,15 @@ Context VCompiler::generateArgs(VFunction *func){
 		string argType = argCntxt.getAllStmt()[0];
 		string str = argType + " " + argName;
 		//if argument is an arraycntxt.addStmt(tempCntxt.getAllStmt()[0] + "*");
-
-	
-
 	for (int i = 1; i < func->m_args.size(); i++) {
 		id = func->m_args[i].m_id;
 		argName = func->getSymTable()->getName(id);
-		
 		argCntxt = vTypeCodeGen(func->getSymTable()->getType(id),
 				func->getSymTable(),(func->getSymTable()->getType(id)->getBasicType()==VType::SCALAR_TYPE) && (scalSet->find(argName)==scalSet->end()?false:true));
 		argType = argCntxt.getAllStmt()[0];
 		str += "," + argType + " " + argName;
 
 	}
-	
 	 cntxt.addStmt(str);
   }	
 	 return cntxt;
@@ -465,7 +460,6 @@ Context VCompiler::generateReturnType(VFunction *func){
 	FuncTypePtr funcType = static_cast<FuncTypePtr>(func->getType());
 	//TODO : Deal with multiple return types
 	if(funcType->getNumReturns()>1) {
-	
 	  cntxt.addStmt(genFuncStructName(func));
 	  return cntxt;
 	}
@@ -2147,6 +2141,7 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 		<<"Exiting"<<std::endl;
 		exit(0);
 	}
+    
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
@@ -2166,6 +2161,7 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
                 compStmt += "=";
             }
             compStmt +=  " "+domainVec[i + count];
+        
 			iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
 			cntxt.addStmt(
 				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
@@ -2242,15 +2238,20 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
-bool VCompiler::isIndexAffine(IndexStruct index) {
+bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
     if(!index.m_isExpr) return false;
     Expression::ExprType type = index.m_val.m_expr->getExprType();
     if(type != Expression::NAME_EXPR && type != Expression::CONST_EXPR) {
         std::cout<<"Not a name expression"<<std::endl;
         return false;
     }
-    // if(type == Expression::NAME_EXPR) {
-    // }
+    if(type == Expression::NAME_EXPR) {
+        NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);  
+        // Has to be a iteration variable and not defined inside the loop
+        if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) == info->m_udmgInfo->m_defs.end()) {
+            return false;
+        }
+    }
     return true;
 }
 

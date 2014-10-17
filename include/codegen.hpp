@@ -233,7 +233,7 @@ private:
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
     void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt);
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info,LoopInfo *currLoopInfo);
-    bool isIndexAffine(IndexStruct index);
+    bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet);
     bool areLoopBoundsValid(IndexStruct index, LoopInfo *);
     std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:

@@ -2209,7 +2209,6 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
         getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt);
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
-        // std::cout<<"Set size "<<set.size()<<std::endl;
     }
 }
 
@@ -2236,6 +2235,7 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
             itervarSet.insert(itervar.begin(), itervar.end());
         }  
     }   
+    std::cout<<"set size"<<set.size()<<std::endl;
 }
 
 bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
@@ -2248,7 +2248,7 @@ bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<i
     if(type == Expression::NAME_EXPR) {
         NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);  
         // Has to be a iteration variable and not defined inside the loop
-        if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) == info->m_udmgInfo->m_defs.end()) {
+        if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
             return false;
         }
     }
@@ -2269,6 +2269,7 @@ bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
     }
     return false;
 }
+
 bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
     if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
         && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
@@ -2279,7 +2280,6 @@ bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
         int id  = nameExpr->getId();
         ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
         if(exprVec.size() == 0 ) {
-            lc.prettyPrint();
             return false;
         }  
         if((!isExprInVariant(exprVec[0],info) || !isExprInVariant(exprVec[1], info))) {
@@ -2314,6 +2314,7 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             return false;
         }
         if(!isIndexAffine(vec[i], info, itervarSet)) {
+            std::cout<<"Index is not affine"<<std::endl;
             return false;
         }
         

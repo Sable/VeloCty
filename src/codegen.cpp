@@ -2223,7 +2223,7 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
         if(!requiresCheck(indices[i].m_iexpr)) {
             continue;
         }
-        if(isValidIndex(indices[i],itervarSet, domain, symTable, info,info)) {
+        if(isValidIndex(indices[i],itervarSet, domain, symTable, info)) {
             set.insert(indices[i].m_iexpr);
             usedIndices.insert(indices[i].m_iexpr);
         }
@@ -2271,7 +2271,7 @@ bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
 }
 bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
     if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
-        || index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
+        && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
         return false;
     }
     if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
@@ -2279,16 +2279,29 @@ bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
         int id  = nameExpr->getId();
         ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
         if(exprVec.size() == 0 ) {
+            lc.prettyPrint();
             return false;
         }  
-        if(!(isExprInVariant(exprVec[0],info)|| isExprInVariant(exprVec[1], info))) {
+        if((!isExprInVariant(exprVec[0],info) || !isExprInVariant(exprVec[1], info))) {
             return false;
         } 
     } 
     return true;
 }
 
-bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info, LoopInfo* currLoopInfo) {
+bool VCompiler::isExprLoopInvariant(ExpressionPtr expr, LoopInfo *info) {
+    if(expr->getExprType() != Expression::NAME_EXPR) {
+        return false;
+    }
+    int id = static_cast<NameExprPtr>(expr)->getId();
+    unordered_set<int> defSet = info->m_udmgInfo->m_defs;
+    if(defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
+        return false;
+    }
+    return true;
+}
+
+bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
     if(!indexInfo.m_isRegularIndex) {
         std::cout<<"Not a regular index"<<std::endl;
         return false;
@@ -2300,11 +2313,19 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             std::cout<<"Not an expr index"<<std::endl;
             return false;
         }
+        if(!isIndexAffine(vec[i], info, itervarSet)) {
+            return false;
+        }
+        
+        // ExpressionPtrVector exprVec = lc.getLoopExpr();
+        if(!areLoopBoundsValid(vec[i], info)) {
+            std::cout<<"Loop range variables not loop invariant"<<std::endl;
+            return false; 
+        }
     }
     return true;
 }
-// bool VCompiler::isLoopInVariant(LoopInfo* loopInfo, Loop*Info currLoopInfo, int id){
-// }
+
 Context VCompiler::getOriginalArrStr(NameExprPtr expr, SymTable * symTable){
 	string name = symTable->getName(expr->getId());
 	Context cntxt;

@@ -263,6 +263,7 @@ void LoopCollector::caseForStmt(ForStmtPtr node){
         addToIterMap(itervars[i],domain->getStartExpr(i), domain->getStopExpr(i), domain->getStepExpr(i));  
         addToExcludeMap(itervars[i], domain->getExclude(i)); 
     }
+    caseStmt(node->getBody()); 
 }
 
 void LoopCollector::casePforStmt(PforStmtPtr node){
@@ -272,6 +273,7 @@ void LoopCollector::casePforStmt(PforStmtPtr node){
         addToIterMap(itervars[i],domain->getStartExpr(i), domain->getStopExpr(i), domain->getStepExpr(i));  
         addToExcludeMap(itervars[i], domain->getExclude(i)); 
     }
+    
 }
 
 void LoopCollector::caseWhileStmt(WhileStmtPtr node){
@@ -306,4 +308,8 @@ void LoopCollector::addToExcludeMap(int iterVar, bool excludeVal) {
 }
 
 void LoopCollector::prettyPrint() {
+    IterToExprMap::iterator it = iterMap.begin();
+    for(; it != iterMap.end(); it++) {
+        std::cout<<"Pretty print id "<<it->first<<std::endl;
+    }
 }

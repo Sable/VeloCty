@@ -1,6 +1,7 @@
 #ifndef __LOOP_COLLECTOR__H
 #define __LOOP_COLLECTOR__H 
 #include <vraptor.hpp>
+#include<iostream>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 

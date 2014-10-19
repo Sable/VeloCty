@@ -2142,6 +2142,8 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 		exit(0);
 	}
     
+    IndexSet indexSet;
+    getIndexElimSet(stmt, symTable, indexSet);
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
@@ -2188,8 +2190,6 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 			cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
 		}
 	}
-    IndexSet indexSet;
-    getIndexElimSet(stmt, symTable, indexSet);
 	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
 	vector<string> bodyVec = bodyCntxt.getAllStmt();
 	for (int i = 0; i < bodyVec.size(); i++) {

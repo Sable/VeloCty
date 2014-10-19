@@ -2209,7 +2209,9 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
         if(infoMap.find(stmt) != infoMap.end()) {
             getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, indexSet);
-        }
+        } else {
+            std::cout<<"Warning: LoopInfo for the current for loop not found. skipping"<<std::endl;
+        } 
         std::cout<<"set size"<<indexSet.size()<<std::endl;
     }
 }

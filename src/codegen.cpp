@@ -2209,7 +2209,7 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
         IndexSet set;
         getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, set);
-        std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
+        std::cout<<"set size"<<set.size()<<std::endl;
     }
 }
 
@@ -2242,7 +2242,6 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
             getLoopIndices(info, symTable,itervarSet, static_cast<DomainExprPtr>(forStmt->getDomain()), indexToLoopMap, forStmt, set); 
         }  
     }   
-    std::cout<<"set size"<<set.size()<<std::endl;
 }
 
 bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
@@ -2703,7 +2702,6 @@ IndexSet* VCompiler::getIndexSet(StmtPtr stmt) {
 
 Context VCompiler::stmtListCodeGen(StmtListPtr stmt, SymTable *symTable) {
 	Context cntxt;
-    std::cout<<"Stmt list size "<<stmt->getNumChildren()<<std::endl;
 	for (int i = 0; i < stmt->getNumChildren(); i++) {
 
 		StmtPtr childStmt = stmt->getChild(i);

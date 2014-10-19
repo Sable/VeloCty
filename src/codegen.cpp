@@ -102,6 +102,7 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
     std::cout<<"generating code in module "<<std::endl;
 #endif 
     lc.analyze(vm);
+    setBoundsCheckFlag(true);
     for (int i = 0; i < funcList.size(); i++) {
         std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
         if(funcList[i]->getName().compare("pForFunc") == 0) {
@@ -2098,47 +2099,114 @@ Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar,
             }
             compStmt +=  " "+domainVec[i + count];
         
-			iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
-			cntxt.addStmt(
-				"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-			cntxt.addStmt("{\n");
-		}
-		else {
-			std::string vecStr = genTempVec();
-			std::string iterStr=genIterVar();
-			VTypePtr type = symTable->getType(iterVar[i]);
-			Context typeCntxt;
-			if(type->getBasicType() == VType::SCALAR_TYPE){
-			  typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
-			}
-			else if(type->getBasicType() == VType::ARRAY_TYPE){
-			  typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
-			}
-			std::string typeStr = typeCntxt.getAllStmt()[0];
-			cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
-				      domainVec[i]+","+domainVec[i+count]+","
-				      + domainVec[i+2*count]+");\n");
-			cntxt.addStmt(
-				"for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
-			cntxt.addStmt("{\n");
-			cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
-		}
-	}
-	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
-	vector<string> bodyVec = bodyCntxt.getAllStmt();
-	for (int i = 0; i < bodyVec.size(); i++) {
-		cntxt.addStmt(bodyVec[i]);
-	}
-	for (int i = 0; i < iterVar.size(); i++) {
-		cntxt.addStmt("}\n");
-	}
+            iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
+            cntxt.addStmt(
+                    "for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
+            cntxt.addStmt("{\n");
+        }
+        else {
+            std::string vecStr = genTempVec();
+            std::string iterStr=genIterVar();
+            VTypePtr type = symTable->getType(iterVar[i]);
+            Context typeCntxt;
+            if(type->getBasicType() == VType::SCALAR_TYPE){
+                typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
+            }
+            else if(type->getBasicType() == VType::ARRAY_TYPE){
+                typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
+            }
+            std::string typeStr = typeCntxt.getAllStmt()[0];
+            cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
+                    domainVec[i]+","+domainVec[i+count]+","
+                    + domainVec[i+2*count]+");\n");
+            cntxt.addStmt(
+                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
+            cntxt.addStmt("{\n");
+            cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
+        }
+    }
+    Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
+    vector<string> bodyVec = bodyCntxt.getAllStmt();
+    for (int i = 0; i < bodyVec.size(); i++) {
+        cntxt.addStmt(bodyVec[i]);
+    }
+    for (int i = 0; i < iterVar.size(); i++) {
+        cntxt.addStmt("}\n");
+    }
     return cntxt;
 }
+
+Context VCompiler::replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTable *symTable){
+    Context cntxt;
+    if(!index.m_isExpr) {
+        std::cout<<"Index has to be an expression"<<std::endl;
+    }
+    ExpressionPtr expr = index.m_val.m_expr;
+    if(expr->getExprType() == Expression::CONST_EXPR) {
+       cntxt = exprTypeCodeGen(expr, symTable); 
+        return cntxt;
+    } 
+    if(expr->getExprType() == Expression::NAME_EXPR) {
+        unordered_set<int> defSet = info->m_udmgInfo->m_defs;
+        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
+        if(isIterVar(nameExpr->getId()) && defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
+           ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+           cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            return cntxt;
+        }
+    }
+    return cntxt;
+}
+
+Context VCompiler::replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymTable *symTable){
+    Context cntxt;
+    if(!index.m_isExpr) {
+        std::cout<<"Index has to be an expression"<<std::endl;
+    }
+    ExpressionPtr expr = index.m_val.m_expr;
+    if(expr->getExprType() == Expression::CONST_EXPR) {
+       cntxt = exprTypeCodeGen(expr, symTable); 
+        return cntxt;
+    } 
+    if(expr->getExprType() == Expression::NAME_EXPR) {
+        unordered_set<int> defSet = info->m_udmgInfo->m_defs;
+        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
+        if(isIterVar(nameExpr->getId()) && defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
+           ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+           cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            return cntxt;
+        }
+    }
+    return cntxt;
+}
+Context VCompiler::genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, SymTable *symTable) {
+    IndexVec vec = expr->getIndices();
+    Context cntxt;
+    for(int i = 0; i < vec.size(); i++) {
+        cntxt = replaceIndexWithStop(vec[i], info, symTable);
+    }
+    return cntxt;
+}
+
+Context VCompiler::genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *symTable) {
+    Context cntxt;
+    IndexSet::iterator it = indexSet.begin();
+    for(; it != indexSet.end(); it++) {
+         cntxt = genIndexOptimCondition(*it, info, symTable);
+    }
+    return cntxt;
+}
+
 Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
     Context cntxt;
     IndexSet indexSet;
     getIndexElimSet(stmt, symTable, indexSet);
-	StmtPtr sPtr = stmt->getBody();
+    LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+    if(it != infoMap.end()) {
+        LoopInfo *info = it->second;
+        genCheckOptimCondition(indexSet, info, symTable);
+    }
+    StmtPtr sPtr = stmt->getBody();
     StmtListPtr bodyStmt;
     if(sPtr->getStmtType() == Statement::STMT_LIST) {
         bodyStmt = static_cast<StmtListPtr> (sPtr);
@@ -2146,9 +2214,9 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
         std::cout<<"Body of the loop has to be a statement list"<<std::endl;
         exit(0);
     }
-	ExpressionPtr domainPtr = stmt->getDomain();
+    ExpressionPtr domainPtr = stmt->getDomain();
     cntxt = loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable);
-	return cntxt;
+    return cntxt;
 }
 
 void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
@@ -2218,6 +2286,9 @@ std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {
     return lc.getLoopExpr(id);
 }
 
+bool VCompiler::isIterVar(int id) {
+    return lc.isIterVar(id);
+}
 bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
     if(expr->getExprType() == Expression::NAME_EXPR) {
         NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
@@ -2492,6 +2563,9 @@ bool VCompiler::requiresCheck(IndexExprPtr expr){
 }
 Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs) {
 	Context cntxt;
+    if(!getBoundsCheckFlag()) {
+        return cntxt;
+    }
 	unordered_set<IndexExprPtr> *indexSet = collector.getIndexSet(stmt);
 	if(indexSet == NULL) {
 		return cntxt;

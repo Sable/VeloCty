@@ -113,6 +113,7 @@ class VCompiler {
 private:
 	int maxTempVecId;
 	int maxTempIterId;
+    bool boundsCheckFlag;
 	std::string tempVarStr;
 	std::string tempIterStr;
     std::map<StmtPtr,LoopInfo*> infoMap;
@@ -238,6 +239,13 @@ private:
     bool areLoopBoundsValid(IndexStruct index, LoopInfo *);
     std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:
+    void setBoundsCheckFlag(bool val) {
+        boundsCheckFlag = val;
+    }
+
+    bool getBoundsCheckFlag() {
+        return boundsCheckFlag;
+    }
     bool isNegativeIndex( IndexExprPtr expr);
     bool isExprInVariant(ExpressionPtr expr, LoopInfo* info);
     std::string genIndexPtrFunc() const;
@@ -252,118 +260,123 @@ public:
 
 	}
 
-	VCompiler(std::string moduleName):tempVarStr("vrTempVec"),tempIterStr("vrTempIter"),moduleName(moduleName){
-		scalSet = new set<string>();
-		maxTempVecId = 0;
-		maxTempIterId = 0;
-    	structVarId = 0;
+    VCompiler(std::string moduleName):tempVarStr("vrTempVec"),tempIterStr("vrTempIter"),moduleName(moduleName){
+        scalSet = new set<string>();
+        maxTempVecId = 0;
+        maxTempIterId = 0;
+        structVarId = 0;
         initLibCallSet();
-	}
-	~VCompiler(){
-		delete scalSet;
-	}
-	typedef enum LoopDirection {
-		COUNT_UP,
-		COUNT_DOWN, 
-		UNKNOWN
-	}LoopDirection;
-	bool getSseFlag();
-	void setSseFlag(bool);
-	bool getOpenMpFlag();
-	void setOpenMpFlag(bool);
+    }
+    ~VCompiler(){
+        delete scalSet;
+    }
+    typedef enum LoopDirection {
+        COUNT_UP,
+        COUNT_DOWN, 
+        UNKNOWN
+    }LoopDirection;
+    bool getSseFlag();
+    void setSseFlag(bool);
+    bool getOpenMpFlag();
+    void setOpenMpFlag(bool);
     void setCurrModule(VModule *vm){
         currModule = vm;
     }
     VModule* getCurrModule() const {
         return currModule;
     }
-	Context funcCodeGen(VFunction *func);
-	Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);
-	Context forStmtCodeGen(ForStmtPtr stmt, SymTable *symtable);
+    Context funcCodeGen(VFunction *func);
+    Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);
+    Context forStmtCodeGen(ForStmtPtr stmt, SymTable *symtable);
     Context loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar, StmtListPtr bodyStmt, SymTable *symTable);
-	Context exprStmtCodeGen(ExprStmtPtr stmt, SymTable *symtable);
-	Context assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable);
-	Context nameExprCodeGen(NameExprPtr expr, SymTable *symTable);
+    Context exprStmtCodeGen(ExprStmtPtr stmt, SymTable *symtable);
+    Context assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable);
+    Context nameExprCodeGen(NameExprPtr expr, SymTable *symTable);
     bool isNegativeConst(IndexStruct index);
-	Context plusExprCodeGen(PlusExprPtr expr, SymTable *symTable);
-	Context domainExprCodeGen(DomainExprPtr expr, SymTable *symTable);
+    Context plusExprCodeGen(PlusExprPtr expr, SymTable *symTable);
+    Context domainExprCodeGen(DomainExprPtr expr, SymTable *symTable);
     Context dimExprCodeGen(DimExprPtr expr, SymTable *symTable); 
-	Context constExprCodeGen(ConstExprPtr expr, SymTable *symTable);
-	Context stmtListCodeGen(StmtListPtr stmt, SymTable *symTable);
-	Context indexExprCodeGen(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
-	Context minusExprCodeGen(MinusExprPtr expr, SymTable *symTable);
-	Context matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
-	Context matPlusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr=NULL);
-	Context matMinusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
-	Context matLDivCallCodeGen(LibCallExprPtr expr, SymTable *symTable, ExpressionPtr lExpr = NULL);
-	Context matRDivCallCodeGen(LibCallExprPtr expr,SymTable *symTable,ExpressionPtr lExpr = NULL);
-	Context matTransCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
-	Context elemMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
-	Context elemDivCallCodeGen(LibCallExprPtr expr, SymTable * symTable,ExpressionPtr lExpr = NULL);
-	Context returnStmtCodeGen(ReturnStmtPtr stmt, SymTable *symTable);
-	Context moduleCodeGen(VModule *vm);
-	Context breakStmtCodeGen(BreakStmtPtr stmt);
-	Context continueStmtCodeGen(ContinueStmtPtr stmt);
-	Context ifStmtCodeGen(IfStmtPtr stmt, SymTable * symTable);
-	Context whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable);
-	//Context refOpStmtCodeGen(RefOpStmtPtr stmt, SymTable *symTable);
-	Context pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable);
-	Context allocExprCodeGen(AllocExprPtr expr, SymTable *symTable);
-	Context binaryExprCodeGen(BinaryExprPtr expr, SymTable *symTable);
-	Context multExprCodeGen(MultExprPtr expr, SymTable *symTable);
-	Context divExprCodeGen(DivExprPtr expr, SymTable *symTable);
-	Context geqExprCodeGen(GeqExprPtr expr, SymTable *symTable);
-	Context eqExprCodeGen(EqExprPtr expr, SymTable *symTable);
-	Context gtExprCodeGen(GtExprPtr expr, SymTable *symTable);
-	Context ltExprCodeGen(LtExprPtr expr, SymTable *symTable);
-	Context leqExprCodeGen(LeqExprPtr expr, SymTable *symTable);
-	Context neqExprCodeGen(NeqExprPtr expr, SymTable *symTable);
-	Context andExprCodeGen(AndExprPtr expr, SymTable *symTable);
-	Context orExprCodeGen(OrExprPtr expr, SymTable *symTable);
-	Context notExprCodeGen(NotExprPtr expr, SymTable *symTable); //to be written
-	Context funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
-	Context libCallExprCodeGen(LibCallExprPtr expr, SymTable *symtable,ExpressionPtr lExpr = NULL);
-	Context negateExprCodeGen(NegateExprPtr expr, SymTable *symTable);
-	std::string getMatTypeStr(VTypePtr vtype);
-	std::string generateMatClassStr(LibCallExprPtr expr, SymTable *symTable);
-	std::string generateMatClassStr(VTypePtr vtype);
-	std::string generateArgs(ExpressionPtrVector args,SymTable *symTable,bool checkIsInt=false, std::string cast="");
-	Context catCallCodeGen(FunCallExprPtr expr, SymTable *symTable);
-	std::vector<LoopDirection> getLoopDirections(DomainExprPtr expr, SymTable *symTable);
-	Context handleMultReturns(ReturnStmtPtr stmt,SymTable *symTable);
-	std::string genStructVarStr(VFunction *func);
-	bool hasMultRet(FunCallExprPtr expr);
-	Context genBoundCheckStmt(StmtPtr stmt,SymTable * symTable, bool onLhs=false);
-	std::string genFuncStructName(std::string funcName);
-	std::string genFuncStructName(FunCallExprPtr expr);
-	std::string genStructVarStr(std::string structType);
-	Context handleMultLhs(AssignStmtPtr stmt, SymTable* symtable);
-	Context tupleExprCodeGen(TupleExprPtr expr, SymTable* symTable);
+    Context constExprCodeGen(ConstExprPtr expr, SymTable *symTable);
+    Context stmtListCodeGen(StmtListPtr stmt, SymTable *symTable);
+    Context indexExprCodeGen(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
+    Context replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymTable *table);
+    Context replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTable *table);
+    Context genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, SymTable *table);
+    Context genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *table);
+    Context minusExprCodeGen(MinusExprPtr expr, SymTable *symTable);
+    Context matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
+    Context matPlusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr=NULL);
+    Context matMinusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
+    Context matLDivCallCodeGen(LibCallExprPtr expr, SymTable *symTable, ExpressionPtr lExpr = NULL);
+    Context matRDivCallCodeGen(LibCallExprPtr expr,SymTable *symTable,ExpressionPtr lExpr = NULL);
+    Context matTransCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
+    Context elemMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
+    Context elemDivCallCodeGen(LibCallExprPtr expr, SymTable * symTable,ExpressionPtr lExpr = NULL);
+    Context returnStmtCodeGen(ReturnStmtPtr stmt, SymTable *symTable);
+    Context moduleCodeGen(VModule *vm);
+    Context breakStmtCodeGen(BreakStmtPtr stmt);
+    Context continueStmtCodeGen(ContinueStmtPtr stmt);
+    Context ifStmtCodeGen(IfStmtPtr stmt, SymTable * symTable);
+    Context whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable);
+    //Context refOpStmtCodeGen(RefOpStmtPtr stmt, SymTable *symTable);
+    Context pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable);
+    Context allocExprCodeGen(AllocExprPtr expr, SymTable *symTable);
+    Context binaryExprCodeGen(BinaryExprPtr expr, SymTable *symTable);
+    Context multExprCodeGen(MultExprPtr expr, SymTable *symTable);
+    Context divExprCodeGen(DivExprPtr expr, SymTable *symTable);
+    Context geqExprCodeGen(GeqExprPtr expr, SymTable *symTable);
+    Context eqExprCodeGen(EqExprPtr expr, SymTable *symTable);
+    Context gtExprCodeGen(GtExprPtr expr, SymTable *symTable);
+    Context ltExprCodeGen(LtExprPtr expr, SymTable *symTable);
+    Context leqExprCodeGen(LeqExprPtr expr, SymTable *symTable);
+    Context neqExprCodeGen(NeqExprPtr expr, SymTable *symTable);
+    Context andExprCodeGen(AndExprPtr expr, SymTable *symTable);
+    Context orExprCodeGen(OrExprPtr expr, SymTable *symTable);
+    Context notExprCodeGen(NotExprPtr expr, SymTable *symTable); //to be written
+    Context funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr = NULL);
+    Context libCallExprCodeGen(LibCallExprPtr expr, SymTable *symtable,ExpressionPtr lExpr = NULL);
+    Context negateExprCodeGen(NegateExprPtr expr, SymTable *symTable);
+    std::string getMatTypeStr(VTypePtr vtype);
+    std::string generateMatClassStr(LibCallExprPtr expr, SymTable *symTable);
+    std::string generateMatClassStr(VTypePtr vtype);
+    std::string generateArgs(ExpressionPtrVector args,SymTable *symTable,bool checkIsInt=false, std::string cast="");
+    Context catCallCodeGen(FunCallExprPtr expr, SymTable *symTable);
+    std::vector<LoopDirection> getLoopDirections(DomainExprPtr expr, SymTable *symTable);
+    Context handleMultReturns(ReturnStmtPtr stmt,SymTable *symTable);
+    std::string genStructVarStr(VFunction *func);
+    bool hasMultRet(FunCallExprPtr expr);
+    Context genBoundCheckStmt(StmtPtr stmt,SymTable * symTable, bool onLhs=false);
+    std::string genFuncStructName(std::string funcName);
+    std::string genFuncStructName(FunCallExprPtr expr);
+    std::string genStructVarStr(std::string structType);
+    Context handleMultLhs(AssignStmtPtr stmt, SymTable* symtable);
+    Context tupleExprCodeGen(TupleExprPtr expr, SymTable* symTable);
     bool isScalarLibCall(AssignStmtPtr stmt, SymTable *symTable);
     bool isScalarFunCall(AssignStmtPtr stmt, SymTable *symTable);
-	void genHeaderFile(VModule *vm);
-	Context getHeaderContext() { return headerCntxt;}
-	void setHeaderContext(Context cntxt) {headerCntxt = cntxt;}
-	std::string genFuncHeader(VFunction *func);
-	bool isBuiltin(const std::string & funcName);
-	bool isComplex(ExpressionPtr expr);
+    bool isIterVar(int id);
+    void genHeaderFile(VModule *vm);
+    Context getHeaderContext() { return headerCntxt;}
+    void setHeaderContext(Context cntxt) {headerCntxt = cntxt;}
+    std::string genFuncHeader(VFunction *func);
+    bool isBuiltin(const std::string & funcName);
+    bool isComplex(ExpressionPtr expr);
     std::string genNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool isSpecLibCall(AssignStmtPtr stmt);
     void initLibCallSet();
     Context castExprCodeGen(CastExprPtr expr,SymTable *symTable);
     Context complexExprCodeGen(ComplexExprPtr expr,SymTable *symTable);
     LoopDirection getLoopDirectionEnum(ExpressionPtr expr);
-	void setCollector(NodeCollector& nc) {
-		collector = nc;
-	}
-	NodeCollector getCollector() const {
-		return collector;
-	}
-	bool hasIndexExpr(StmtPtr stmt);
+    void setCollector(NodeCollector& nc) {
+        collector = nc;
+    }
+    NodeCollector getCollector() const {
+        return collector;
+    }
+    bool hasIndexExpr(StmtPtr stmt);
     bool isNegativeIndex( StmtPtr stmt);
     IndexSet* getIndexSet(StmtPtr stmt);
-	std::string getSpecBoundCheckFuncStr();
-	std::string genSpecBoundCheckHeader(IndexExprPtr expr, SymTable* symTable);
+    std::string getSpecBoundCheckFuncStr();
+    std::string genSpecBoundCheckHeader(IndexExprPtr expr, SymTable* symTable);
 };
 
 

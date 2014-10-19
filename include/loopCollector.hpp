@@ -87,6 +87,9 @@ namespace VRaptor{
             }
             return false;
         }
+        bool isIterVar(int id) const {
+            return iterMap.find(id) != iterMap.end();
+        }
     };
 
 }

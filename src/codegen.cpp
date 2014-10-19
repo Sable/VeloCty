@@ -2126,15 +2126,12 @@ std::string VCompiler::genIterVar() {
 	return tempIterStr + itoa(maxTempIterId++);
 }
 
-Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
+Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar, StmtListPtr bodyStmt, SymTable *symTable) {
     Context cntxt;
-	StmtPtr sPtr = stmt->getBody();
-	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
-	ExpressionPtr domainPtr = stmt->getDomain();
 	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
 	std::vector<LoopDirection> loopVec;
 	if(domainPtr->getExprType()==Expression::DOMAIN_EXPR) {
-		loopVec = getLoopDirections(static_cast<DomainExprPtr>(domainPtr),symTable); 
+		loopVec = getLoopDirections(domainPtr,symTable); 
 	}
 	else {
 		std::cout<<"getDomain does not return a domain expression"<<std::endl
@@ -2142,11 +2139,8 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 		exit(0);
 	}
     
-    IndexSet indexSet;
-    getIndexElimSet(stmt, symTable, indexSet);
 	string initStmt, compStmt, iterStmt;
 	vector<string> domainVec = domainCntxt.getAllStmt();
-	vector<int> iterVar = stmt->getIterVars();
 	string var = symTable->getName(iterVar[0]);
 	int count = iterVar.size();
 	for (int i = 0; i < iterVar.size(); i++) {
@@ -2198,6 +2192,22 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
 	for (int i = 0; i < iterVar.size(); i++) {
 		cntxt.addStmt("}\n");
 	}
+    return cntxt;
+}
+Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
+    Context cntxt;
+    IndexSet indexSet;
+    getIndexElimSet(stmt, symTable, indexSet);
+	StmtPtr sPtr = stmt->getBody();
+    StmtListPtr bodyStmt;
+    if(sPtr->getStmtType() == Statement::STMT_LIST) {
+        bodyStmt = static_cast<StmtListPtr> (sPtr);
+    } else {
+        std::cout<<"Body of the loop has to be a statement list"<<std::endl;
+        exit(0);
+    }
+	ExpressionPtr domainPtr = stmt->getDomain();
+    cntxt = loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable);
 	return cntxt;
 }
 

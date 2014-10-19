@@ -280,6 +280,7 @@ public:
 	Context funcCodeGen(VFunction *func);
 	Context stmtCodeGen(StmtPtr stmt, SymTable *symTable);
 	Context forStmtCodeGen(ForStmtPtr stmt, SymTable *symtable);
+    Context loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar, StmtListPtr bodyStmt, SymTable *symTable);
 	Context exprStmtCodeGen(ExprStmtPtr stmt, SymTable *symtable);
 	Context assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable);
 	Context nameExprCodeGen(NameExprPtr expr, SymTable *symTable);

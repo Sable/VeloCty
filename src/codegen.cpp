@@ -2207,14 +2207,17 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         std::vector<int> itervar = stmt->getIterVars();
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
-        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt);
+        IndexSet set;
+        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, set);
         std::cout<<"vec size "<< it->second->m_indexes.size()<<std::endl;
     }
 }
 
-void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap, ForStmtPtr currStmt) {
-    std::vector<LoopInfo::IndexInfo> indices = info->m_indexes; 
-    IndexSet set;
+void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap, ForStmtPtr currStmt, IndexSet & set) {
+    std::vector<LoopInfo::IndexInfo> indices;
+    if(infoMap.find(currStmt) != infoMap.end()) {
+        indices = infoMap.find(currStmt)->second->m_indexes; 
+    }
     for(int i = 0; i < indices.size(); i++ ) {
         if(usedIndices.find(indices[i].m_iexpr) != usedIndices.end())  {
             continue;
@@ -2227,12 +2230,16 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
             usedIndices.insert(indices[i].m_iexpr);
         }
     }
-    std::vector<StmtPtr> childLoops  = info->m_childLoops;
+    std::vector<StmtPtr> childLoops ; 
+    if(infoMap.find(currStmt) != infoMap.end()) {
+         childLoops = infoMap.find(currStmt)->second->m_childLoops;
+    }
     for (int  i = 0; i < childLoops.size(); i++ ) {
         if(childLoops[i]->getStmtType() == Statement::STMT_FOR) {
             ForStmtPtr forStmt = static_cast<ForStmtPtr>(childLoops[i]);
             std::vector<int> itervar = forStmt->getIterVars();
             itervarSet.insert(itervar.begin(), itervar.end());
+            getLoopIndices(info, symTable,itervarSet, static_cast<DomainExprPtr>(forStmt->getDomain()), indexToLoopMap, forStmt, set); 
         }  
     }   
     std::cout<<"set size"<<set.size()<<std::endl;

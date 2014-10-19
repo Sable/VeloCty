@@ -2207,9 +2207,10 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
         std::vector<int> itervar = stmt->getIterVars();
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
-        IndexSet set;
-        getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, set);
-        std::cout<<"set size"<<set.size()<<std::endl;
+        if(infoMap.find(stmt) != infoMap.end()) {
+            getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, indexSet);
+        }
+        std::cout<<"set size"<<indexSet.size()<<std::endl;
     }
 }
 

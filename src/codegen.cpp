@@ -584,69 +584,9 @@ Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
 	StmtPtr sPtr = stmt->getBody();
 	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
 	ExpressionPtr domainPtr = stmt->getDomain();
-	Context domainCntxt = exprTypeCodeGen(domainPtr, symTable);
-	std::vector<LoopDirection> loopVec;
-	if(domainPtr->getExprType()==Expression::DOMAIN_EXPR) {
-			loopVec = getLoopDirections(static_cast<DomainExprPtr>(domainPtr),symTable); 
-	}
-	else {
-			std::cout<<"getDomain does not return a domain expression"<<std::endl
-					<<"Exiting"<<std::endl;
-			exit(0);
-	}
-	string initStmt, compStmt, iterStmt;
-	vector<string> domainVec = domainCntxt.getAllStmt();
 	vector<int> iterVar = stmt->getIterVars();
-	string var = symTable->getName(iterVar[0]);
-	int count = iterVar.size();
-	for (int i = 0; i < iterVar.size(); i++) {
-			var = symTable->getName(iterVar[i]);
-			if(loopVec[i] == VCompiler::COUNT_UP 
-							|| loopVec[i] == VCompiler::COUNT_DOWN){
-					initStmt = var + "=" + domainVec[i];
-					if(loopVec[i]==VCompiler::COUNT_UP) {
-							compStmt = var + "<" ;
-					}else {
-							compStmt = var + ">";
-					}
-					if(!static_cast<DomainExprPtr>(domainPtr)->getExclude(i)){
-							compStmt += "=";
-					}
-					compStmt +=  " "+domainVec[i + count];
-					iterStmt = var + "=" + var + "+" + domainVec[i + 2 * count];
-					cntxt.addStmt(
-									"for(" + initStmt + ";" + compStmt + ";" + iterStmt + ")\n");
-					cntxt.addStmt("{\n");
-			}
-			else {
-					std::string vecStr = genTempVec();
-					std::string iterStr=genIterVar();
-					VTypePtr type = symTable->getType(iterVar[i]);
-					Context typeCntxt;
-					if(type->getBasicType() == VType::SCALAR_TYPE){
-							typeCntxt = scalarTypeCodeGen(static_cast<ScalarTypePtr>(type));
-					}
-					else if(type->getBasicType() == VType::ARRAY_TYPE){
-							typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
-					}
-					std::string typeStr = typeCntxt.getAllStmt()[0];
-					cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
-									domainVec[i]+","+domainVec[i+count]+","
-									+ domainVec[i+2*count]+");\n");
-					cntxt.addStmt(
-									"for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
-					cntxt.addStmt("{\n");
-					cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
-			}
-	}
-	Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);
-	vector<string> bodyVec = bodyCntxt.getAllStmt();
-	for (int i = 0; i < bodyVec.size(); i++) {
-			cntxt.addStmt(bodyVec[i]);
-	}
-	for (int i = 0; i < iterVar.size(); i++) {
-			cntxt.addStmt("}\n");
-	}
+    Context loopCntxt = loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),iterVar, bodyStmt, symTable); 
+    cntxt.addStmtVec(loopCntxt.getAllStmt());
 	return cntxt;
 }
 std::string VCompiler::genStructVarStr(VFunction *func) {

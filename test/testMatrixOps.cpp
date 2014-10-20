@@ -9,6 +9,12 @@
 #include "complexdatahandler.h"
 #include "library_ops.hpp"
 #include"vr_data.hpp"
+void testCheckDims(mxArray* plhs[],mxArray* prhs[]) {
+    VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
+    bool val = checkDimStart_spec<VrArrayPtrF64>(A,3,3);
+    bool val1 = checkDimStop_spec<VrArrayPtrF64>(A,3,3);
+    std::cout<<"val "<<val<<"val1 "<<val1<<std::endl;
+}
 void testMeanScalar(mxArray* plhs[],mxArray* prhs[]) {
 	VrArrayPtrF64 A = getVrArrayF64(prhs[0]);
     double b;
@@ -252,7 +258,8 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[]){
 	/* testMeanScalar(plhs,const_cast<mxArray**>(prhs)); */
 	/* testTranspose(plhs,const_cast<mxArray**>(prhs)); */
 	/* testScalMult(plhs,const_cast<mxArray**>(prhs)); */
-	testConstructor(plhs,const_cast<mxArray**>(prhs));
+	// testConstructor(plhs,const_cast<mxArray**>(prhs));
+	testCheckDims(plhs,const_cast<mxArray**>(prhs));
     
     
 }

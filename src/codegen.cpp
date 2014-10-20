@@ -2313,10 +2313,24 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
-bool VCompiler::isIndexAffine(ConstExprPtr expr) {
+bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
+    if(expr == NULL) {
+        std::cout<<"Expression is NULL"<<std::endl;
+        return false;
+    }
+    switch(expr->getExprType()) {
+        case Expression::NAME_EXPR : 
+            return isNameExprAffine(static_cast<NameExprPtr>(expr),info,itervarSet);
+        case Expression::CONST_EXPR :
+            return isConstExprAffine(static_cast<ConstExprPtr>(expr));
+    }
+}
+
+bool VCompiler::isConstExprAffine(ConstExprPtr expr) {
     return true;
 }
-bool VCompiler::isIndexAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet) {
+
+bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet) {
     if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && 
         info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
         return false;
@@ -2325,18 +2339,10 @@ bool VCompiler::isIndexAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_se
     }
 
 }
+
 bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
     if(!index.m_isExpr) return false;
-    Expression::ExprType type = index.m_val.m_expr->getExprType();
-    if(type == Expression::CONST_EXPR) {
-        return isIndexAffine(static_cast<ConstExprPtr>(index.m_val.m_expr));
-    }
-    if(type == Expression::NAME_EXPR) {
-        NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);  
-        // Has to be a iteration variable and not defined inside the loop
-        return isIndexAffine(nameExpr, info, itervarSet);
-    }
-    return false;
+    return isExprAffine((index.m_val.m_expr),info, itervarSet);
 }
 
 std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {

@@ -2205,15 +2205,16 @@ Context VCompiler::genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, Sym
 
 std::string VCompiler::genCheckOptimStartFunc(IndexExprPtr expr,SymTable *symTable) {
     if(expr->getIndices().size() <=3) {
-        return "checkDimStart_spec<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+        return "checkDimStart_spec<" + vTypeCodeGen(symTable->getType(expr->getArrayId()),symTable).getAllStmt()[0]+">";
     }
-        return "checkDimStart<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+        return "checkDimStart<" + vTypeCodeGen(symTable->getType(expr->getArrayId()),symTable).getAllStmt()[0]+">";
 }
+
 std::string VCompiler::genCheckOptimStopFunc(IndexExprPtr expr,SymTable *symTable) {
     if(expr->getIndices().size() <=3) {
-        return "checkDimStop_spec<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+        return "checkDimStop_spec<" + vTypeCodeGen(symTable->getType(expr->getArrayId()),symTable).getAllStmt()[0]+">";
     }
-        return "checkDimStop<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+        return "checkDimStop<" + vTypeCodeGen(symTable->getType(expr->getArrayId()),symTable).getAllStmt()[0]+">";
 }
 
 std::string VCompiler::genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *symTable) {
@@ -2312,21 +2313,30 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
+bool VCompiler::isIndexAffine(ConstExprPtr expr) {
+    return true;
+}
+bool VCompiler::isIndexAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet) {
+    if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && 
+        info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
+        return false;
+    } else {
+        return true;
+    }
+
+}
 bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
     if(!index.m_isExpr) return false;
     Expression::ExprType type = index.m_val.m_expr->getExprType();
-    if(type != Expression::NAME_EXPR && type != Expression::CONST_EXPR) {
-        std::cout<<"Not a name expression"<<std::endl;
-        return false;
+    if(type == Expression::CONST_EXPR) {
+        return isIndexAffine(static_cast<ConstExprPtr>(index.m_val.m_expr));
     }
     if(type == Expression::NAME_EXPR) {
         NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);  
         // Has to be a iteration variable and not defined inside the loop
-        if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
-            return false;
-        }
+        return isIndexAffine(nameExpr, info, itervarSet);
     }
-    return true;
+    return false;
 }
 
 std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {

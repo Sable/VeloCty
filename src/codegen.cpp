@@ -2314,50 +2314,66 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
-bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
+bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
     if(expr == NULL) {
         std::cout<<"Expression is NULL"<<std::endl;
         return false;
     }
     switch(expr->getExprType()) {
         case Expression::NAME_EXPR : 
-            return isNameExprAffine(static_cast<NameExprPtr>(expr),info,itervarSet);
+            return isNameExprAffine(static_cast<NameExprPtr>(expr),info,itervarSet,index);
         case Expression::CONST_EXPR :
             return isConstExprAffine(static_cast<ConstExprPtr>(expr));
         case Expression::PLUS_EXPR :
-            return isPlusExprAffine(static_cast<PlusExprPtr>(expr), info,itervarSet);
+            return isPlusExprAffine(static_cast<PlusExprPtr>(expr), info,itervarSet,index);
         case Expression::MINUS_EXPR :
-            return isMinusExprAffine(static_cast<MinusExprPtr>(expr), info, itervarSet);
+            return isMinusExprAffine(static_cast<MinusExprPtr>(expr), info, itervarSet,index);
         default:
             return false;
     }
 }
 
-bool VCompiler::isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
-    return isExprAffine(expr->getLhs(),info,itervarSet) && isExprAffine(expr->getRhs(), info, itervarSet); 
+bool VCompiler::isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
+    return isExprAffine(expr->getLhs(),info,itervarSet,index) && isExprAffine(expr->getRhs(), info, itervarSet,index); 
 }
 
-bool VCompiler::isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
-    return isExprAffine(expr->getLhs(),info,itervarSet) && isExprAffine(expr->getRhs(), info, itervarSet); 
+bool VCompiler::isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
+    return isExprAffine(expr->getLhs(),info,itervarSet,index) && isExprAffine(expr->getRhs(), info, itervarSet,index); 
 }
 
 bool VCompiler::isConstExprAffine(ConstExprPtr expr) {
     return true;
 }
 
-bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet) {
+void VCompiler::addToIndxToIterMap(IndexExprPtr index, int id) {
+    if(indxToIterMap.find(index) != indxToIterMap.end()) {
+        IntegerSet set = indxToIterMap.find(index)->second;
+        set.insert(id);
+        indxToIterMap.insert(std::pair<IndexExprPtr,IntegerSet>(index, set));
+    } else {
+        IntegerSet set;
+        set.insert(id);
+        indxToIterMap.insert(std::pair<IndexExprPtr,IntegerSet>(index, set));
+    }
+}
+
+bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
     if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && 
         info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
         return false;
     } else {
+        if(itervarSet.find(nameExpr->getId()) != itervarSet.end() &&
+            info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
+            addToIndxToIterMap(index, nameExpr->getId()); 
+        }
         return true;
     }
 
 }
 
-bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet) {
+bool VCompiler::isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet, IndexExprPtr indxExpr) {
     if(!index.m_isExpr) return false;
-    return isExprAffine((index.m_val.m_expr),info, itervarSet);
+    return isExprAffine((index.m_val.m_expr),info, itervarSet,indxExpr);
 }
 
 std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {
@@ -2388,41 +2404,62 @@ bool VCompiler::isMinusExprInvariant(MinusExprPtr expr, LoopInfo *info) {
 }
 
 bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info) {
-    if(expr->getExprType() == Expression::NAME_EXPR) {
-        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
-        return info->m_udmgInfo->m_defs.find(nameExpr->getId()) == info->m_udmgInfo->m_defs.end();
+    if(expr == NULL) {
+        return false;
     }
-    if(expr->getExprType() == Expression::CONST_EXPR) {
-        return true;
+    switch(expr->getExprType()) {
+        case Expression::NAME_EXPR : 
+            return isNameExprInvariant(static_cast<NameExprPtr>(expr), info);
+        case Expression::CONST_EXPR :
+            return isConstExprInvariant(static_cast<ConstExprPtr>(expr));
+        case Expression::MINUS_EXPR :
+            return isMinusExprInvariant(static_cast<MinusExprPtr>(expr),info);
+        case Expression::PLUS_EXPR :
+            return isPlusExprInvariant(static_cast<PlusExprPtr>(expr),info);
+        default :
+            return false;
     }
     return false;
 }
 
 
-bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
-    if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
-        && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
-        return false;
+bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
+    IndexVec indices = expr->getIndices();
+    if(indxToIterMap.find(expr) != indxToIterMap.end()) {
+       IntegerSet set = indxToIterMap.find(expr)->second; 
+        IntegerSet::iterator it = set.begin();    
+        std::cout<<"Integers"<<std::endl;
+        for(; it != set.end();it++) {
+            std::cout<<*it<<std::endl;
+        }
     }
-    if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
-        NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
-        int id  = nameExpr->getId();
-        ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
-        if(exprVec.size() == 0 ) {
+    for(int i = 0; i < indices.size(); i++) {
+        IndexStruct index = indices[i];
+        if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
+                && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
             return false;
-        }  
-        if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
-            return false;
+        }
+        if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
+            NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
+            int id  = nameExpr->getId();
+            ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
+            if(exprVec.size() == 0 ) {
+                return false;
+            }  
+            if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
+                return false;
+            } 
         } 
-    } 
+    }
     return true;
 }
 
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
-    if(!indexInfo.m_isRegularIndex) {
-        std::cout<<"Not a regular index"<<std::endl;
-        return false;
-    } 
+    // if(!indexInfo.m_isRegularIndex) {
+    //     std::cout<<"Not a regular index"<<std::endl;
+    //     std::cout<<symTable->getName(indexInfo.m_iexpr->getArrayId())<<std::endl;
+    //     return false;
+    // } 
     IndexExprPtr indexExpr = indexInfo.m_iexpr;  
     IndexVec vec = indexExpr->getIndices();
     for( int i = 0; i < vec.size(); i++) {
@@ -2430,16 +2467,17 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             std::cout<<"Not an expr index"<<std::endl;
             return false;
         }
-        if(!isIndexAffine(vec[i], info, itervarSet)) {
+        if(!isIndexAffine(vec[i], info, itervarSet,indexExpr)) {
             std::cout<<"Index is not affine"<<std::endl;
             return false;
         }
         
         // ExpressionPtrVector exprVec = lc.getLoopExpr();
-        if(!areLoopBoundsValid(vec[i], info)) {
-            std::cout<<"Loop range variables not loop invariant"<<std::endl;
-            return false; 
-        }
+    }
+
+    if(!areLoopBoundsValid(indexExpr,info)) {
+        std::cout<<"Loop range variables not loop invariant"<<std::endl;
+        return false; 
     }
     return true;
 }

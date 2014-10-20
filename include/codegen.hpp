@@ -110,7 +110,10 @@ class BuiltinMapper {
 Provides methods which generate code for each node of VRIR. It takes a pointer of type VModule which is the root of the VRIR AST.   
 */
 class VCompiler {
+    typedef unordered_set<int> IntegerSet;
+    typedef unordered_map<IndexExprPtr,IntegerSet> IndexToIterMap;
 private:
+    IndexToIterMap indxToIterMap; 
 	int maxTempVecId;
 	int maxTempIterId;
     bool boundsCheckFlag;
@@ -135,6 +138,7 @@ private:
 	    \param SymTable is a pointer to the function's symTable
 	*/
 	Context stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable);  
+    void addToIndxToIterMap(IndexExprPtr expr, int id);
 	//! Generates C++ code for expression node 
 	/*! Calls specialised methods depending on the type of the expression
 	    \fn exprTypeCodeGen 
@@ -234,14 +238,14 @@ private:
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
     void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt, IndexSet& set);
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
-    bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet);
-    bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet);
-    bool isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
-    bool isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
-    bool isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
+    bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr indxExpr);
+    bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );
+    bool isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );
+    bool isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr  );
+    bool isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr);
     bool isConstExprAffine(ConstExprPtr expr);
     
-    bool areLoopBoundsValid(IndexStruct index, LoopInfo *);
+    bool areLoopBoundsValid(IndexExprPtr index, LoopInfo *);
     std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:
     void setBoundsCheckFlag(bool val) {

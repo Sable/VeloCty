@@ -302,7 +302,9 @@ public:
     Context replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymTable *table);
     Context replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTable *table);
     Context genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, SymTable *table);
-    Context genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *table);
+    std::string genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *table);
+    std::string genCheckOptimStartFunc(IndexExprPtr expr, SymTable *symTable);
+    std::string genCheckOptimStopFunc(IndexExprPtr expr,SymTable *symTable);
     Context minusExprCodeGen(MinusExprPtr expr, SymTable *symTable);
     Context matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
     Context matPlusCallCodeGen(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lExpr=NULL);

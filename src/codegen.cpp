@@ -2377,9 +2377,14 @@ bool VCompiler::isConstExprInvariant(ConstExprPtr expr) {
     return true;
 }
 
-bool VCompiler::isPlusExprInvariant(PlusExprPtr expr) {
-    return isExprInvariant(expr->getLhs()) &&
-        isExprInvariant(expr->getRhs());
+bool VCompiler::isPlusExprInvariant(PlusExprPtr expr,LoopInfo *info) {
+    return isExprInvariant(expr->getLhs(),info) &&
+        isExprInvariant(expr->getRhs(),info);
+}
+
+bool VCompiler::isMinusExprInvariant(MinusExprPtr expr, LoopInfo *info) {
+    return isExprInvariant(expr->getLhs(),info) &&
+        isExprInvariant(expr->getRhs(),info);
 }
 
 bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info) {
@@ -2406,7 +2411,7 @@ bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
         if(exprVec.size() == 0 ) {
             return false;
         }  
-        if((!isExprInVariant(exprVec[0],info) || !isExprInVariant(exprVec[1], info))) {
+        if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
             return false;
         } 
     } 

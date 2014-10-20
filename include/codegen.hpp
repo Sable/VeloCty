@@ -254,6 +254,8 @@ public:
     bool isNegativeIndex( IndexExprPtr expr);
     bool isExprInvariant(ExpressionPtr expr, LoopInfo* info);
     bool isNameExprInvariant(NameExprPtr expr, LoopInfo* info);
+    bool isPlusExprInvariant(PlusExprPtr expr, LoopInfo* info);
+    bool isMinusExprInvariant(MinusExprPtr expr, LoopInfo* info);
     bool isConstExprInvariant(ConstExprPtr expr);
     std::string genIndexPtrFunc() const;
     std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);

@@ -2254,22 +2254,22 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     }
     ExpressionPtr domainPtr = stmt->getDomain();
     if(indexSet.size() > 0) {
-    cntxt.addStmt("if(" + optimString + ") { \n");
-    setBoundsCheckFlag(false); 
+    // cntxt.addStmt("if(" + optimString + ") { \n");
+    // setBoundsCheckFlag(false); 
     }
     cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
     if(indexSet.size() > 0) {
-    setBoundsCheckFlag(true); 
-        cntxt.addStmt("} else {\n");
-        cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
-        cntxt.addStmt("}\n");
+    // setBoundsCheckFlag(true); 
+        // cntxt.addStmt("} else {\n");
+        // cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+        // cntxt.addStmt("}\n");
     }
     return cntxt;
 }
 
 void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
     if(infoMap.find(stmt) != infoMap.end()) {
-       LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
         std::vector<int> itervar = stmt->getIterVars();
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
@@ -2277,6 +2277,7 @@ void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& in
             getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, indexSet);
         } else {
             std::cout<<"Warning: LoopInfo for the current for loop not found. skipping"<<std::endl;
+            return;
         } 
         std::cout<<"set size"<<indexSet.size()<<std::endl;
     }
@@ -2323,7 +2324,21 @@ bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<i
             return isNameExprAffine(static_cast<NameExprPtr>(expr),info,itervarSet);
         case Expression::CONST_EXPR :
             return isConstExprAffine(static_cast<ConstExprPtr>(expr));
+        case Expression::PLUS_EXPR :
+            return isPlusExprAffine(static_cast<PlusExprPtr>(expr), info,itervarSet);
+        case Expression::MINUS_EXPR :
+            return isMinusExprAffine(static_cast<MinusExprPtr>(expr), info, itervarSet);
+        default:
+            return false;
     }
+}
+
+bool VCompiler::isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
+    return isExprAffine(expr->getLhs(),info,itervarSet) && isExprAffine(expr->getRhs(), info, itervarSet); 
+}
+
+bool VCompiler::isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet) {
+    return isExprAffine(expr->getLhs(),info,itervarSet) && isExprAffine(expr->getRhs(), info, itervarSet); 
 }
 
 bool VCompiler::isConstExprAffine(ConstExprPtr expr) {

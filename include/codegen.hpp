@@ -237,6 +237,8 @@ private:
     bool isExprLoopInvariant(ExpressionPtr expr, LoopInfo *info);
     bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet);
     bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet);
+    bool isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
+    bool isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
     bool isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
     bool isConstExprAffine(ConstExprPtr expr);
     

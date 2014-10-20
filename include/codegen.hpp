@@ -234,7 +234,6 @@ private:
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
     void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt, IndexSet& set);
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
-    bool isExprLoopInvariant(ExpressionPtr expr, LoopInfo *info);
     bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet);
     bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet);
     bool isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet);
@@ -253,7 +252,9 @@ public:
         return boundsCheckFlag;
     }
     bool isNegativeIndex( IndexExprPtr expr);
-    bool isExprInVariant(ExpressionPtr expr, LoopInfo* info);
+    bool isExprInvariant(ExpressionPtr expr, LoopInfo* info);
+    bool isNameExprInvariant(NameExprPtr expr, LoopInfo* info);
+    bool isConstExprInvariant(ConstExprPtr expr);
     std::string genIndexPtrFunc() const;
     std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);
     std::vector<string> getIndexTemps( int n );

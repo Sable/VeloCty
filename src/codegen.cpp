@@ -2367,7 +2367,22 @@ std::vector<ExpressionPtr> VCompiler::getLoopBoundsFromMap(int id) {
 bool VCompiler::isIterVar(int id) {
     return lc.isIterVar(id);
 }
-bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
+
+bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info) {
+    return info->m_udmgInfo->m_defs.find(expr->getId()) == 
+        info->m_udmgInfo->m_defs.end();
+}
+
+bool VCompiler::isConstExprInvariant(ConstExprPtr expr) {
+    return true;
+}
+
+bool VCompiler::isPlusExprInvariant(PlusExprPtr expr) {
+    return isExprInvariant(expr->getLhs()) &&
+        isExprInvariant(expr->getRhs());
+}
+
+bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info) {
     if(expr->getExprType() == Expression::NAME_EXPR) {
         NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
         return info->m_udmgInfo->m_defs.find(nameExpr->getId()) == info->m_udmgInfo->m_defs.end();
@@ -2377,6 +2392,7 @@ bool VCompiler::isExprInVariant(ExpressionPtr expr,LoopInfo *info) {
     }
     return false;
 }
+
 
 bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
     if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
@@ -2394,18 +2410,6 @@ bool VCompiler::areLoopBoundsValid(IndexStruct index, LoopInfo *info) {
             return false;
         } 
     } 
-    return true;
-}
-
-bool VCompiler::isExprLoopInvariant(ExpressionPtr expr, LoopInfo *info) {
-    if(expr->getExprType() != Expression::NAME_EXPR) {
-        return false;
-    }
-    int id = static_cast<NameExprPtr>(expr)->getId();
-    unordered_set<int> defSet = info->m_udmgInfo->m_defs;
-    if(defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
-        return false;
-    }
     return true;
 }
 

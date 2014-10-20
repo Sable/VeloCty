@@ -2165,36 +2165,72 @@ Context VCompiler::replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymT
     }
     ExpressionPtr expr = index.m_val.m_expr;
     if(expr->getExprType() == Expression::CONST_EXPR) {
-       cntxt = exprTypeCodeGen(expr, symTable); 
+        cntxt = exprTypeCodeGen(expr, symTable); 
         return cntxt;
     } 
     if(expr->getExprType() == Expression::NAME_EXPR) {
         unordered_set<int> defSet = info->m_udmgInfo->m_defs;
         NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
         if(isIterVar(nameExpr->getId()) && defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
-           ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
-           cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+            cntxt = exprTypeCodeGen(exprVec[1], symTable);
             return cntxt;
         }
     }
     return cntxt;
 }
+
 Context VCompiler::genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, SymTable *symTable) {
     IndexVec vec = expr->getIndices();
     Context cntxt;
+    std::string startFuncCall = genCheckOptimStartFunc(expr, symTable) +"(";
+    std::string stopFuncCall = genCheckOptimStopFunc(expr, symTable)+"(";
+    startFuncCall += symTable->getName(expr->getArrayId()); 
+    stopFuncCall += symTable->getName(expr->getArrayId()); 
     for(int i = 0; i < vec.size(); i++) {
-        cntxt = replaceIndexWithStop(vec[i], info, symTable);
+        Context startCntxt = replaceIndexWithStart(vec[i], info, symTable);
+        Context stopCntxt = replaceIndexWithStop(vec[i], info, symTable);
+        startFuncCall += ",";
+        stopFuncCall += ",";
+        startFuncCall += startCntxt.getAllStmt()[0];
+        stopFuncCall += stopCntxt.getAllStmt()[0];
+         
     }
+    startFuncCall += ")";
+    stopFuncCall += ")";
+    cntxt.addStmt(startFuncCall);
+    cntxt.addStmt(stopFuncCall);
     return cntxt;
 }
 
-Context VCompiler::genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *symTable) {
-    Context cntxt;
-    IndexSet::iterator it = indexSet.begin();
-    for(; it != indexSet.end(); it++) {
-         cntxt = genIndexOptimCondition(*it, info, symTable);
+std::string VCompiler::genCheckOptimStartFunc(IndexExprPtr expr,SymTable *symTable) {
+    if(expr->getIndices().size() <=3) {
+        return "checkDimStart_spec<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
     }
-    return cntxt;
+        return "checkDimStart<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+}
+std::string VCompiler::genCheckOptimStopFunc(IndexExprPtr expr,SymTable *symTable) {
+    if(expr->getIndices().size() <=3) {
+        return "checkDimStop_spec<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+    }
+        return "checkDimStop<" + vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0]+">";
+}
+
+std::string VCompiler::genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *symTable) {
+    Context cntxt;
+    std::string condString="";
+    IndexSet::iterator it = indexSet.begin();
+    bool flag = false;
+    for(; it != indexSet.end(); it++) {
+        cntxt = genIndexOptimCondition(*it, info, symTable);
+        if(flag) {
+            condString += " && ";
+        } else{
+            flag = true;
+        }
+        condString +=cntxt.getAllStmt()[0] + " && " + cntxt.getAllStmt()[1]; 
+    }
+    return condString;
 }
 
 Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
@@ -2202,9 +2238,10 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     IndexSet indexSet;
     getIndexElimSet(stmt, symTable, indexSet);
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+    std::string optimString;
     if(it != infoMap.end()) {
         LoopInfo *info = it->second;
-        genCheckOptimCondition(indexSet, info, symTable);
+        optimString = genCheckOptimCondition(indexSet, info, symTable);
     }
     StmtPtr sPtr = stmt->getBody();
     StmtListPtr bodyStmt;
@@ -2215,7 +2252,17 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
         exit(0);
     }
     ExpressionPtr domainPtr = stmt->getDomain();
-    cntxt = loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable);
+    if(indexSet.size() > 0) {
+    cntxt.addStmt("if(" + optimString + ") { \n");
+    setBoundsCheckFlag(false); 
+    }
+    cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+    if(indexSet.size() > 0) {
+    setBoundsCheckFlag(true); 
+        cntxt.addStmt("} else {\n");
+        cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+        cntxt.addStmt("}\n");
+    }
     return cntxt;
 }
 

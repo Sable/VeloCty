@@ -236,6 +236,9 @@ private:
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
     bool isExprLoopInvariant(ExpressionPtr expr, LoopInfo *info);
     bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet);
+    bool isIndexAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet);
+    bool isIndexAffine(ConstExprPtr expr);
+    
     bool areLoopBoundsValid(IndexStruct index, LoopInfo *);
     std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:

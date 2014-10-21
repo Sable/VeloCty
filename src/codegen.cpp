@@ -2477,11 +2477,6 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
 }
 
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
-    // if(!indexInfo.m_isRegularIndex) {
-    //     std::cout<<"Not a regular index"<<std::endl;
-    //     std::cout<<symTable->getName(indexInfo.m_iexpr->getArrayId())<<std::endl;
-    //     return false;
-    // } 
     IndexExprPtr indexExpr = indexInfo.m_iexpr;  
     IndexVec vec = indexExpr->getIndices();
     for( int i = 0; i < vec.size(); i++) {
@@ -2493,8 +2488,6 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             std::cout<<"Index is not affine"<<std::endl;
             return false;
         }
-        
-        // ExpressionPtrVector exprVec = lc.getLoopExpr();
     }
 
     if(!areLoopBoundsValid(indexExpr,info)) {

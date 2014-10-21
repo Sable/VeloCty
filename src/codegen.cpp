@@ -2466,6 +2466,9 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
         for(; it != set.end(); it++) {
             int id = *it;
             ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
+            if(exprVec.size() == 0) {
+                return false;
+            }
             if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
                 std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;
@@ -2489,7 +2492,6 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             return false;
         }
     }
-
     if(!areLoopBoundsValid(indexExpr,info)) {
         std::cout<<"Loop range variables not loop invariant"<<std::endl;
         return false; 
@@ -2724,11 +2726,11 @@ Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs
                 tmpCntxt.addStmtVec(genBoundCheckStmt(*it,symTable,onLhs).getAllStmt());
             }
         }
-        if(tmpCntxt.getAllStmt().size() > 0 ) {
             cntxt.addStmt("#ifdef BOUND_CHECK\n");
+        if(tmpCntxt.getAllStmt().size() > 0 ) {
             cntxt.addStmtVec(tmpCntxt.getAllStmt());
-            cntxt.addStmt("#endif\n");
         }
+            cntxt.addStmt("#endif\n");
     }
     return cntxt;
 }

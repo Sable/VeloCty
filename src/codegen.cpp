@@ -2273,7 +2273,7 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     if(it != infoMap.end()) {
         LoopInfo *info = it->second;
         std::cout<<"index set size"<<indexSet.size()<<std::endl;
-        // optimString = genCheckOptimCondition(indexSet, info, symTable);
+        optimString = genCheckOptimCondition(indexSet, info, symTable);
     }
     StmtPtr sPtr = stmt->getBody();
     StmtListPtr bodyStmt;
@@ -2285,15 +2285,15 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     }
     ExpressionPtr domainPtr = stmt->getDomain();
     if(indexSet.size() > 0) {
-    // cntxt.addStmt("if(" + optimString + ") { \n");
-    // setBoundsCheckFlag(false); 
+    cntxt.addStmt("if(" + optimString + ") { \n");
+    setBoundsCheckFlag(false); 
     }
     cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
     if(indexSet.size() > 0) {
-    // setBoundsCheckFlag(true); 
-        // cntxt.addStmt("} else {\n");
-        // cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
-        // cntxt.addStmt("}\n");
+    setBoundsCheckFlag(true); 
+        cntxt.addStmt("} else {\n");
+        cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+        cntxt.addStmt("}\n");
     }
     return cntxt;
 }

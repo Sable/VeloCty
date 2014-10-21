@@ -2349,6 +2349,7 @@ void VCompiler::addToIndxToIterMap(IndexExprPtr index, int id) {
     if(indxToIterMap.find(index) != indxToIterMap.end()) {
         IntegerSet set = indxToIterMap.find(index)->second;
         set.insert(id);
+        indxToIterMap.erase(index);
         indxToIterMap.insert(std::pair<IndexExprPtr,IntegerSet>(index, set));
     } else {
         IntegerSet set;
@@ -2359,12 +2360,15 @@ void VCompiler::addToIndxToIterMap(IndexExprPtr index, int id) {
 
 bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
     if(itervarSet.find(nameExpr->getId()) == itervarSet.end() && 
-        info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
+            info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
         return false;
     } else {
-        if(itervarSet.find(nameExpr->getId()) != itervarSet.end() &&
-            info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
+        if(itervarSet.find(nameExpr->getId()) != itervarSet.end()) {
             addToIndxToIterMap(index, nameExpr->getId()); 
+            if(indxToIterMap.find(index) != indxToIterMap.end()) {
+                IntegerSet set = indxToIterMap.find(index)->second; 
+                IntegerSet::iterator it = set.begin();    
+            }
         }
         return true;
     }
@@ -2428,29 +2432,34 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
     if(indxToIterMap.find(expr) != indxToIterMap.end()) {
        IntegerSet set = indxToIterMap.find(expr)->second; 
         IntegerSet::iterator it = set.begin();    
-        std::cout<<"Integers"<<std::endl;
-        for(; it != set.end();it++) {
-            std::cout<<*it<<std::endl;
-        }
-    }
-    for(int i = 0; i < indices.size(); i++) {
-        IndexStruct index = indices[i];
-        if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
-                && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
-            return false;
-        }
-        if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
-            NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
-            int id  = nameExpr->getId();
+        for(; it != set.end(); it++) {
+            int id = *it;
             ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
-            if(exprVec.size() == 0 ) {
+            if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
+                std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;
-            }  
-            if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
-                return false;
-            } 
-        } 
+            }
+        }
     }
+    
+    // for(int i = 0; i < indices.size(); i++) {
+    //     IndexStruct index = indices[i];
+    //     if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
+    //             && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
+    //         return false;
+    //     }
+    //     if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
+    //         NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
+    //         int id  = nameExpr->getId();
+    //         ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
+    //         if(exprVec.size() == 0 ) {
+    //             return false;
+    //         }  
+    //         if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
+                // return false;
+            // } 
+        // } 
+    // }
     return true;
 }
 

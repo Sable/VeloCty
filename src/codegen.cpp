@@ -2442,24 +2442,6 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
         }
     }
     
-    // for(int i = 0; i < indices.size(); i++) {
-    //     IndexStruct index = indices[i];
-    //     if(index.m_val.m_expr->getExprType() != Expression::NAME_EXPR 
-    //             && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
-    //         return false;
-    //     }
-    //     if(index.m_val.m_expr->getExprType() == Expression::NAME_EXPR) {
-    //         NameExprPtr nameExpr = static_cast<NameExprPtr>(index.m_val.m_expr);
-    //         int id  = nameExpr->getId();
-    //         ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
-    //         if(exprVec.size() == 0 ) {
-    //             return false;
-    //         }  
-    //         if((!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1], info))) {
-                // return false;
-            // } 
-        // } 
-    // }
     return true;
 }
 

@@ -315,9 +315,10 @@ public:
     Context replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymTable *table);
     Context replaceExprWithExpr(ExpressionPtr , LoopInfo *info, SymTable *table,bool isStart);
     Context replaceNameExprWithExpr(NameExprPtr , LoopInfo *info, SymTable *table,bool isStart);
+    Context replaceBinaryExprWithExpr(BinaryExprPtr , LoopInfo *info, SymTable *table,bool isStart,std::string sign);
     Context replacePlusExprWithExpr(PlusExprPtr , LoopInfo *info, SymTable *table,bool isStart);
     Context replaceMinusExprWithExpr(MinusExprPtr , LoopInfo *info, SymTable *table,bool isStart);
-    Context replaceConstExprWithExpr(ConstExprPtr);
+    Context replaceConstExprWithExpr(ConstExprPtr,SymTable *);
     Context replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTable *table);
     Context genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, SymTable *table);
     std::string genCheckOptimCondition(IndexSet & indexSet, LoopInfo *info, SymTable *table);

@@ -2142,31 +2142,45 @@ Context VCompiler::replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTa
     if(!index.m_isExpr) {
         std::cout<<"Index has to be an expression"<<std::endl;
     }
-    ExpressionPtr expr = index.m_val.m_expr;
-    if(expr->getExprType() == Expression::CONST_EXPR) {
-       cntxt = exprTypeCodeGen(expr, symTable); 
-        return cntxt;
-    } 
-    if(expr->getExprType() == Expression::NAME_EXPR) {
-        unordered_set<int> defSet = info->m_udmgInfo->m_defs;
-        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
-        if(isIterVar(nameExpr->getId()) && defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
-           ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
-           cntxt = exprTypeCodeGen(exprVec[1], symTable);
-            return cntxt;
+    cntxt = replaceExprWithExpr(index.m_val.m_expr, info, symTable, false);
+    return cntxt;
+}
+
+Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info, SymTable *symTable,bool isStart) {
+    Context cntxt;
+    unordered_set<int> defSet = info->m_udmgInfo->m_defs;
+    if(isIterVar(nameExpr->getId()) && defSet.find(nameExpr->getId()) != defSet.end()) {
+        ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+        if(isStart) {
+            cntxt = exprTypeCodeGen(exprVec[0], symTable);
+        }
+        else  {
+            cntxt = exprTypeCodeGen(exprVec[1], symTable);
         }
     }
     return cntxt;
 }
 
-Context VCompiler::replaceNameExprWithExpr(NameExprPtr , LoopInfo *info, SymTable *table,bool isStart) {
+Context VCompiler::replaceBinaryExprWithExpr(BinaryExprPtr expr, LoopInfo* info, SymTable *table, bool isStart, std::string op) {
+    Context  cntxt; 
+    Context lCntxt = replaceExprWithExpr(expr->getLhs(),info, table,isStart);
+    Context rCntxt = replaceExprWithExpr(expr->getRhs(),info, table,isStart);
+    cntxt.addStmt("( " +lCntxt.getAllStmt()[0] +" "+ op  + " " + rCntxt.getAllStmt()[0] + ")");
+    return cntxt;
 }
-Context VCompiler::replacePlusExprWithExpr(PlusExprPtr , LoopInfo *info, SymTable *table,bool isStart){
+
+Context VCompiler::replacePlusExprWithExpr(PlusExprPtr expr, LoopInfo *info, SymTable *table,bool isStart) {
+    return replaceBinaryExprWithExpr(expr, info, table, isStart, "+");
+} 
+
+Context VCompiler::replaceMinusExprWithExpr(MinusExprPtr expr, LoopInfo *info, SymTable *table,bool isStart) {
+    return replaceBinaryExprWithExpr(expr, info, table, isStart, "-");
 }
-Context VCompiler::replaceMinusExprWithExpr(MinusExprPtr , LoopInfo *info, SymTable *table,bool isStart) {
+
+Context VCompiler::replaceConstExprWithExpr(ConstExprPtr expr,SymTable *symTable) {
+    return constExprCodeGen(expr,symTable);
 }
-Context VCompiler::replaceConstExprWithExpr(ConstExprPtr expr) {
-}
+
 Context VCompiler::replaceExprWithExpr(ExpressionPtr expr, LoopInfo *info, SymTable *symTable,bool isStart) {
     if(expr == NULL) {
         return Context();
@@ -2175,7 +2189,7 @@ Context VCompiler::replaceExprWithExpr(ExpressionPtr expr, LoopInfo *info, SymTa
         case Expression::NAME_EXPR : 
             return replaceNameExprWithExpr(static_cast<NameExprPtr>(expr),info, symTable, isStart);
         case Expression::CONST_EXPR :
-            return replaceConstExprWithExpr(static_cast<ConstExprPtr>(expr));
+            return replaceConstExprWithExpr(static_cast<ConstExprPtr>(expr),symTable);
         case Expression::PLUS_EXPR :
             return replacePlusExprWithExpr(static_cast<PlusExprPtr>( expr),info, symTable, isStart);
         case Expression::MINUS_EXPR :
@@ -2191,19 +2205,7 @@ Context VCompiler::replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymT
         std::cout<<"Index has to be an expression"<<std::endl;
     }
     ExpressionPtr expr = index.m_val.m_expr;
-    if(expr->getExprType() == Expression::CONST_EXPR) {
-        cntxt = exprTypeCodeGen(expr, symTable); 
-        return cntxt;
-    } 
-    if(expr->getExprType() == Expression::NAME_EXPR) {
-        unordered_set<int> defSet = info->m_udmgInfo->m_defs;
-        NameExprPtr nameExpr = static_cast<NameExprPtr>(expr);
-        if(isIterVar(nameExpr->getId()) && defSet.find(static_cast<NameExprPtr>(expr)->getId()) != defSet.end()) {
-            ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
-            cntxt = exprTypeCodeGen(exprVec[1], symTable);
-            return cntxt;
-        }
-    }
+    cntxt = replaceExprWithExpr(expr, info, symTable, true);
     return cntxt;
 }
 

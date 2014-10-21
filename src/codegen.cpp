@@ -1933,6 +1933,7 @@ std::string VCompiler::genIndexPtrStr(IndexExprPtr expr, SymTable *symTable) {
     funcStr +=")";
     return funcStr;
 }
+
 std::string VCompiler::genIndexStr(IndexExprPtr expr, SymTable *symTable) {
     std::string declStr ="";
     int id=expr->getArrayId();
@@ -2158,6 +2159,32 @@ Context VCompiler::replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTa
     return cntxt;
 }
 
+Context VCompiler::replaceNameExprWithExpr(NameExprPtr , LoopInfo *info, SymTable *table,bool isStart) {
+}
+Context VCompiler::replacePlusExprWithExpr(PlusExprPtr , LoopInfo *info, SymTable *table,bool isStart){
+}
+Context VCompiler::replaceMinusExprWithExpr(MinusExprPtr , LoopInfo *info, SymTable *table,bool isStart) {
+}
+Context VCompiler::replaceConstExprWithExpr(ConstExprPtr expr) {
+}
+Context VCompiler::replaceExprWithExpr(ExpressionPtr expr, LoopInfo *info, SymTable *symTable,bool isStart) {
+    if(expr == NULL) {
+        return Context();
+    }
+    switch(expr->getExprType()) {
+        case Expression::NAME_EXPR : 
+            return replaceNameExprWithExpr(static_cast<NameExprPtr>(expr),info, symTable, isStart);
+        case Expression::CONST_EXPR :
+            return replaceConstExprWithExpr(static_cast<ConstExprPtr>(expr));
+        case Expression::PLUS_EXPR :
+            return replacePlusExprWithExpr(static_cast<PlusExprPtr>( expr),info, symTable, isStart);
+        case Expression::MINUS_EXPR :
+            return replaceMinusExprWithExpr(static_cast<MinusExprPtr>(expr), info, symTable, isStart);
+        default :
+            return Context();
+    }  
+}
+
 Context VCompiler::replaceIndexWithStart(IndexStruct index, LoopInfo *info, SymTable *symTable){
     Context cntxt;
     if(!index.m_isExpr) {
@@ -2237,12 +2264,14 @@ std::string VCompiler::genCheckOptimCondition(IndexSet & indexSet, LoopInfo *inf
 Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) { 
     Context cntxt;
     IndexSet indexSet;
+    std::string optimString;
+    indxToIterMap.clear();
     getIndexElimSet(stmt, symTable, indexSet);
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
-    std::string optimString;
     if(it != infoMap.end()) {
         LoopInfo *info = it->second;
-        optimString = genCheckOptimCondition(indexSet, info, symTable);
+        std::cout<<"index set size"<<indexSet.size()<<std::endl;
+        // optimString = genCheckOptimCondition(indexSet, info, symTable);
     }
     StmtPtr sPtr = stmt->getBody();
     StmtListPtr bodyStmt;

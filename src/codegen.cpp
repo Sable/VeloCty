@@ -2639,65 +2639,65 @@ std::string VCompiler::genSpecBoundCheckHeader(IndexExprPtr expr, SymTable* symT
 }
 
 Context VCompiler::genSpecialisedBoundCheck(IndexExprPtr expr, SymTable *symTable, bool onLhs) {
-	Context cntxt;
-	IndexVec vec = expr->getIndices();
-	std::string boundFuncStr = genSpecBoundCheckHeader(expr,symTable);
-	boundFuncStr += "(";
-	boundFuncStr += "&"+symTable->getName(expr->getArrayId());
-	boundFuncStr += ",";
-	boundFuncStr +=  onLhs ? "true" : "false";
-	for (int i = 0; i < vec.size(); i++) {
-		std::string argStr = exprTypeCodeGen(vec[i].m_val.m_expr, symTable).getAllStmt()[0];
-		if(vec[i].m_val.m_expr->getType()->getBasicType() == VType::SCALAR_TYPE ) {
-			if ((static_cast<ScalarTypePtr>(vec[i].m_val.m_expr->getType()))->getScalarTag() != ScalarType::SCALAR_INT64 || 
-				(static_cast<ScalarTypePtr>(vec[i].m_val.m_expr->getType()))->getScalarTag() != ScalarType::SCALAR_INT32) {
-				 argStr = "static_cast<dim_type>(" + argStr + ")";
-			} 
-		} else if (vec[i].m_val.m_expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
-			ArrayTypePtr arrayType = static_cast<ArrayTypePtr>(vec[i].m_val.m_expr->getType());
-			if(arrayType->getElementType()->getScalarTag() != ScalarType::SCALAR_INT32 || 
-				arrayType->getElementType()->getScalarTag() != ScalarType::SCALAR_INT64) {
-				 argStr = "static_cast<dim_type>(" + argStr + ")";
-			} 
-		}
-		boundFuncStr += "," + argStr; 
-	} 
-	cntxt.addStmt(boundFuncStr + ");\n");
-	return cntxt;
+    Context cntxt;
+    IndexVec vec = expr->getIndices();
+    std::string boundFuncStr = genSpecBoundCheckHeader(expr,symTable);
+    boundFuncStr += "(";
+    boundFuncStr += "&"+symTable->getName(expr->getArrayId());
+    boundFuncStr += ",";
+    boundFuncStr +=  onLhs ? "true" : "false";
+    for (int i = 0; i < vec.size(); i++) {
+        std::string argStr = exprTypeCodeGen(vec[i].m_val.m_expr, symTable).getAllStmt()[0];
+        if(vec[i].m_val.m_expr->getType()->getBasicType() == VType::SCALAR_TYPE ) {
+            if ((static_cast<ScalarTypePtr>(vec[i].m_val.m_expr->getType()))->getScalarTag() != ScalarType::SCALAR_INT64 || 
+                    (static_cast<ScalarTypePtr>(vec[i].m_val.m_expr->getType()))->getScalarTag() != ScalarType::SCALAR_INT32) {
+                argStr = "static_cast<dim_type>(" + argStr + ")";
+            } 
+        } else if (vec[i].m_val.m_expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
+            ArrayTypePtr arrayType = static_cast<ArrayTypePtr>(vec[i].m_val.m_expr->getType());
+            if(arrayType->getElementType()->getScalarTag() != ScalarType::SCALAR_INT32 || 
+                    arrayType->getElementType()->getScalarTag() != ScalarType::SCALAR_INT64) {
+                argStr = "static_cast<dim_type>(" + argStr + ")";
+            } 
+        }
+        boundFuncStr += "," + argStr; 
+    } 
+    cntxt.addStmt(boundFuncStr + ");\n");
+    return cntxt;
 }
 bool VCompiler::canSpecBoundCheckStmt(IndexVec vec) {
-	for( int i = 0; i < vec.size(); i++) {
-		if(!vec[i].m_isExpr) return false;
-	}
+    for( int i = 0; i < vec.size(); i++) {
+        if(!vec[i].m_isExpr) return false;
+    }
     return vec.size() <=2;
 }
 Context VCompiler::genBoundCheckStmt(IndexExprPtr expr,SymTable * symTable,bool onLhs) {
-	Context cntxt; 
-	IndexVec vec = expr->getIndices();
-	if (canSpecBoundCheckStmt(expr->getIndices())) {
-		return genSpecialisedBoundCheck(expr, symTable, onLhs);	
-	}
-	std::string boundFuncStr = genBoundCheckHeader(expr,symTable);
-	boundFuncStr += "(";
-	boundFuncStr += "&"+symTable->getName(expr->getArrayId());
-	boundFuncStr += ","+itoa(onLhs);
-	boundFuncStr += ","+ itoa(vec.size());
-	for(int i = 0; i < vec.size(); i++) {
-		std::string rangeFunc;
-		if(!vec[i].m_isExpr) {
-			rangeFunc = genRangeFuncStr(vec[i].m_val.m_range,symTable); 
-		}
-		else{
-			rangeFunc = genRangeFuncStr(vec[i].m_val.m_expr,symTable);
-		}
-		boundFuncStr += ","+rangeFunc;
-		/*if(i < vec.size()-1) {
-			boundFuncStr +=",";
-		} */
-	}	
-	boundFuncStr +=");\n";
-	cntxt.addStmt(boundFuncStr);
-	return cntxt;
+    Context cntxt; 
+    IndexVec vec = expr->getIndices();
+    if (canSpecBoundCheckStmt(expr->getIndices())) {
+        return genSpecialisedBoundCheck(expr, symTable, onLhs);	
+    }
+    std::string boundFuncStr = genBoundCheckHeader(expr,symTable);
+    boundFuncStr += "(";
+    boundFuncStr += "&"+symTable->getName(expr->getArrayId());
+    boundFuncStr += ","+itoa(onLhs);
+    boundFuncStr += ","+ itoa(vec.size());
+    for(int i = 0; i < vec.size(); i++) {
+        std::string rangeFunc;
+        if(!vec[i].m_isExpr) {
+            rangeFunc = genRangeFuncStr(vec[i].m_val.m_range,symTable); 
+        }
+        else{
+            rangeFunc = genRangeFuncStr(vec[i].m_val.m_expr,symTable);
+        }
+        boundFuncStr += ","+rangeFunc;
+        /*if(i < vec.size()-1) {
+          boundFuncStr +=",";
+          } */
+    }	
+    boundFuncStr +=");\n";
+    cntxt.addStmt(boundFuncStr);
+    return cntxt;
 }
 bool VCompiler::requiresCheck(IndexExprPtr expr){
     IndexVec vec = expr->getIndices();
@@ -2709,32 +2709,35 @@ bool VCompiler::requiresCheck(IndexExprPtr expr){
     return false;
 }
 Context VCompiler::genBoundCheckStmt(StmtPtr stmt,SymTable * symTable,bool onLhs) {
-	Context cntxt;
-    if(!getBoundsCheckFlag()) {
+    Context cntxt;
+    unordered_set<IndexExprPtr> *indexSet = collector.getIndexSet(stmt);
+    if(indexSet == NULL) {
         return cntxt;
     }
-	unordered_set<IndexExprPtr> *indexSet = collector.getIndexSet(stmt);
-	if(indexSet == NULL) {
-		return cntxt;
-	}
-	else {
+    else {
         Context tmpCntxt;
-		unordered_set<IndexExprPtr>::iterator it = indexSet->begin();
-		for(; it !=indexSet->end(); it++) {
-			if(isOnLhs(static_cast<IndexExprPtr>(*it))) {
-				onLhs = true;	
-			} else {
-				onLhs = false;
-			}
+        unordered_set<IndexExprPtr>::iterator it = indexSet->begin();
+        for(; it !=indexSet->end(); it++) {
+            if(!getBoundsCheckFlag() && 
+                    usedIndices.find(*it) != usedIndices.end()) {
+                continue;
+            }
+            if(isOnLhs(static_cast<IndexExprPtr>(*it))) {
+                onLhs = true;	
+            } else {
+                onLhs = false;
+            }
             if(requiresCheck(*it)){
                 tmpCntxt.addStmtVec(genBoundCheckStmt(*it,symTable,onLhs).getAllStmt());
             }
-		}
-		cntxt.addStmt("#ifdef BOUND_CHECK\n");
-        cntxt.addStmtVec(tmpCntxt.getAllStmt());
-		cntxt.addStmt("#endif\n");
-	}
-	return cntxt;
+        }
+        if(tmpCntxt.getAllStmt().size() > 0 ) {
+            cntxt.addStmt("#ifdef BOUND_CHECK\n");
+            cntxt.addStmtVec(tmpCntxt.getAllStmt());
+            cntxt.addStmt("#endif\n");
+        }
+    }
+    return cntxt;
 }
 
 bool VCompiler::hasColon(IndexExprPtr expr) {

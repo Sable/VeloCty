@@ -2170,6 +2170,9 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
                 std::cout<<"loop direction is not known. Can not generate optimisation. String. Exiting"<<std::endl;
             }
         }
+    } else  {
+        std::cout<<"NameExpression in replace"<<symTable->getName(nameExpr->getId())<<std::endl;
+        return nameExprCodeGen(nameExpr, symTable);
     }
     return cntxt;
 }
@@ -2285,7 +2288,6 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
     if(it != infoMap.end() && indexSet.size() > 0) {
         LoopInfo *info = it->second;
-        std::cout<<"index set size"<<indexSet.size()<<std::endl;
         optimString = genCheckOptimCondition(indexSet, info, symTable);
     }
     StmtPtr sPtr = stmt->getBody();
@@ -2433,6 +2435,10 @@ bool VCompiler::isIterVar(int id) {
 }
 
 bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info) {
+    std::cout<<"name expression "<<expr->getId()<<std::endl;
+    std::cout<<"In isNameExprInvariant"<<(info->m_udmgInfo->m_defs.find(expr->getId()) == 
+        info->m_udmgInfo->m_defs.end())<<std::endl;
+
     return info->m_udmgInfo->m_defs.find(expr->getId()) == 
         info->m_udmgInfo->m_defs.end();
 }

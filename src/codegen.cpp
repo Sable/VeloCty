@@ -2482,6 +2482,10 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
             if(exprVec.size() == 0) {
                 return false;
             }
+            if(getLoopDirectionEnum(exprVec[2]) == UNKNOWN) {
+                std::cout<<"Loop Direction can not be determined."<<std::endl;
+                return false;
+            }
             if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
                 std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;

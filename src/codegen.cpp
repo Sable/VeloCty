@@ -1523,7 +1523,7 @@ Context VCompiler::constExprCodeGen(ConstExprPtr expr, SymTable *symTable) {
 
 VCompiler::LoopDirection VCompiler::getLoopDirectionEnum(ExpressionPtr expr) {
         ExpressionPtr  stepExpr = NULL;
-        if(stepExpr == NULL) {
+        if(expr == NULL) {
             return VCompiler::COUNT_UP;
         }
        if(expr->getExprType() == Expression::CAST_EXPR) {

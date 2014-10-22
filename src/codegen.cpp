@@ -101,7 +101,6 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
 #ifdef DEBUG
     std::cout<<"generating code in module "<<std::endl;
 #endif 
-    lc.analyze(vm);
     setBoundsCheckFlag(true);
     for (int i = 0; i < funcList.size(); i++) {
         std::cout<<"Generating code for "<<funcList[i]->getName()<<std::endl;
@@ -109,6 +108,9 @@ Context VCompiler::moduleCodeGen(VModule *vm) {
             continue;
         }
         currFunction = funcList[i];
+        LoopCollector funcLc;
+        funcLc.caseFunction(funcList[i]);
+        lc = funcLc;
         LoopInfo::getLoopInfoMap(funcList[i], infoMap, topLoops);
         if(prelim_bounds) {
             VRaptor::prelimBCE(funcList[i], infoMap);

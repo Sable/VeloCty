@@ -1527,7 +1527,7 @@ VCompiler::LoopDirection VCompiler::getLoopDirectionEnum(ExpressionPtr expr) {
             return VCompiler::COUNT_UP;
         }
        if(expr->getExprType() == Expression::CAST_EXPR) {
-            stepExpr = static_cast<CastExprPtr>(stepExpr)->getBaseExpr();
+            stepExpr = static_cast<CastExprPtr>(expr)->getBaseExpr();
         } else {
             stepExpr = expr;
         }

@@ -2151,11 +2151,24 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
     unordered_set<int> defSet = info->m_udmgInfo->m_defs;
     if(isIterVar(nameExpr->getId()) && defSet.find(nameExpr->getId()) != defSet.end()) {
         ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+        VCompiler::LoopDirection dir  = getLoopDirectionEnum(exprVec[2]);
         if(isStart) {
-            cntxt = exprTypeCodeGen(exprVec[0], symTable);
+            if(dir == COUNT_UP) {
+                cntxt = exprTypeCodeGen(exprVec[0], symTable);
+            } else if(dir == COUNT_DOWN) {
+                cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            } else  {
+                std::cout<<"loop direction is not known. Can not generate optimisation. String. Exiting"<<std::endl;
+            }
         }
         else  {
-            cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            if(dir == COUNT_UP) {
+                cntxt = exprTypeCodeGen(exprVec[1], symTable);
+            } else if(dir == COUNT_DOWN) {
+                cntxt = exprTypeCodeGen(exprVec[0], symTable);
+            } else  {
+                std::cout<<"loop direction is not known. Can not generate optimisation. String. Exiting"<<std::endl;
+            }
         }
     }
     return cntxt;
@@ -2270,7 +2283,7 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     indxToIterMap.clear();
     getIndexElimSet(stmt, symTable, indexSet);
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
-    if(it != infoMap.end()) {
+    if(it != infoMap.end() && indexSet.size() > 0) {
         LoopInfo *info = it->second;
         std::cout<<"index set size"<<indexSet.size()<<std::endl;
         optimString = genCheckOptimCondition(indexSet, info, symTable);

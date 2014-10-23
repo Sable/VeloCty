@@ -19,6 +19,12 @@ bool prelim_bounds = true;
 #else 
 bool prelim_bounds = true;
 #endif
+#define PHASE2_BOUNDS
+#ifdef PHASE2_BOUNDS
+bool phase2Optimise = true;
+#else 
+bool phase2Optimise = false;
+#endif
 
 using namespace VRaptor;
 using namespace std;
@@ -2285,13 +2291,15 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     IndexSet indexSet;
     std::string optimString;
-    indxToIterMap.clear();
-    indexSet.clear();
-    getIndexElimSet(stmt, symTable, indexSet);
-    LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
-    if(it != infoMap.end() && indexSet.size() > 0) {
-        LoopInfo *info = it->second;
-        optimString = genCheckOptimCondition(indexSet, info, symTable);
+    if(phase2Optimise) {
+        indxToIterMap.clear();
+        indexSet.clear();
+        getIndexElimSet(stmt, symTable, indexSet);
+        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+        if(it != infoMap.end() && indexSet.size() > 0) {
+            LoopInfo *info = it->second;
+            optimString = genCheckOptimCondition(indexSet, info, symTable);
+        }
     }
     StmtPtr sPtr = stmt->getBody();
     StmtListPtr bodyStmt;
@@ -2302,16 +2310,20 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
         exit(0);
     }
     ExpressionPtr domainPtr = stmt->getDomain();
-    if(indexSet.size() > 0) {
-    cntxt.addStmt("if(" + optimString + ") { \n");
-    setBoundsCheckFlag(false); 
+    if(phase2Optimise) {
+        if(indexSet.size() > 0) {
+            cntxt.addStmt("if(" + optimString + ") { \n");
+            setBoundsCheckFlag(false); 
+        }
     }
     cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
-    if(indexSet.size() > 0) {
-    setBoundsCheckFlag(true); 
-        cntxt.addStmt("} else {\n");
-        cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
-        cntxt.addStmt("}\n");
+    if(phase2Optimise) {
+        if(indexSet.size() > 0) {
+            setBoundsCheckFlag(true); 
+            cntxt.addStmt("} else {\n");
+            cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+            cntxt.addStmt("}\n");
+        }
     }
     return cntxt;
 }

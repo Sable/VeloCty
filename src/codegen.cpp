@@ -1524,34 +1524,34 @@ Context VCompiler::constExprCodeGen(ConstExprPtr expr, SymTable *symTable) {
 }
 
 VCompiler::LoopDirection VCompiler::getLoopDirectionEnum(ExpressionPtr expr) {
-        ExpressionPtr  stepExpr = NULL;
-        if(expr == NULL) {
-            return VCompiler::COUNT_UP;
+    ExpressionPtr  stepExpr = NULL;
+    if(expr == NULL) {
+        return VCompiler::COUNT_UP;
+    }
+    if(expr->getExprType() == Expression::CAST_EXPR) {
+        stepExpr = static_cast<CastExprPtr>(expr)->getBaseExpr();
+    } else {
+        stepExpr = expr;
+    }
+    if(stepExpr->getExprType()==Expression::CONST_EXPR) {
+        ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
+        if(constExpr->getDoubleVal()>0) {
+            return (VCompiler::COUNT_UP);
+        }else {
+            return (VCompiler::COUNT_DOWN);
         }
-       if(expr->getExprType() == Expression::CAST_EXPR) {
-            stepExpr = static_cast<CastExprPtr>(expr)->getBaseExpr();
-        } else {
-            stepExpr = expr;
-        }
-        if(stepExpr->getExprType()==Expression::CONST_EXPR) {
-            ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
-            if(constExpr->getDoubleVal()>0) {
+    }
+    else if(stepExpr->getExprType()==Expression::NEGATE_EXPR) {
+        NegateExprPtr nExpr = static_cast<NegateExprPtr>(stepExpr);
+        if(nExpr->getBaseExpr()->getExprType()==Expression::CONST_EXPR) {
+            ConstExprPtr constExpr = static_cast<ConstExprPtr>(nExpr->getBaseExpr());
+            if(constExpr->getDoubleVal()<0) {
                 return (VCompiler::COUNT_UP);
-            }else {
+            }else{
                 return (VCompiler::COUNT_DOWN);
             }
         }
-		else if(stepExpr->getExprType()==Expression::NEGATE_EXPR) {
-			NegateExprPtr nExpr = static_cast<NegateExprPtr>(stepExpr);
-			if(nExpr->getBaseExpr()->getExprType()==Expression::CONST_EXPR) {
-				ConstExprPtr constExpr = static_cast<ConstExprPtr>(stepExpr);
-				if(constExpr->getDoubleVal()<0) {
-					return (VCompiler::COUNT_UP);
-				}else{
-					return (VCompiler::COUNT_DOWN);
-				}
-			}
-     }
+    }
     return VCompiler::UNKNOWN;
 }
 
@@ -2286,7 +2286,9 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     IndexSet indexSet;
     std::string optimString;
     indxToIterMap.clear();
+    indexSet.clear();
     getIndexElimSet(stmt, symTable, indexSet);
+    std::cout<<"Index set size "<<indexSet.size()<<std::endl;
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
     if(it != infoMap.end() && indexSet.size() > 0) {
         LoopInfo *info = it->second;
@@ -2411,12 +2413,11 @@ bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered
             info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
         return false;
     } else {
-        if(itervarSet.find(nameExpr->getId()) != itervarSet.end()) {
-            addToIndxToIterMap(index, nameExpr->getId()); 
-            if(indxToIterMap.find(index) != indxToIterMap.end()) {
-                IntegerSet set = indxToIterMap.find(index)->second; 
-                IntegerSet::iterator it = set.begin();    
+        if(itervarSet.find(nameExpr->getId()) != itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
+            std::cout<<"Name Expression "<<nameExpr->getId()<<std::endl;
+            if(nameExpr->getId() == 6) {
             }
+            addToIndxToIterMap(index, nameExpr->getId()); 
         }
         return true;
     }
@@ -2478,29 +2479,81 @@ bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info) {
     return false;
 }
 
+ExpressionPtrVector VCompiler::getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars) {
+    DomainExprPtr dExpr = NULL;
+    if(expr->getExprType() == Expression::DOMAIN_EXPR) {
+        dExpr  = static_cast<DomainExprPtr>(expr);
+    } else {
+        std::cout<<"Expression is not a domain Expression.\n Exiting"<<std::endl;
+        exit(0);
+    }
+    for(int i = 0; i < iterVars.size(); i++) {
+        if(iterVars[i] == iterId) {
+            ExpressionPtrVector exprVec;
+            exprVec.push_back(dExpr->getStartExpr(i));
+            exprVec.push_back(dExpr->getStopExpr(i));
+            exprVec.push_back(dExpr->getStepExpr(i));
+            return exprVec;
+        }
+    } 
+    return ExpressionPtrVector();
+}
+ExpressionPtrVector VCompiler::getLoopBounds(int iterId, LoopInfo *info) {
+    if(iterId < 0) {
+        std::cout<<"id can not be negative"<<std::endl<<"Exiting"<<std::endl;
+        exit(0);
+    }
+    StmtPtr loopStmt = info->m_loop;
+    if(loopStmt->getStmtType() == Statement::STMT_FOR) {
+        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<ForStmtPtr>(loopStmt)->getDomain(), static_cast<ForStmtPtr>(loopStmt)->getIterVars());
+        if(vec.size() > 0) {
+            return vec;
+        }
+    } else if(loopStmt->getStmtType()== Statement::STMT_PFOR) {
+        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<PforStmtPtr>(loopStmt)->getDomain(), static_cast<PforStmtPtr>(loopStmt)->getIterVars());
+        if(vec.size() > 0) {
+            return vec;
+        }
+    }
+    for(int i = 0; i < info->m_childLoops.size(); i++) {
+        if(infoMap.find(info->m_childLoops[i]) != infoMap.end()) {
+            LoopInfo *childInfo = infoMap.find(info->m_childLoops[i])->second;
+            ExpressionPtrVector vec = getLoopBounds(iterId,childInfo);
+            if(vec.size() > 0 ){
+                return vec;
+            }
+        }
+    }
+    return ExpressionPtrVector();
+}
 
 bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
     IndexVec indices = expr->getIndices();
     if(indxToIterMap.find(expr) != indxToIterMap.end()) {
-       IntegerSet set = indxToIterMap.find(expr)->second; 
+        IntegerSet set = indxToIterMap.find(expr)->second; 
         IntegerSet::iterator it = set.begin();    
         for(; it != set.end(); it++) {
             int id = *it;
-            ExpressionPtrVector exprVec = getLoopBoundsFromMap(id);
+            ExpressionPtrVector exprVec = getLoopBounds(id,info);
             if(exprVec.size() == 0) {
                 return false;
             }
-            if(getLoopDirectionEnum(exprVec[2]) == UNKNOWN) {
+            std::cout<<"LOOP direction "<<getLoopDirectionEnum(exprVec[2])<<std::endl;
+            if( getLoopDirectionEnum(exprVec[2])== UNKNOWN) {
                 std::cout<<"Loop Direction can not be determined."<<std::endl;
                 return false;
+            } else  {
+                std::cout<<"expression Type "<<exprVec[2]->getExprType()<<std::endl;
             }
             if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
                 std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;
             }
         }
+    } else {
+        return false;
     }
-    
+
     return true;
 }
 
@@ -2514,6 +2567,7 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
         }
         if(!isIndexAffine(vec[i], info, itervarSet,indexExpr)) {
             std::cout<<"Index is not affine"<<std::endl;
+            std::cout<<exprTypeCodeGen(vec[i].m_val.m_expr,symTable).getAllStmt()[0]<<std::endl;
             return false;
         }
     }

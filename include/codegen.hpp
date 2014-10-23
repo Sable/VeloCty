@@ -138,6 +138,8 @@ private:
 	    \param SymTable is a pointer to the function's symTable
 	*/
 	Context stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable);  
+    ExpressionPtrVector getLoopBounds(int iterId, LoopInfo *info);
+    ExpressionPtrVector getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars);
     void addToIndxToIterMap(IndexExprPtr expr, int id);
 	//! Generates C++ code for expression node 
 	/*! Calls specialised methods depending on the type of the expression

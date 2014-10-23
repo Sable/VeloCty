@@ -140,6 +140,8 @@ private:
 	Context stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable);  
     ExpressionPtrVector getLoopBounds(int iterId, LoopInfo *info);
     ExpressionPtrVector getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars);
+    std::vector<int> getItervars(StmtPtr stmt);
+    DomainExprPtr getDomain(StmtPtr stmt);
     void addToIndxToIterMap(IndexExprPtr expr, int id);
 	//! Generates C++ code for expression node 
 	/*! Calls specialised methods depending on the type of the expression
@@ -230,7 +232,7 @@ private:
     std::string genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool  canSpecialiseNegativeIndex(IndexVec vec); 
     bool canSpecialiseArraySlice(IndexVec vec);
-    void getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet );
+    void getIndexElimSet(StmtPtr stmt, SymTable *symTable,IndexSet& indexSet );
     std::string genSpecArraySliceStr(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr = NULL);
     bool isSpecSlice(AssignStmtPtr stmt);
     bool  canSpecBoundCheckStmt(IndexVec vec); 
@@ -238,7 +240,7 @@ private:
     bool isOnLhs(IndexExprPtr expr);
     Context handleArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable* symTable);
     Context handleSpecArraySliceSet(IndexExprPtr lhsExpr, ExpressionPtr expr, SymTable *symTable);
-    void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,ForStmtPtr stmt, IndexSet& set);
+    void getLoopIndices(LoopInfo* info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain, unordered_map<IndexStruct, unordered_set<StmtPtr> >& indexToLoopMap,StmtPtr stmt, IndexSet& set);
     bool isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info);
     bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr indxExpr);
     bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );

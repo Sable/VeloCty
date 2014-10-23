@@ -171,36 +171,36 @@ std::string VCompiler::genConstructor(VFunction *func,SymTable *symTable) {
 }
 
 std::string VCompiler::genRetStruct(VFunction * func) {
-	std::string struct_def = "typedef struct ";
-	SymTable *symTable=func->getSymTable();
-	std::string structName = genFuncStructName(func);
-	struct_def += structName;
-	struct_def += " { \n";
-	FuncTypePtr funcType = static_cast<FuncTypePtr>(func->getType());
-	for(int i = 0; i < funcType->getNumReturns(); i++) {
-		VTypePtr vtype = funcType->getReturnType(i);
-		std::string dataType = vTypeCodeGen(vtype,symTable,false).getAllStmt()[0];
-		struct_def+= dataType + " "+genStructData() + itoa(i) + ";\n";
-	} 
-	struct_def += "\n";
-	struct_def +=genConstructor(func,symTable)+"\n";
-	 struct_def +="}"+structName+";\n";
-	return struct_def;
+    std::string struct_def = "typedef struct ";
+    SymTable *symTable=func->getSymTable();
+    std::string structName = genFuncStructName(func);
+    struct_def += structName;
+    struct_def += " { \n";
+    FuncTypePtr funcType = static_cast<FuncTypePtr>(func->getType());
+    for(int i = 0; i < funcType->getNumReturns(); i++) {
+        VTypePtr vtype = funcType->getReturnType(i);
+        std::string dataType = vTypeCodeGen(vtype,symTable,false).getAllStmt()[0];
+        struct_def+= dataType + " "+genStructData() + itoa(i) + ";\n";
+    } 
+    struct_def += "\n";
+    struct_def +=genConstructor(func,symTable)+"\n";
+    struct_def +="}"+structName+";\n";
+    return struct_def;
 }
 bool VCompiler::hasMultRet(VFunction* func) {
-	return hasMultRet(func->getBody());
+    return hasMultRet(func->getBody());
 }
- 
+
 bool VCompiler::hasMultRet(StmtListPtr stmtList) {
-	for(int i = 0; i < stmtList->getNumChildren(); i++) {
-		if(stmtList->getChild(i)->getStmtType()==Statement::STMT_RETURN) {
-			ReturnStmtPtr returnStmt = static_cast<ReturnStmtPtr>(stmtList->getChild(i));
-			if(returnStmt->getExprs().size()>1){
-				return true;
-			}
-		}
-	}
-	return false;
+    for(int i = 0; i < stmtList->getNumChildren(); i++) {
+        if(stmtList->getChild(i)->getStmtType()==Statement::STMT_RETURN) {
+            ReturnStmtPtr returnStmt = static_cast<ReturnStmtPtr>(stmtList->getChild(i));
+            if(returnStmt->getExprs().size()>1){
+                return true;
+            }
+        }
+    }
+    return false;
 } 
 
 bool VCompiler::hasMultRet(FunCallExprPtr expr) {
@@ -572,34 +572,61 @@ Context VCompiler::stmtCodeGen(StmtPtr stmt, SymTable *symTable) {
 
 Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
-	std::string ompStr = "";
-	if(getOpenMpFlag()) {
-		ompStr = "#pragma omp parallel for ";
-		std::set<int> sharedSet = stmt->getShared();
-		if( sharedSet.size() > 0){
-				ompStr+= "shared(";
-				for(set<int>::iterator it = sharedSet.begin(); it != sharedSet.end(); it++) {
-					std::string varName = symTable->getName(*it);
-					if(it != sharedSet.begin()){
-							ompStr += ", ";
-					}
-					ompStr += varName;
-				}
-				ompStr +=")";
-		}
-		ompStr +="\n";
-	}	
-	cntxt.addStmt(ompStr);
-	StmtPtr sPtr = stmt->getBody();
-	StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
-	ExpressionPtr domainPtr = stmt->getDomain();
-	vector<int> iterVar = stmt->getIterVars();
+    IndexSet indexSet;
+    std::string optimString;
+    if(phase2Optimise) {
+        indxToIterMap.clear();
+        indexSet.clear();
+        getIndexElimSet(stmt, symTable, indexSet);
+        LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+        if(it != infoMap.end() && indexSet.size() > 0) {
+            LoopInfo *info = it->second;
+            optimString = genCheckOptimCondition(indexSet, info, symTable);
+        }
+    }
+    std::string ompStr = "";
+    if(getOpenMpFlag()) {
+        ompStr = "#pragma omp parallel for ";
+        std::set<int> sharedSet = stmt->getShared();
+        if( sharedSet.size() > 0){
+            ompStr+= "shared(";
+            for(set<int>::iterator it = sharedSet.begin(); it != sharedSet.end(); it++) {
+                std::string varName = symTable->getName(*it);
+                if(it != sharedSet.begin()){
+                    ompStr += ", ";
+                }
+                ompStr += varName;
+            }
+            ompStr +=")";
+        }
+        ompStr +="\n";
+    }	
+    StmtPtr sPtr = stmt->getBody();
+    StmtListPtr  bodyStmt = static_cast<StmtListPtr> (sPtr);
+    ExpressionPtr domainPtr = stmt->getDomain();
+    vector<int> iterVar = stmt->getIterVars();
+    if(phase2Optimise) {
+        if(indexSet.size() > 0) {
+            cntxt.addStmt("if(" + optimString + ") { \n");
+            setBoundsCheckFlag(false); 
+        }
+    }
+    cntxt.addStmt(ompStr);
     Context loopCntxt = loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),iterVar, bodyStmt, symTable); 
     cntxt.addStmtVec(loopCntxt.getAllStmt());
-	return cntxt;
+    if(phase2Optimise) {
+        if(indexSet.size() > 0) {
+            setBoundsCheckFlag(true); 
+            cntxt.addStmt("} else {\n");
+            cntxt.addStmt(ompStr);
+            cntxt.addStmtVec(loopStmtCodeGen(static_cast<DomainExprPtr>(domainPtr),stmt->getIterVars(), bodyStmt, symTable).getAllStmt());
+            cntxt.addStmt("}\n");
+        }
+    }
+    return cntxt;
 }
 std::string VCompiler::genStructVarStr(VFunction *func) {
-		return genStructVarStr(genFuncStructName(func));
+    return genStructVarStr(genFuncStructName(func));
 }
 
 std::string VCompiler::genStructVarStr(std::string structType) {
@@ -2328,23 +2355,45 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     return cntxt;
 }
 
-void VCompiler::getIndexElimSet(ForStmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
+std::vector<int> VCompiler::getItervars(StmtPtr stmt) {
+    if(stmt->getStmtType() == Statement::STMT_FOR) {
+        return static_cast<ForStmtPtr>(stmt)->getIterVars();
+    } else if(stmt->getStmtType() == Statement::STMT_PFOR) {
+        return static_cast<PforStmtPtr>(stmt)->getIterVars();
+    }
+    return std::vector<int>();
+}
+
+DomainExprPtr VCompiler::getDomain(StmtPtr stmt) {
+    ExpressionPtr expr = NULL;
+    if(stmt->getStmtType() == Statement::STMT_FOR) {
+        expr = static_cast<ForStmtPtr>(stmt)->getDomain();
+         
+    } else if(stmt->getStmtType() == Statement::STMT_PFOR) {
+        expr = static_cast<PforStmtPtr>(stmt)->getDomain();
+    }
+    if(expr != NULL && expr->getExprType() == Expression::DOMAIN_EXPR) {
+        return static_cast<DomainExprPtr>(expr);
+    }
+    return NULL;
+}
+
+void VCompiler::getIndexElimSet(StmtPtr stmt, SymTable *symTable,IndexSet& indexSet) {
     if(infoMap.find(stmt) != infoMap.end()) {
         LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
-        std::vector<int> itervar = stmt->getIterVars();
+        std::vector<int> itervar = getItervars(stmt);
         unordered_set<int> itervarSet(itervar.begin(), itervar.end());
         unordered_map<IndexStruct, unordered_set<StmtPtr> > indexToLoopMap;
         if(infoMap.find(stmt) != infoMap.end()) {
-            getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(stmt->getDomain()), indexToLoopMap,stmt, indexSet);
+            getLoopIndices(infoMap.find(stmt)->second, symTable, itervarSet, static_cast<DomainExprPtr>(getDomain(stmt)), indexToLoopMap,stmt, indexSet);
         } else {
             std::cout<<"Warning: LoopInfo for the current for loop not found. skipping"<<std::endl;
             return;
         } 
-        std::cout<<"set size"<<indexSet.size()<<std::endl;
     }
 }
 
-void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap, ForStmtPtr currStmt, IndexSet & set) {
+void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set<int> itervarSet, DomainExprPtr domain,unordered_map<IndexStruct, unordered_set<StmtPtr> > & indexToLoopMap, StmtPtr currStmt, IndexSet & set) {
     std::vector<LoopInfo::IndexInfo> indices;
     if(infoMap.find(currStmt) != infoMap.end()) {
         indices = infoMap.find(currStmt)->second->m_indexes; 
@@ -2366,12 +2415,10 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
          childLoops = infoMap.find(currStmt)->second->m_childLoops;
     }
     for (int  i = 0; i < childLoops.size(); i++ ) {
-        if(childLoops[i]->getStmtType() == Statement::STMT_FOR) {
-            ForStmtPtr forStmt = static_cast<ForStmtPtr>(childLoops[i]);
-            std::vector<int> itervar = forStmt->getIterVars();
+            StmtPtr loopStmt = static_cast<StmtPtr>(childLoops[i]);
+            std::vector<int> itervar = getItervars(loopStmt);
             itervarSet.insert(itervar.begin(), itervar.end());
-            getLoopIndices(info, symTable,itervarSet, static_cast<DomainExprPtr>(forStmt->getDomain()), indexToLoopMap, forStmt, set); 
-        }  
+            getLoopIndices(info, symTable,itervarSet, getDomain(loopStmt), indexToLoopMap, loopStmt, set); 
     }   
 }
 
@@ -2425,7 +2472,6 @@ bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered
         return false;
     } else {
         if(itervarSet.find(nameExpr->getId()) != itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
-            std::cout<<"Name Expression "<<nameExpr->getId()<<std::endl;
             if(nameExpr->getId() == 6) {
             }
             addToIndxToIterMap(index, nameExpr->getId()); 

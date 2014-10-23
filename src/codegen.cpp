@@ -2288,7 +2288,6 @@ Context VCompiler::forStmtCodeGen(ForStmtPtr stmt, SymTable *symTable) {
     indxToIterMap.clear();
     indexSet.clear();
     getIndexElimSet(stmt, symTable, indexSet);
-    std::cout<<"Index set size "<<indexSet.size()<<std::endl;
     LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
     if(it != infoMap.end() && indexSet.size() > 0) {
         LoopInfo *info = it->second;

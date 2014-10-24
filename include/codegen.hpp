@@ -345,6 +345,8 @@ public:
     Context whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable);
     //Context refOpStmtCodeGen(RefOpStmtPtr stmt, SymTable *symTable);
     Context pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable);
+    std::string getSharedString(std::set<int> sharedSet, SymTable *symTable);
+    std::string getPrivateString(std::set<int> sharedSet, LoopInfo *info, SymTable *symTable);
     Context allocExprCodeGen(AllocExprPtr expr, SymTable *symTable);
     Context binaryExprCodeGen(BinaryExprPtr expr, SymTable *symTable);
     Context multExprCodeGen(MultExprPtr expr, SymTable *symTable);

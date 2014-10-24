@@ -570,6 +570,44 @@ Context VCompiler::stmtCodeGen(StmtPtr stmt, SymTable *symTable) {
 	return cntxt;
 }
 
+std::string VCompiler::getSharedString(std::set<int> sharedSet, SymTable *symTable) {
+    std::string sharedStr = "";
+        if( sharedSet.size() > 0){
+            sharedStr += "shared(";
+            for(set<int>::iterator it = sharedSet.begin(); it != sharedSet.end(); it++) {
+                std::string varName = symTable->getName(*it);
+                if(it != sharedSet.begin()){
+                    sharedStr += ", ";
+                }
+                sharedStr += varName;
+            }
+            sharedStr +=")";
+        }
+    return sharedStr;
+}
+
+std::string VCompiler::getPrivateString(std::set<int> sharedSet, LoopInfo *info, SymTable *symTable) {
+    std::string privateStr = "";
+    unordered_set<int> defSet = info->m_udmgInfo->m_defs;
+    bool flag = false;
+    if( sharedSet.size() > 0){
+        privateStr += "private(";
+        for(unordered_set<int>::iterator it = defSet.begin(); it != defSet.end(); it++) {
+            if(sharedSet.find(*it) == sharedSet.end()) {
+                std::string varName = symTable->getName(*it);
+                if(flag){
+                    privateStr += ", ";
+                } else {
+                    flag = true;
+                }
+                privateStr += varName;
+            }
+        }
+        privateStr +=")";
+    }
+    return privateStr;
+}
+
 Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     IndexSet indexSet;
@@ -589,16 +627,9 @@ Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
         ompStr = "#pragma omp parallel for ";
         std::set<int> sharedSet = stmt->getShared();
         if( sharedSet.size() > 0){
-            ompStr+= "shared(";
-            for(set<int>::iterator it = sharedSet.begin(); it != sharedSet.end(); it++) {
-                std::string varName = symTable->getName(*it);
-                if(it != sharedSet.begin()){
-                    ompStr += ", ";
-                }
-                ompStr += varName;
-            }
-            ompStr +=")";
+            ompStr += getSharedString(sharedSet,symTable);
         }
+        ompStr += " " + getPrivateString(sharedSet,infoMap.find(stmt)->second,symTable);
         ompStr +="\n";
     }	
     StmtPtr sPtr = stmt->getBody();
@@ -1465,27 +1496,12 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,Ex
         tempCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
         if (tempCntxt.getAllStmt().size() > 0) {
             std::string argStr = tempCntxt.getAllStmt()[0];
-            // if(!isBuiltin(fnName) && 
-            //         expr->getArg(0)->getType()->getBasicType() != VType::SCALAR_TYPE
-            //         && (expr->getArg(0)->getExprType() != Expression::FUNCALL_EXPR && expr->getArg(0)->getExprType() != Expression::LIBCALL_EXPR)) {
-            //     Context typeCntxt = vTypeCodeGen(expr->getArg(0)->getType(),symTable);
-            //     std::string typeStr = typeCntxt.getAllStmt()[0]; 
-            //     argStr = typeStr + "(&" + argStr + ")";				
-            // }	
             name += argStr;
         }
         for (int i = 1; i<expr->getNargs(); i++) {
             tempCntxt = exprTypeCodeGen(expr->getArg(i), symTable);
             if (tempCntxt.getAllStmt().size() > 0) {
                 std::string argStr = tempCntxt.getAllStmt()[0];
-                // if(!isBuiltin(fnName) && 
-                //         expr->getArg(i)->getType()->getBasicType() != VType::SCALAR_TYPE 
-                //         &&( expr->getArg(i)->getExprType() != Expression::FUNCALL_EXPR ||    
-                //             expr->getArg(i)->getExprType() != Expression::LIBCALL_EXPR)) {
-                //     Context typeCntxt = vTypeCodeGen(expr->getArg(i)->getType(),symTable);
-                //     std::string typeStr = typeCntxt.getAllStmt()[0]; 
-                //     argStr = typeStr + "(&" + argStr + ")";
-                // }	
                 name += "," + argStr;
             }
         }

@@ -2501,13 +2501,10 @@ bool VCompiler::isIterVar(int id) {
     return lc.isIterVar(id);
 }
 
-bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info,unordered_set<int> &) {
-    std::cout<<"name expression "<<expr->getId()<<std::endl;
-    std::cout<<"In isNameExprInvariant"<<(info->m_udmgInfo->m_defs.find(expr->getId()) == 
-        info->m_udmgInfo->m_defs.end())<<std::endl;
+bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info,unordered_set<int> & iterVarSet) {
 
     return info->m_udmgInfo->m_defs.find(expr->getId()) == 
-        info->m_udmgInfo->m_defs.end();
+        info->m_udmgInfo->m_defs.end() && iterVarSet.find(expr->getId()) == iterVarSet.end();
 }
 
 bool VCompiler::isConstExprInvariant(ConstExprPtr expr) {

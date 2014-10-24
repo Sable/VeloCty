@@ -177,7 +177,7 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
         outArr.data[*outoffSet] = inArr.data[currOffset + indices[0].m_val.const_val-indx_diff];
         return;	
     }		
-    if(indices[currIndx].m_isRange == true) {
+    if(indices[0].m_isRange == true) {
         DimType start  = indices[0].m_val.range_val[0];
         DimType stop = indices[0].m_val.range_val[1];
         DimType step = indices[0].m_val.range_val[2];
@@ -186,8 +186,8 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
         }
         return;
     }
-    if( indices[currIndx].m_isArray == true) {
-        VrArrayPtrF64 arr = indices[currIndx].arr;
+    if( indices[0].m_isArray == true) {
+        VrArrayPtrF64 arr = indices[0].arr;
         DimType numel  =  getNumElem(arr.dims,arr.ndims);
         for( DimType i = 0; i < numel; i++) {
             outArr.data[(*outoffSet)++] = inArr.data[currOffset + static_cast<DimType>(arr.data[i]) - indx_diff];	

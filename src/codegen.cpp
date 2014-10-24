@@ -1046,7 +1046,23 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
             return matLDivCallCodeGen(expr, symTable,lExpr); 
         case LibCallExpr::LIB_MRDIV : 
             return matRDivCallCodeGen(expr,symTable,lExpr); 
-           
+        case LibCallExpr::LIB_COPY : {
+            if(expr->getNargs() > 1) {
+                std::cout<<"Currently copy operations with a single parameter are supported"<<std::endl;
+                exit(0);
+            }
+            Context argCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
+            int ndims = 0; 
+            if( expr->getType()->getBasicType() != VType::ARRAY_TYPE) {
+                return argCntxt;
+            } else {
+                string copyStr = genCopyExpr(static_cast<NameExprPtr>(expr->getArg(0)),symTable);
+                cntxt.addStmt(copyStr);
+                return cntxt;
+            }
+                std::cout<<"Should not reach here"<<std::endl;
+                exit(0);
+            }
         default:
             cout << "error in library call expression \n function not found"<<expr->getLibFunType()
                 <<"Exiting"<<std::endl;
@@ -1449,27 +1465,27 @@ Context VCompiler::funCallExprCodeGen(FunCallExprPtr expr, SymTable *symTable,Ex
         tempCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
         if (tempCntxt.getAllStmt().size() > 0) {
             std::string argStr = tempCntxt.getAllStmt()[0];
-            if(!isBuiltin(fnName) && 
-                    expr->getArg(0)->getType()->getBasicType() != VType::SCALAR_TYPE
-                    && (expr->getArg(0)->getExprType() != Expression::FUNCALL_EXPR && expr->getArg(0)->getExprType() != Expression::LIBCALL_EXPR)) {
-                Context typeCntxt = vTypeCodeGen(expr->getArg(0)->getType(),symTable);
-                std::string typeStr = typeCntxt.getAllStmt()[0]; 
-                argStr = typeStr + "(&" + argStr + ")";				
-            }	
+            // if(!isBuiltin(fnName) && 
+            //         expr->getArg(0)->getType()->getBasicType() != VType::SCALAR_TYPE
+            //         && (expr->getArg(0)->getExprType() != Expression::FUNCALL_EXPR && expr->getArg(0)->getExprType() != Expression::LIBCALL_EXPR)) {
+            //     Context typeCntxt = vTypeCodeGen(expr->getArg(0)->getType(),symTable);
+            //     std::string typeStr = typeCntxt.getAllStmt()[0]; 
+            //     argStr = typeStr + "(&" + argStr + ")";				
+            // }	
             name += argStr;
         }
         for (int i = 1; i<expr->getNargs(); i++) {
             tempCntxt = exprTypeCodeGen(expr->getArg(i), symTable);
             if (tempCntxt.getAllStmt().size() > 0) {
                 std::string argStr = tempCntxt.getAllStmt()[0];
-                if(!isBuiltin(fnName) && 
-                        expr->getArg(i)->getType()->getBasicType() != VType::SCALAR_TYPE 
-                        &&( expr->getArg(i)->getExprType() != Expression::FUNCALL_EXPR ||    
-                            expr->getArg(i)->getExprType() != Expression::LIBCALL_EXPR)) {
-                    Context typeCntxt = vTypeCodeGen(expr->getArg(i)->getType(),symTable);
-                    std::string typeStr = typeCntxt.getAllStmt()[0]; 
-                    argStr = typeStr + "(&" + argStr + ")";
-                }	
+                // if(!isBuiltin(fnName) && 
+                //         expr->getArg(i)->getType()->getBasicType() != VType::SCALAR_TYPE 
+                //         &&( expr->getArg(i)->getExprType() != Expression::FUNCALL_EXPR ||    
+                //             expr->getArg(i)->getExprType() != Expression::LIBCALL_EXPR)) {
+                //     Context typeCntxt = vTypeCodeGen(expr->getArg(i)->getType(),symTable);
+                //     std::string typeStr = typeCntxt.getAllStmt()[0]; 
+                //     argStr = typeStr + "(&" + argStr + ")";
+                // }	
                 name += "," + argStr;
             }
         }

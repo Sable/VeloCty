@@ -2501,7 +2501,7 @@ bool VCompiler::isIterVar(int id) {
     return lc.isIterVar(id);
 }
 
-bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info) {
+bool VCompiler::isNameExprInvariant(NameExprPtr expr,LoopInfo *info,unordered_set<int> &) {
     std::cout<<"name expression "<<expr->getId()<<std::endl;
     std::cout<<"In isNameExprInvariant"<<(info->m_udmgInfo->m_defs.find(expr->getId()) == 
         info->m_udmgInfo->m_defs.end())<<std::endl;
@@ -2514,29 +2514,29 @@ bool VCompiler::isConstExprInvariant(ConstExprPtr expr) {
     return true;
 }
 
-bool VCompiler::isPlusExprInvariant(PlusExprPtr expr,LoopInfo *info) {
-    return isExprInvariant(expr->getLhs(),info) &&
-        isExprInvariant(expr->getRhs(),info);
+bool VCompiler::isPlusExprInvariant(PlusExprPtr expr,LoopInfo *info,unordered_set<int> & iterVarSet) {
+    return isExprInvariant(expr->getLhs(),info,iterVarSet) &&
+        isExprInvariant(expr->getRhs(),info,iterVarSet);
 }
 
-bool VCompiler::isMinusExprInvariant(MinusExprPtr expr, LoopInfo *info) {
-    return isExprInvariant(expr->getLhs(),info) &&
-        isExprInvariant(expr->getRhs(),info);
+bool VCompiler::isMinusExprInvariant(MinusExprPtr expr, LoopInfo *info,unordered_set<int> & iterVarSet) {
+    return isExprInvariant(expr->getLhs(),info,iterVarSet) &&
+        isExprInvariant(expr->getRhs(),info,iterVarSet);
 }
 
-bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info) {
+bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info,unordered_set<int>& iterVarSet) {
     if(expr == NULL) {
         return false;
     }
     switch(expr->getExprType()) {
         case Expression::NAME_EXPR : 
-            return isNameExprInvariant(static_cast<NameExprPtr>(expr), info);
+            return isNameExprInvariant(static_cast<NameExprPtr>(expr), info,iterVarSet);
         case Expression::CONST_EXPR :
             return isConstExprInvariant(static_cast<ConstExprPtr>(expr));
         case Expression::MINUS_EXPR :
-            return isMinusExprInvariant(static_cast<MinusExprPtr>(expr),info);
+            return isMinusExprInvariant(static_cast<MinusExprPtr>(expr),info,iterVarSet);
         case Expression::PLUS_EXPR :
-            return isPlusExprInvariant(static_cast<PlusExprPtr>(expr),info);
+            return isPlusExprInvariant(static_cast<PlusExprPtr>(expr),info,iterVarSet);
         default :
             return false;
     }
@@ -2591,7 +2591,7 @@ ExpressionPtrVector VCompiler::getLoopBounds(int iterId, LoopInfo *info) {
     return ExpressionPtrVector();
 }
 
-bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
+bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info,unordered_set<int> &iterVarSet) {
     IndexVec indices = expr->getIndices();
     if(indxToIterMap.find(expr) != indxToIterMap.end()) {
         IntegerSet set = indxToIterMap.find(expr)->second; 
@@ -2606,7 +2606,7 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
                 std::cout<<"Loop Direction can not be determined."<<std::endl;
                 return false;
             } 
-            if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
+            if(!isExprInvariant(exprVec[0],info,iterVarSet) || !isExprInvariant(exprVec[1],info,iterVarSet)) {
                 std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;
             }
@@ -2632,7 +2632,7 @@ bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> i
             return false;
         }
     }
-    if(!areLoopBoundsValid(indexExpr,info)) {
+    if(!areLoopBoundsValid(indexExpr,info,itervarSet)) {
         std::cout<<"Loop range variables not loop invariant"<<std::endl;
         return false; 
     }

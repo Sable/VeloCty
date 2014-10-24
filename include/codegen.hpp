@@ -249,7 +249,7 @@ private:
     bool isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr);
     bool isConstExprAffine(ConstExprPtr expr);
     
-    bool areLoopBoundsValid(IndexExprPtr index, LoopInfo *);
+    bool areLoopBoundsValid(IndexExprPtr index, LoopInfo *,unordered_set<int> &);
     std::vector<ExpressionPtr> getLoopBoundsFromMap(int id);
 public:
     void setBoundsCheckFlag(bool val) {
@@ -260,10 +260,10 @@ public:
         return boundsCheckFlag;
     }
     bool isNegativeIndex( IndexExprPtr expr);
-    bool isExprInvariant(ExpressionPtr expr, LoopInfo* info);
-    bool isNameExprInvariant(NameExprPtr expr, LoopInfo* info);
-    bool isPlusExprInvariant(PlusExprPtr expr, LoopInfo* info);
-    bool isMinusExprInvariant(MinusExprPtr expr, LoopInfo* info);
+    bool isExprInvariant(ExpressionPtr expr, LoopInfo* info,unordered_set<int> &);
+    bool isNameExprInvariant(NameExprPtr expr, LoopInfo* info,unordered_set<int> &);
+    bool isPlusExprInvariant(PlusExprPtr expr, LoopInfo* info,unordered_set<int> &);
+    bool isMinusExprInvariant(MinusExprPtr expr, LoopInfo* info,unordered_set<int> &);
     bool isConstExprInvariant(ConstExprPtr expr);
     std::string genIndexPtrFunc() const;
     std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);

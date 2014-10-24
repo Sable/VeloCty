@@ -1,8 +1,11 @@
 import numpy
 import testPython
+def testCheckDims() :
+    a = numpy.random.rand(3,3)
+    testPython.testCheckDims(a)
 def testSlice() :
 	a = numpy.random.rand(3,3)
-	c = testPython.testSlice(a);
+	c = testPython.testSlice(a)
     #assert c == a[1,2],'slicing failed'
 	print('shape of c'+str(c.shape))
 	#print(a[1,2] == c)
@@ -69,9 +72,10 @@ def testIndexPtr() :
 #testZeros_int()
 #testOnes()
 #testIndexVal()
-testIndexPtr()
+#testIndexPtr()
 #testSlice()
 #testSetSlice()
 #testBasic()
 #testZeros()
+testCheckDims()
 print("all test cases passed successfully ")

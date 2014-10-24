@@ -14,6 +14,7 @@
 #include<negative_index_handler.tpp>
 #include<indexPtr.tpp>
 #include<boundcheck.tpp>
+#include<checkDims.tpp>
 #define mod(x,y) ((long)x%(long)y)
 bool isVector(dim_type* dims,dim_type ndims);
 bool isScalar(dim_type* dims,dim_type ndims);

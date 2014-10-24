@@ -5,6 +5,15 @@
 #include<library_ops.hpp>
 #include<cblas.h>
 #include<matrix_ops.hpp>
+
+static PyObject* testCheckDims(PyObject *self, PyObject *args) {
+    PyArrayObject *obj1;
+    PyArg_ParseTuple(args, "O!",&PyArray_Type, &obj1);
+    VrArrayF64 A = getVrArrayF64(obj1);
+    std::cout<<"Start Value"<<checkDimStart_spec<VrArrayF64>(A,-3,4)<<std::endl;
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 static PyObject* testBasic(PyObject *self, PyObject *args) 
 {
     PyArrayObject *obj1;
@@ -208,6 +217,7 @@ static PyMethodDef testPythonMethods[] =
 	{"testOnes", testOnes, METH_VARARGS, "Testing Ones"},
 	{"testIndexVal", testIndexVal, METH_VARARGS, "Testing IndexVal"},
 	{"testIndexPtr", testIndexPtr, METH_VARARGS, "Testing IndexPtr"},
+	{"testCheckDims", testCheckDims, METH_VARARGS, "Testing IndexPtr"},
 	{NULL,NULL,0,NULL}
 };
  static struct PyModuleDef testPythonModule = {

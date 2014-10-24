@@ -1795,12 +1795,19 @@ Context VCompiler::ltExprCodeGen(LtExprPtr expr, SymTable *symTable) {
 }
 
 Context VCompiler::gtExprCodeGen(GtExprPtr expr, SymTable *symTable) {
-	Context cntxt;
-	Context tempCntxt = binaryExprCodeGen(expr, symTable);
-	string lStr = tempCntxt.getAllStmt()[0];
-	string rStr = tempCntxt.getAllStmt()[1];
-	cntxt.addStmt(lStr + " > " + rStr);
-	return cntxt;
+    Context cntxt;
+    if(expr->getType()->getBasicType() == VType::SCALAR_TYPE) {
+        Context tempCntxt = binaryExprCodeGen(expr, symTable);
+        string lStr = tempCntxt.getAllStmt()[0];
+        string rStr = tempCntxt.getAllStmt()[1];
+        cntxt.addStmt(lStr + " > " + rStr);
+    } else if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
+        string lStr = exprTypeCodeGen(expr->getLhs(),symTable).getAllStmt()[0];
+        string rStr = exprTypeCodeGen(expr->getRhs(),symTable).getAllStmt()[0];
+        cntxt.addStmt("gt<"+ vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0] + ">("
+                + lStr + ", " + rStr + ")");
+    }
+    return cntxt;
 }
 
 Context VCompiler::geqExprCodeGen(GeqExprPtr expr, SymTable *symTable) {
@@ -2471,9 +2478,9 @@ bool VCompiler::isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered
             info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
         return false;
     } else {
-        if(itervarSet.find(nameExpr->getId()) != itervarSet.end() && info->m_udmgInfo->m_defs.find(nameExpr->getId()) != info->m_udmgInfo->m_defs.end()) {
-            if(nameExpr->getId() == 6) {
-            }
+        if(itervarSet.find(nameExpr->getId()) != itervarSet.end() && 
+                info->m_udmgInfo->m_defs.find(nameExpr->getId()) != 
+                info->m_udmgInfo->m_defs.end()) {
             addToIndxToIterMap(index, nameExpr->getId()); 
         }
         return true;
@@ -2595,13 +2602,10 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info) {
             if(exprVec.size() == 0) {
                 return false;
             }
-            std::cout<<"LOOP direction "<<getLoopDirectionEnum(exprVec[2])<<std::endl;
             if( getLoopDirectionEnum(exprVec[2])== UNKNOWN) {
                 std::cout<<"Loop Direction can not be determined."<<std::endl;
                 return false;
-            } else  {
-                std::cout<<"expression Type "<<exprVec[2]->getExprType()<<std::endl;
-            }
+            } 
             if(!isExprInvariant(exprVec[0],info) || !isExprInvariant(exprVec[1],info)) {
                 std::cout<<"Loop bounds are not invariant"<<std::endl;
                 return false;

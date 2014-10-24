@@ -115,6 +115,11 @@ typedef struct VrArrayB{
   bool *data;
   dim_type* dims;  
   int ndims;
+    VrArrayB() {
+        data = NULL;
+        dims = NULL;
+        ndims = 0;
+    }
 }VrArrayB;
 
 struct VrIndex{

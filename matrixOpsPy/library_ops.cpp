@@ -106,6 +106,38 @@ VrArrayPtrF64 zeros_double(int nargs,...){
   return c;
 }
 
+VrArrayPtrCF64 zeros_double_complex(int nargs,...){
+	va_list args;
+	
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+  
+  ndims = nargs;
+  dim_type *dims= (dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
+  va_start(args,nargs);
+  for(int i = 0; i < nargs; i++){
+      dims[i] = va_arg(args,int);
+      if(dims[i] < 0) {
+          VR_PRINT_ERR("Dimensions have to be greater than 0");
+      }
+      if (dims[i] == 0) {
+          zeroFlag = true;
+      }
+  }
+  va_end(args);
+  VrArrayPtrCF64 c;
+  if (!zeroFlag) {
+     c = vrAllocArrayF64CM(ndims,0,dims);
+     
+  }else {
+    c =  vrAllocArrayF64CM(ndims,2,dims);
+  }
+  return c;
+}
 VrArrayPtrI32 zeros_int(int nargs,...){
 	va_list args;
 	

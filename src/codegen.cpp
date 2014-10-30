@@ -1973,7 +1973,7 @@ bool VCompiler::isNegativeIndex( IndexExprPtr expr) {
 }
 
 bool VCompiler::canSpecialiseNegativeIndex(IndexVec vec) {
-    return vec.size() <= 2;
+    return vec.size() <= 3;
 }
 
 bool VCompiler::canSpecialiseArraySlice(IndexVec vec) {

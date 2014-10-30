@@ -156,15 +156,6 @@ void NodeCollector::caseAndExpr(AndExprPtr node){
 void NodeCollector::caseOrExpr(OrExprPtr node){
     caseBinaryExpr(node);
 }
-/* void NodeCollector::caseUnaryExpr(UnaryExprPtr node){ */
-/*     caseExpr(node->getBaseExpr()); */
-/* } */
-/* void NodeCollector::caseNotExpr(NotExprPtr node){ */
-/*     caseUnaryExpr(node); */
-/* } */
-/* void NodeCollector::caseNegateExpr(NegateExprPtr node){ */
-/*     caseUnaryExpr(node); */
-/* } */
 void NodeCollector::caseFuncallExpr(FunCallExprPtr node){
     for(int i = 0; i < node->getNargs(); i++){
         caseExpr(node->getArg(i));

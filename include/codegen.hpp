@@ -324,6 +324,7 @@ public:
     Context replaceNameExprWithExpr(NameExprPtr , LoopInfo *info, SymTable *table,bool isStart);
     Context replaceBinaryExprWithExpr(BinaryExprPtr , LoopInfo *info, SymTable *table,bool isStart,std::string sign);
     Context replacePlusExprWithExpr(PlusExprPtr , LoopInfo *info, SymTable *table,bool isStart);
+    Context replaceMultExprWithExpr(MultExprPtr , LoopInfo *info, SymTable *table,bool isStart);
     Context replaceMinusExprWithExpr(MinusExprPtr , LoopInfo *info, SymTable *table,bool isStart);
     Context replaceConstExprWithExpr(ConstExprPtr,SymTable *);
     Context replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTable *table);

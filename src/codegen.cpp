@@ -765,6 +765,7 @@ Context VCompiler::whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable) {
 }
 Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
+    std::cout<<"Statement type "<<stmt->getStmtType()<<std::endl;
 	switch (stmt->getStmtType()) {
 	case Statement::STMT_ASSIGN: //Assignment Statement
 		cntxt = assignStmtCodeGen(static_cast<AssignStmtPtr> (stmt), symTable);
@@ -2280,7 +2281,6 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
             }
         }
     } else  {
-        std::cout<<"NameExpression in replace"<<symTable->getName(nameExpr->getId())<<std::endl;
         return nameExprCodeGen(nameExpr, symTable);
     }
     return cntxt;
@@ -2301,7 +2301,9 @@ Context VCompiler::replacePlusExprWithExpr(PlusExprPtr expr, LoopInfo *info, Sym
 Context VCompiler::replaceMinusExprWithExpr(MinusExprPtr expr, LoopInfo *info, SymTable *table,bool isStart) {
     return replaceBinaryExprWithExpr(expr, info, table, isStart, "-");
 }
-
+Context VCompiler::replaceMultExprWithExpr(MultExprPtr expr, LoopInfo *info, SymTable *table, bool isStart) {
+    return replaceBinaryExprWithExpr(expr, info, table, isStart, "*");
+}
 Context VCompiler::replaceConstExprWithExpr(ConstExprPtr expr,SymTable *symTable) {
     return constExprCodeGen(expr,symTable);
 }
@@ -2319,6 +2321,8 @@ Context VCompiler::replaceExprWithExpr(ExpressionPtr expr, LoopInfo *info, SymTa
             return replacePlusExprWithExpr(static_cast<PlusExprPtr>( expr),info, symTable, isStart);
         case Expression::MINUS_EXPR :
             return replaceMinusExprWithExpr(static_cast<MinusExprPtr>(expr), info, symTable, isStart);
+        case Expression::MULT_EXPR :
+            return replaceMultExprWithExpr(static_cast<MultExprPtr>(expr),info, symTable, isStart);
         default :
             return Context();
     }  
@@ -2341,6 +2345,7 @@ Context VCompiler::genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, Sym
     std::string stopFuncCall = genCheckOptimStopFunc(expr, symTable)+"(";
     startFuncCall += symTable->getName(expr->getArrayId()); 
     stopFuncCall += symTable->getName(expr->getArrayId()); 
+    std::cout<<"Name "<<symTable->getName(expr->getArrayId())<<std::endl;
     for(int i = 0; i < vec.size(); i++) {
         Context startCntxt = replaceIndexWithStart(vec[i], info, symTable);
         Context stopCntxt = replaceIndexWithStop(vec[i], info, symTable);

@@ -765,7 +765,6 @@ Context VCompiler::whileStmtCodeGen(WhileStmtPtr stmt, SymTable *symTable) {
 }
 Context VCompiler::stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable) {
 	Context cntxt;
-    std::cout<<"Statement type "<<stmt->getStmtType()<<std::endl;
 	switch (stmt->getStmtType()) {
 	case Statement::STMT_ASSIGN: //Assignment Statement
 		cntxt = assignStmtCodeGen(static_cast<AssignStmtPtr> (stmt), symTable);
@@ -1991,12 +1990,13 @@ std::string VCompiler::genSpecNegativeIndexStr(IndexExprPtr expr, SymTable *symT
     IndexVec vec=expr->getIndices();
     Context typeCntxt = vTypeCodeGen(symTable->getType(id), symTable);
     std::string typeStr = typeCntxt.getAllStmt()[0];
-    std::string exprStr = "getIndexVal_spec<"+typeStr + ">("+ arrayName + ", "  + exprTypeCodeGen(vec[0].m_val.m_expr,symTable).getAllStmt()[0]; 
+    std::string exprStr = "getIndexVal_spec<"+typeStr + ">(";
+    if(expr->getIndices().size() > 1) {
+        exprStr += itoa(!isRowMajor(id,symTable)) + ",";
+    }
+    exprStr += arrayName + ", "  + exprTypeCodeGen(vec[0].m_val.m_expr,symTable).getAllStmt()[0]; 
     for( int i = 1; i < vec.size(); i++ ) {
         exprStr += "," + exprTypeCodeGen(vec[i].m_val.m_expr,symTable).getAllStmt()[0];
-    }
-    if( vec.size() >1) {
-        exprStr += ","+itoa(!isRowMajor(id,symTable)); 
     }
     exprStr += ")";
     return exprStr;

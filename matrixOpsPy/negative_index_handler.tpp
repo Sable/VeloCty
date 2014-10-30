@@ -25,7 +25,7 @@ inline long getIndexVal(ArrayType arr, int nIndices, ...) {
 }
 
 template<class ArrayType>
-inline long getIndexVal_spec(ArrayType arr, long row,  long col,int layout=0) {
+inline long getIndexVal_spec(int layout=0,ArrayType arr, long row,  long col) {
     if( row < 0) {
       row = arr.dims[0] - row;  
     }
@@ -51,7 +51,7 @@ long getIndexVal_spec(ArrayType arr, long row) {
 }
 
 template<class ArrayType>
-long getIndexVal_spec(ArrayType arr, long row, long col, long index_3, int layout=0) {
+long getIndexVal_spec(int layout=0, ArrayType arr, long row, long col, long index_3) {
     if( row < 0) {
       row = arr.dims[0] - row;  
     }

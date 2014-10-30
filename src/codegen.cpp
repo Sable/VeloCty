@@ -7,7 +7,7 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-#define MEM_OPTMISE
+// #define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
 #else 
@@ -953,11 +953,28 @@ Context VCompiler::tupleExprCodeGen(TupleExprPtr expr, SymTable* symTable) {
     }
     return cntxt;
 }
+std::string VCompiler::genComplexStr(ScalarTypePtr scalarType) {
+    switch(scalarType->getScalarTag()) {
+        case ScalarType::SCALAR_FLOAT32 :
+            return "float_complex";
+        case ScalarType::SCALAR_FLOAT64 :
+            return "double_complex";
+    }
+    return "";
+}
+
 Context VCompiler::allocExprCodeGen(AllocExprPtr expr, SymTable* symTable){
     Context cntxt;
     std::string typeStr = "";
     if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
+        if(static_cast<ArrayTypePtr>(expr->getType())->getElementType()->getComplexStatus() == ScalarType::REAL) {
         typeStr = scalarTypeCodeGen(static_cast<ArrayTypePtr>(expr->getType())->getElementType()).getAllStmt()[0];
+        } else {
+           typeStr = genComplexStr(static_cast<ArrayTypePtr>(expr->getType())->getElementType());
+        }
+    } else  {
+        std::cout<<"Scalars are currently not supported"<<std::endl;
+        exit(0);
     } 
     switch(expr->getTag()){
         case AllocExpr::ALLOC_ZEROS:
@@ -1078,28 +1095,36 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
         case LibCallExpr::LIB_MRDIV : 
             return matRDivCallCodeGen(expr,symTable,lExpr); 
         case LibCallExpr::LIB_COPY : {
-            if(expr->getNargs() > 1) {
-                std::cout<<"Currently copy operations with a single parameter are supported"<<std::endl;
-                exit(0);
-            }
-            Context argCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
-            int ndims = 0; 
-            if( expr->getType()->getBasicType() != VType::ARRAY_TYPE) {
-                return argCntxt;
-            } else {
-                string copyStr = genCopyExpr(static_cast<NameExprPtr>(expr->getArg(0)),symTable);
-                cntxt.addStmt(copyStr);
-                return cntxt;
-            }
-                std::cout<<"Should not reach here"<<std::endl;
-                exit(0);
+                                         if(expr->getNargs() > 1) {
+                                             std::cout<<"Currently copy operations with a single parameter are supported"<<std::endl;
+                                             exit(0);
+                                         }
+                                         Context argCntxt = exprTypeCodeGen(expr->getArg(0), symTable);
+                                         int ndims = 0; 
+                                         if( expr->getType()->getBasicType() != VType::ARRAY_TYPE) {
+                                             return argCntxt;
+                                         } else {
+                                             string copyStr = genCopyExpr(static_cast<NameExprPtr>(expr->getArg(0)),symTable);
+                                             cntxt.addStmt(copyStr);
+                                             return cntxt;
+                                         }
+                                         std::cout<<"Should not reach here"<<std::endl;
+                                         exit(0);
+                                     }
+        case LibCallExpr::LIB_ATAN2: 
+                                     {
+                                         funcName = "atan2";
+                                         if(isInt(expr)) {
+                                             funcName +="l";
+                                         } else if(isFloat(expr)){
+                                             funcName +="f";
+                                         }
+                                         break;
+
             }
         default:
-            cout << "error in library call expression \n function not found"<<expr->getLibFunType()
-                <<"Exiting"<<std::endl;
+            cout <<"error in library call expression \n function not found"<<expr->getLibFunType()<<"Exiting"<<std::endl;
             exit(0);
-            break;
-
 	}
 	Context tempCntxt; 
 	std::string fnName = funcName;
@@ -1133,6 +1158,16 @@ Context VCompiler::libCallExprCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
 	return cntxt;
 	
 }
+
+bool VCompiler::isFloat(ExpressionPtr expr) {
+    if(expr->getType()->getBasicType() == VType::SCALAR_TYPE) {
+      return static_cast<ScalarTypePtr>(expr->getType())->getScalarTag() == ScalarType::SCALAR_FLOAT32;
+    } else if(expr->getType()->getBasicType() == VType::ARRAY_TYPE)  {
+       return static_cast<ArrayTypePtr>(expr->getType())->getElementType()->getScalarTag() == ScalarType::SCALAR_FLOAT32; 
+    }
+    return false;
+}
+
 std::string VCompiler::getMatTypeStr(VTypePtr vtype){
   ScalarTypePtr scalarType;
   if(vtype->getBasicType()==VType::ARRAY_TYPE){
@@ -1836,7 +1871,7 @@ Context VCompiler::gtExprCodeGen(GtExprPtr expr, SymTable *symTable) {
     } else if(expr->getType()->getBasicType() == VType::ARRAY_TYPE) {
         string lStr = exprTypeCodeGen(expr->getLhs(),symTable).getAllStmt()[0];
         string rStr = exprTypeCodeGen(expr->getRhs(),symTable).getAllStmt()[0];
-        cntxt.addStmt("gt<"+ vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0] + ">("
+        cntxt.addStmt("gt<"+ vTypeCodeGen(expr->getLhs()->getType(),symTable).getAllStmt()[0] + ">("
                 + lStr + ", " + rStr + ")");
     }
     return cntxt;
@@ -2461,6 +2496,29 @@ void VCompiler::getLoopIndices(LoopInfo * info, SymTable *symTable,unordered_set
     }   
 }
 
+bool VCompiler::isMultExprAffine(MultExprPtr expr,LoopInfo *info,unordered_set<int> itervarSet,IndexExprPtr index) {
+    if(expr->getLhs()->getExprType() != Expression::CONST_EXPR && expr->getLhs()->getExprType() != Expression::NAME_EXPR) {
+        return false;
+    }
+    if(expr->getRhs()->getExprType() != Expression::CONST_EXPR && expr->getRhs()->getExprType() != Expression::NAME_EXPR) {
+        return false;
+    }
+    if(expr->getLhs()->getExprType() == Expression::CONST_EXPR) {
+        if(expr->getRhs()->getExprType() == Expression::CONST_EXPR) {
+            return true;
+        }
+        return isNameExprAffine(static_cast<NameExprPtr>(expr->getRhs()),info,itervarSet, index);
+        
+    }
+    if(expr->getRhs()->getExprType() == Expression::CONST_EXPR) {
+        if(expr->getLhs()->getExprType() == Expression::CONST_EXPR) {
+            return true;
+        }
+        return isNameExprAffine(static_cast<NameExprPtr>(expr->getLhs()),info,itervarSet,index);
+    }
+    return isNameExprAffine(static_cast<NameExprPtr>(expr->getLhs()),info,itervarSet,index) && isNameExprAffine(static_cast<NameExprPtr>(expr->getRhs()),info,itervarSet,index);
+}
+
 bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr index) {
     if(expr == NULL) {
         std::cout<<"Expression is NULL"<<std::endl;
@@ -2475,6 +2533,8 @@ bool VCompiler::isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<i
             return isPlusExprAffine(static_cast<PlusExprPtr>(expr), info,itervarSet,index);
         case Expression::MINUS_EXPR :
             return isMinusExprAffine(static_cast<MinusExprPtr>(expr), info, itervarSet,index);
+        case Expression::MULT_EXPR :
+            return isMultExprAffine(static_cast<MultExprPtr>(expr),info, itervarSet, index);
         default:
             return false;
     }
@@ -2650,6 +2710,10 @@ bool VCompiler::areLoopBoundsValid(IndexExprPtr expr, LoopInfo *info,unordered_s
 bool VCompiler::isValidIndex(LoopInfo::IndexInfo indexInfo, unordered_set<int> itervarSet, DomainExprPtr domain, SymTable *symTable, LoopInfo *info) {
     IndexExprPtr indexExpr = indexInfo.m_iexpr;  
     IndexVec vec = indexExpr->getIndices();
+    StmtPtr blockStmt  = collector.getStmt(indexExpr); 
+    if(blockStmt !=NULL && blockStmt->getStmtType() == Statement::STMT_IF) {
+        return false;
+    }
     for( int i = 0; i < vec.size(); i++) {
         if(!vec[i].m_isExpr) {
             std::cout<<"Not an expr index"<<std::endl;

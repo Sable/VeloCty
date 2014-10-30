@@ -11,16 +11,22 @@ using std::tr1::unordered_set;
 namespace VRaptor{
       typedef unordered_set<IndexExprPtr> IndexSet;
       typedef unordered_map<StmtPtr,IndexSet*> IndexMap;
+      typedef unordered_map<IndexExprPtr, StmtPtr> StmtMap;
   class NodeCollector {
     private :
       IndexMap stmtToIndexExprMap;
+      StmtMap stmtMap;
       StmtPtr currStmt;
+      StmtPtr currStmtList;
       bool onLhs;
       IndexSet lhsIndexSet;
 	  IndexSet indexColonSet; 
       void addToMap(StmtPtr currStmt,IndexExprPtr indexExpr);
       void addToColonSet(IndexExprPtr index);
 	  void addToLhsSet(IndexExprPtr index);
+      void addToStmtMap(IndexExprPtr expr, StmtPtr stmt) {
+         stmtMap.insert(std::pair<IndexExprPtr,StmtPtr>(expr,stmt));
+      }
     public :
       /* void caseNode(Node* node); */
       void caseModule(VModule * node);
@@ -84,6 +90,13 @@ namespace VRaptor{
 	  bool hasColon(IndexExprPtr expr) {
 			return indexColonSet.find(expr) != indexColonSet.end(); 
 	  } 
+      StmtPtr getStmt(IndexExprPtr expr) {
+        StmtMap::iterator it = stmtMap.find(expr);
+        if(it != stmtMap.end()) {
+            return it->second; 
+        }
+        return NULL;
+      }
       void analyze(VModule *);
       ~NodeCollector(){
         stmtToIndexExprMap.clear();

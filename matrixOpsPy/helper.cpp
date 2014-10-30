@@ -57,7 +57,7 @@ VrArrayPtrB getVrArrayB(PyArrayObject* arr){
 
 VrArrayPtrCF64 getVrArrayCF64(PyArrayObject * arr){
     VrArrayPtrCF64 out;//=(VrArrayPtrCF64)VR_MALLOC(sizeof(VrArrayCF64));
-	VR_GET_DATA_CF64(out)=mat_getComplexDataCF64(arr);
+	VR_GET_DATA_CF64(out)= static_cast<double complex*>PyArray_DATA((arr));
 	VR_GET_NDIMS_CF64(out)=PyArray_NDIM(arr);
 	VR_GET_DIMS_CF64(out)=(dim_type*)PyArray_DIMS(arr);
 	return out;
@@ -65,7 +65,7 @@ VrArrayPtrCF64 getVrArrayCF64(PyArrayObject * arr){
 
 VrArrayPtrCF32 getVrArrayCF32(PyArrayObject * arr){
     VrArrayPtrCF32 out;//=(VrArrayPtrCF32)VR_MALLOC(sizeof(VrArrayCF32));
-	VR_GET_DATA_CF32(out)=mat_getComplexDataCF32(arr);
+	VR_GET_DATA_CF32(out)=static_cast<float complex*>PyArray_DATA((arr));
 	VR_GET_NDIMS_CF32(out)=PyArray_NDIM(arr);
 	VR_GET_DIMS_CF32(out)=(dim_type*)PyArray_DIMS(arr);
 	return out;

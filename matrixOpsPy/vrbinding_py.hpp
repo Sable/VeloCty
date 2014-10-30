@@ -29,7 +29,7 @@ const bool vrAutoCastMatrix = true;
 #else
 const bool vrAutoCastMatrix = false;
 #endif
-#define VR_MALLOC(x) GC_MALLOC(x)
+#define VR_MALLOC(x) GC_MALLOC_ATOMIC(x)
 #define VR_REALLOC(x,y) (realloc(x,y))
 #define VR_FREE(x) GC_FREE(x)
 #include <Python.h>

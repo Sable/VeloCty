@@ -5,7 +5,7 @@
 #include<cstdlib>
 #include<stdio.h>
 #include<gc.h>
-#define VR_MALLOC(x) GC_MALLOC(x)
+#define VR_MALLOC(x) GC_MALLOC_ATOMIC(x)
 typedef int dim_type;
 typedef enum Layout{
     COLUMN_MAJOR,ROW_MAJOR
@@ -102,6 +102,12 @@ typedef struct VrArrayCF64{
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
   VrArrayCF64 operator()(int nargs, ...);
+  VrArrayCF64() {
+    ndims =0;
+    dims = NULL;
+    data = NULL;
+  }
+  VrArrayCF64(dim_type, dim_type*);
 }VrArrayCF64;
 
 typedef struct VrArrayCF32{
@@ -110,7 +116,13 @@ typedef struct VrArrayCF32{
   int ndims;
   dim_type numelSliced(VrIndex*,dim_type);
   dim_type* dimsSliced(VrIndex*, dim_type);
+  VrArrayCF32() {
+    ndims =0;
+    dims = NULL;
+    data = NULL;
+  }
   VrArrayCF32 operator()(int nargs, ...);
+  VrArrayCF32(dim_type, dim_type*);
 }VrArrayCF32;
 
 typedef struct VrArrayCI64{

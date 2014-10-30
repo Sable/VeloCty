@@ -175,6 +175,7 @@ void NodeCollector::caseVRange(VRange* node){
 }
 void NodeCollector::caseIndexExpr(IndexExprPtr node){
     addToMap(currStmt,node);
+    addToStmtMap(node,currStmtList);
     bool hasColon = false;
     IndexVec vec = node->getIndices();
     for(int i =0; i < vec.size(); i++) {
@@ -234,20 +235,24 @@ void NodeCollector::caseCastExpr(CastExprPtr expr){
 
 void NodeCollector::caseStmt(StmtPtr node){
     currStmt = node;
+    
     switch (node->getStmtType()) {
         case Statement::STMT_ASSIGN: //Assignment Statement
         caseAssignStmt(static_cast<AssignStmtPtr>(node));
         break;
     case Statement::STMT_IF: // IF statement
+        currStmtList = node;
         caseIfStmt(static_cast<IfStmtPtr>(node));
         break;
     case Statement::STMT_WHILE: // while statement 
         caseWhileStmt(static_cast<WhileStmtPtr>(node));
         break;
     case Statement::STMT_FOR: // for statement
+        currStmtList = node;
         caseForStmt(static_cast<ForStmtPtr>(node));
         break;
     case Statement::STMT_PFOR: //parallel for
+        currStmtList = node;
         casePforStmt(static_cast<PforStmtPtr>(node));
         break;
     case Statement::STMT_LIST: // list statement

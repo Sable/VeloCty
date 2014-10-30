@@ -147,3 +147,17 @@ VrArrayI32::VrArrayI32(dim_type ndims, dim_type *dims) {
 	this->ndims = ndims;
 	data = static_cast<int*>(VR_MALLOC(sizeof(int) * numel));	
 }
+
+VrArrayCF64::VrArrayCF64(dim_type ndims,dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<double complex*>(malloc(sizeof(double complex) * numel));	
+}
+
+VrArrayCF32::VrArrayCF32(dim_type ndims,dim_type *dims) {
+	dim_type numel = getNumElem(dims,ndims);
+	this->dims = dims;
+	this->ndims = ndims;
+	data = static_cast<float complex*>(malloc(sizeof(float complex) * numel));	
+}

@@ -525,6 +525,65 @@ float complex cexp(float complex scalVal) {
   return cexpf(scalVal);
 }
 
+VrArrayPtrCF64 empty_double_complex(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    // printf("In empty %d\n",nargs);
+    VrArrayPtrCF64 c(nargs,dims);
+    va_end(args);
+    return c;
+}
+
+VrArrayPtrCF32 empty_float_complex(int nargs,...){
+	va_list args;
+  int ndims = 0;
+  bool zeroFlag = false;
+  if (nargs <=  0) {
+    std::cout<<"number of arguments have to be positive"<<std::endl;
+    exit(0);
+  } 
+    ndims = nargs;
+	int *dims = (int*)VR_MALLOC(sizeof(int) * ndims);
+  memset(dims, 0, ndims * sizeof(dim_type));
+	va_start(args,nargs);
+	for(int i = 0; i < nargs; i++){
+
+        dims[i] = va_arg(args,int);
+        if(dims[i] < 0) {
+            std::cout<<"dimensions have to be positive "<<std::endl;
+            exit(0);
+        }
+        if (dims[i] == 0) {
+            zeroFlag = true;
+            break;
+        }
+    }
+    VrArrayPtrCF32 c(nargs,dims);
+    va_end(args);
+    return c;
+}
+
 VrArrayPtrF64 empty_double(int nargs,...){
 	va_list args;
   int ndims = 0;

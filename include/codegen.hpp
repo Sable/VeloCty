@@ -196,6 +196,7 @@ private:
     std::string itoa(int num);
     bool isInt(ExpressionPtr expr);
     bool isInt(ScalarTypePtr type);
+    bool isFloat(ExpressionPtr expr);
     bool isMatMultCall(LibCallExprPtr expr);
     Context getOriginalArrStr(NameExprPtr expr, SymTable * symTable);
     Context handleSpecMatMultCall(LibCallExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr);
@@ -206,6 +207,7 @@ private:
     bool requireOriginalArr(AssignStmtPtr stmt);
     bool isArrayCopy(AssignStmtPtr stmt);
     std::string genCopyExpr(std::string name , int ndims);
+    std::string genComplexStr(ScalarTypePtr scalarType);
     std::string genCopyExpr(NameExprPtr expr,SymTable * symTable);
     std::string genIndexStr(IndexExprPtr expr, SymTable *symTable);
     bool isRowMajor(int id, SymTable *symTable);
@@ -245,6 +247,7 @@ private:
     bool isIndexAffine(IndexStruct index, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr indxExpr);
     bool isNameExprAffine(NameExprPtr nameExpr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );
     bool isPlusExprAffine(PlusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );
+    bool isMultExprAffine(MultExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr );
     bool isMinusExprAffine(MinusExprPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr  );
     bool isExprAffine(ExpressionPtr expr, LoopInfo *info, unordered_set<int> itervarSet,IndexExprPtr);
     bool isConstExprAffine(ConstExprPtr expr);

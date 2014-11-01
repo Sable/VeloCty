@@ -7,19 +7,19 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-// #define MEM_OPTMISE
+#define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
 #else 
 bool memOptmise = false;
 #endif
-#define PRELIM_BOUNDS
+// #define PRELIM_BOUNDS
 #ifdef PRELIM_BOUNDS
 bool prelim_bounds = true;
 #else 
 bool prelim_bounds = true;
 #endif
-#define PHASE2_BOUNDS
+// #define PHASE2_BOUNDS
 #ifdef PHASE2_BOUNDS
 bool phase2Optimise = true;
 #else 
@@ -667,20 +667,15 @@ std::string VCompiler::genStructVarStr(std::string structType) {
 Context VCompiler::handleMultReturns(ReturnStmtPtr stmt,SymTable *symTable) {
   Context cntxt;
   std::string structName = genFuncStructName(currFunction);
-  //std::string structVar = genStructVarStr(currFunction);
   std::string structDecl = structName  + "(";
-//  cntxt.addStmt(structDecl);
   ExpressionPtrVector exprVec = stmt->getExprs(); 
   vector<int> rIdVec = stmt->getRids();
   for(int i = 0; i < rIdVec.size(); i++) {
-    std::string exprStr = symTable->getName(rIdVec[i]);//exprTypeCodeGen(exprVec[i],symTable).getAllStmt()[0];
+    std::string exprStr = symTable->getName(rIdVec[i]);
 	structDecl += exprStr;
 	if( (i + 1) != exprVec.size()) {
 		structDecl += ",";
 	}	
-    //string structAssgn = structVar + "." + genStructData() + itoa(i) + " = " 
-	//		 + exprStr + ";\n";
-    //cntxt.addStmt(structAssgn);
   }
   structDecl +=")";
   cntxt.addStmt("return " + structDecl+";\n");
@@ -694,11 +689,9 @@ Context VCompiler::returnStmtCodeGen(ReturnStmtPtr stmt, SymTable *symTable) {
 	string retStr = "return ";
 	if (rIdVec.size() > 0) {
         if(rIdVec.size() == 1) {
-            retStr += symTable->getName(rIdVec[0]);//exprTypeCodeGen(exprVec[0],symTable).getAllStmt()[0];
+            retStr += symTable->getName(rIdVec[0]);
         }
-		/* std::cout<<"Return variable name "<<retStr<<std::endl; */
 		if (exprVec.size() > 1) {
-			//cout << "compiler does not handle multiple returns" << endl;
 			return handleMultReturns(stmt,symTable);
 		}
 	}
@@ -728,7 +721,6 @@ Context VCompiler::ifStmtCodeGen(IfStmtPtr stmt, SymTable *symTable) {
 	// if block
 	StmtPtr ifBlockStmt = stmt->getIfBranch();
 	Context ifCntxt = stmtTypeCodeGen(ifBlockStmt, symTable);
-    std::cout<<"if statement size "<<ifCntxt.getAllStmt().size()<<std::endl;
 	for (int i = 0; i < ifCntxt.getAllStmt().size(); i++) {
 		cntxt.addStmt(ifCntxt.getAllStmt()[i]);
 	}
@@ -1455,24 +1447,7 @@ Context VCompiler::catCallCodeGen(FunCallExprPtr expr, SymTable *symTable){
   string typeStr = vTypeCodeGen(expr->getType(),symTable).getAllStmt()[0];
   funcStr += "<" + typeStr + ">";
   int nargs = expr->getNargs();
-  /*if (scalarArgs(expr)) {
-    if(nargs <= 0) {
-      std::cout<<"Arguments cannot be 0. \n Exiting"<<std::endl;
-      exit(0);
-    }
-    string argStr = generateArgs(expr->getArgs(),symTable);
-    funcStr += "(" + itoa(nargs) + "," +argStr + ")"  ;
-      
-  }*/
-  //else {
     funcStr += "(" +itoa(nargs);
-    /*ExpressionPtr arg = expr->getArg(0);
-    string argStr = exprTypeCodeGen(arg,symTable).getAllStmt()[0];
-    if (arg->getType()->getBasicType()==VType::SCALAR_TYPE) {
-       argStr+= "getVrArray<VrArrayF64,double>("+argStr+")";
-    }
-    funcStr+=","+argStr;
-    */
     for(int i = 0; i < expr->getNargs(); i++) {
       ExpressionPtr arg = expr->getArg(i);
       string argStr = exprTypeCodeGen(arg,symTable).getAllStmt()[0];
@@ -1482,8 +1457,6 @@ Context VCompiler::catCallCodeGen(FunCallExprPtr expr, SymTable *symTable){
       funcStr+=","+argStr;  
     }
     funcStr+=")";
- // }
-  
   cntxt.addStmt(funcStr);
   return cntxt;
 }

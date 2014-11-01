@@ -7,7 +7,7 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-#define MEM_OPTMISE
+// #define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
 #else 
@@ -91,7 +91,7 @@ void VCompiler::initLibCallSet() {
     /* libCallSet.insert(LibCallExpr::LIB_MRDIV); */
 }
 void VCompiler::setOpenMpFlag(bool val){
-    enableOpenMP = true;
+    enableOpenMP = val;
 }
 Context VCompiler::moduleCodeGen(VModule *vm) {
     Context cntxt;
@@ -1288,6 +1288,9 @@ Context VCompiler::matMultCallCodeGen(LibCallExprPtr expr, SymTable *symTable,Ex
             blasLayoutType = expr->getArg(0)->getType();
         }
         outStr=generateMatClassStr(expr,symTable)+"::mmult"+"("+genCblasOrder(static_cast<ArrayTypePtr>(blasLayoutType))+","+genCblasTrans()+","+genCblasTrans()+","+generateArgs(expr->getArgs(),symTable)+(lhsExpr!=NULL?", &"+exprTypeCodeGen(lhsExpr,symTable).getAllStmt()[0]:"")+")";
+        if(expr->getType()->getBasicType() ==  VType::SCALAR_TYPE && lhsExpr == NULL) {
+            outStr = "*"+genDataStr(expr->getType(), outStr);
+        } 
     } else {
         return elemMultCallCodeGen(expr, symTable,lhsExpr);
     }

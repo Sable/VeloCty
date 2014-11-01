@@ -25,7 +25,7 @@ inline long getIndexVal(ArrayType arr, int nIndices, ...) {
 }
 
 template<class ArrayType>
-inline long getIndexVal_spec(int layout=0,ArrayType arr, long row,  long col) {
+inline long getIndexVal_spec(int layout,ArrayType arr, long row,  long col) {
     if( row < 0) {
       row = arr.dims[0] - row;  
     }
@@ -51,19 +51,19 @@ long getIndexVal_spec(ArrayType arr, long row) {
 }
 
 template<class ArrayType>
-long getIndexVal_spec(int layout=0, ArrayType arr, long row, long col, long index_3) {
+long getIndexVal_spec(int layout, ArrayType arr, long row, long col, long index_3) {
     if( row < 0) {
       row = arr.dims[0] - row;  
     }
     if( col < 0) {
-      col = arr.dims[0] - col;  
+      col = arr.dims[1] - col;  
     }
     if( index_3 < 0) {
-      index_3 = arr.dims[0] - index_3;  
+      index_3 = arr.dims[2] - index_3;  
     }
     // Row major layout
     if(layout == 0) {
-        return row *arr.dims[1]* arr.dims[2] + col * arr.dims[1] + index_3;
+        return row *arr.dims[1]* arr.dims[2] + col * arr.dims[2] + index_3;
     } else if(layout == 1) { // Column Major layout
         return index_3 *arr.dims[0]* arr.dims[1] + col * arr.dims[0] + row;
     } else{

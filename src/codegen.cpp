@@ -13,13 +13,13 @@ bool memOptmise = true;
 #else 
 bool memOptmise = false;
 #endif
-// #define PRELIM_BOUNDS
+#define PRELIM_BOUNDS
 #ifdef PRELIM_BOUNDS
 bool prelim_bounds = true;
 #else 
 bool prelim_bounds = true;
 #endif
-// #define PHASE2_BOUNDS
+#define PHASE2_BOUNDS
 #ifdef PHASE2_BOUNDS
 bool phase2Optimise = true;
 #else 
@@ -1652,7 +1652,11 @@ Context VCompiler::domainExprCodeGen(DomainExprPtr expr, SymTable *symTable) {
 		tempCntxt = exprTypeCodeGen(startExpr, symTable);
 		vec = tempCntxt.getAllStmt();
 		for (int i = 0; i < vec.size(); i++) {
-			strtCntxt.addStmt(vec[i]);
+            std::string exprStr = vec[i];
+            if(startExpr->getType()->getBasicType() == VType::SCALAR_TYPE && !isInt(static_cast<ScalarTypePtr>(startExpr->getType()))) {
+                exprStr = "static_cast<long>(" + exprStr + ")";
+            }
+			strtCntxt.addStmt(exprStr);
 		}
 		ExpressionPtr endExpr = expr->getStopExpr(j);
         if (endExpr == NULL) {
@@ -1662,7 +1666,11 @@ Context VCompiler::domainExprCodeGen(DomainExprPtr expr, SymTable *symTable) {
 		tempCntxt = exprTypeCodeGen(endExpr, symTable);
 		vec = tempCntxt.getAllStmt();
 		for (int i = 0; i < vec.size(); i++) {
-			endCntxt.addStmt(vec[i]);
+            std::string exprStr = vec[i];
+            if(endExpr->getType()->getBasicType() == VType::SCALAR_TYPE && !isInt(static_cast<ScalarTypePtr>(endExpr->getType()))) {
+                exprStr = "static_cast<long>(" + exprStr + ")";
+            }
+			endCntxt.addStmt(exprStr);
 		}
 		ExpressionPtr stepExpr = expr->getStepExpr(j);
         if(stepExpr == NULL) {
@@ -1671,7 +1679,11 @@ Context VCompiler::domainExprCodeGen(DomainExprPtr expr, SymTable *symTable) {
 		tempCntxt = exprTypeCodeGen(stepExpr, symTable);
 		vec = tempCntxt.getAllStmt();
 		for (int i = 0; i < vec.size(); i++) {
-			stepCntxt.addStmt(vec[i]);
+            std::string exprStr = vec[i];
+            if(stepExpr->getType()->getBasicType() == VType::SCALAR_TYPE && !isInt(static_cast<ScalarTypePtr>(stepExpr->getType()))) {
+                exprStr = "static_cast<long>(" + exprStr + ")";
+            }
+			stepCntxt.addStmt(exprStr);
 		}
 	}
 	vec = strtCntxt.getAllStmt();
@@ -2236,7 +2248,19 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
     Context cntxt;
     unordered_set<int> defSet = info->m_udmgInfo->m_defs;
     if(isIterVar(nameExpr->getId()) && defSet.find(nameExpr->getId()) != defSet.end()) {
-        ExpressionPtrVector exprVec = getLoopBoundsFromMap(nameExpr->getId());
+        ExpressionPtrVector exprVec = getLoopBounds(nameExpr->getId(), getDomain(info->m_loop), getItervars(info->m_loop));
+        if(exprVec.size() == 0) {
+            for(int i = 0; i < info->m_childLoops.size(); i++) {
+                exprVec = getLoopBounds(nameExpr->getId(), getDomain(info->m_childLoops[i]), getItervars(info->m_childLoops[i]));
+                if(exprVec.size() >0) {
+                    break;
+                }
+            }
+        }
+        if(exprVec.size() == 0) {
+            std::cout<<"Loop bounds not found"<<std::endl;
+            exit(0);
+        }
         VCompiler::LoopDirection dir  = getLoopDirectionEnum(exprVec[2]);
         if(isStart) {
             if(dir == COUNT_UP) {
@@ -2321,7 +2345,6 @@ Context VCompiler::genIndexOptimCondition(IndexExprPtr expr, LoopInfo *info, Sym
     std::string stopFuncCall = genCheckOptimStopFunc(expr, symTable)+"(";
     startFuncCall += symTable->getName(expr->getArrayId()); 
     stopFuncCall += symTable->getName(expr->getArrayId()); 
-    std::cout<<"Name "<<symTable->getName(expr->getArrayId())<<std::endl;
     for(int i = 0; i < vec.size(); i++) {
         Context startCntxt = replaceIndexWithStart(vec[i], info, symTable);
         Context stopCntxt = replaceIndexWithStop(vec[i], info, symTable);
@@ -2878,7 +2901,7 @@ bool VCompiler::canSpecBoundCheckStmt(IndexVec vec) {
     for( int i = 0; i < vec.size(); i++) {
         if(!vec[i].m_isExpr) return false;
     }
-    return vec.size() <=2;
+    return vec.size() <=3;
 }
 Context VCompiler::genBoundCheckStmt(IndexExprPtr expr,SymTable * symTable,bool onLhs) {
     Context cntxt; 

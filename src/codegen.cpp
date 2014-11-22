@@ -2240,7 +2240,12 @@ Context VCompiler::replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTa
     if(!index.m_isExpr) {
         std::cout<<"Index has to be an expression"<<std::endl;
     }
-    cntxt = replaceExprWithExpr(index.m_val.m_expr, info, symTable, false);
+    Context tempCntxt = replaceExprWithExpr(index.m_val.m_expr, info, symTable, false);
+    std::string exprStr = tempCntxt.getAllStmt()[0];
+    if(getCurrModule()->m_zeroIndex == true && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
+        exprStr = "(" + exprStr + " - 1 )"; 
+    } 
+    cntxt.addStmt(exprStr); 
     return cntxt;
 }
 

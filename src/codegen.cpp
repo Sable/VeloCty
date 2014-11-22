@@ -2242,9 +2242,6 @@ Context VCompiler::replaceIndexWithStop(IndexStruct index, LoopInfo *info, SymTa
     }
     Context tempCntxt = replaceExprWithExpr(index.m_val.m_expr, info, symTable, false);
     std::string exprStr = tempCntxt.getAllStmt()[0];
-    if(getCurrModule()->m_zeroIndex == true && index.m_val.m_expr->getExprType() != Expression::CONST_EXPR) {
-        exprStr = "(" + exprStr + " - 1 )"; 
-    } 
     cntxt.addStmt(exprStr); 
     return cntxt;
 }
@@ -2277,13 +2274,22 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
             }
         }
         else  {
+            Context tempCntxt;
             if(dir == COUNT_UP) {
-                cntxt = exprTypeCodeGen(exprVec[1], symTable);
+                tempCntxt = exprTypeCodeGen(exprVec[1], symTable);
+                
             } else if(dir == COUNT_DOWN) {
-                cntxt = exprTypeCodeGen(exprVec[0], symTable);
+                tempCntxt = exprTypeCodeGen(exprVec[0], symTable);
+                
             } else  {
                 std::cout<<"loop direction is not known. Can not generate optimisation. String. Exiting"<<std::endl;
             }
+        
+            std::string exprStr = tempCntxt.getAllStmt()[0];
+            if(getCurrModule()->m_zeroIndex) {
+                exprStr = "(" + exprStr + "- 1 )";
+            }
+            cntxt.addStmt(exprStr);
         }
     } else  {
         return nameExprCodeGen(nameExpr, symTable);

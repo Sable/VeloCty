@@ -98,6 +98,16 @@ inline void checkBounds_spec(T* arr,bool onLhs,dim_type row,dim_type col) {
     return;
 }
 
+template<class T,class dataType> 
+inline void checkBounds_spec(T* arr,bool onLhs,dim_type row,dim_type col,dim_type indx_3) {
+    if(row >= arr->dims[0] || col >= arr->dims[1] || indx_3 >= arr->dims[2]){
+        VR_PRINT_ERR("Index Exceeds dimensions");
+        exit(0);
+    }  
+   return;
+
+}
+
 template<class T,class DataType> 
 inline void checkBounds_spec(T* arr,bool onLhs,VrIndex row) {
     if(VR_GET_DATA_F64((*arr)) ==NULL ) {

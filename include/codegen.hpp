@@ -139,7 +139,7 @@ private:
 	*/
 	Context stmtTypeCodeGen(StmtPtr stmt, SymTable *symTable);  
     ExpressionPtrVector getLoopBounds(int iterId, LoopInfo *info);
-    ExpressionPtrVector getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars);
+    ExpressionPtrVector getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars,StmtPtr );
     std::vector<int> getItervars(StmtPtr stmt);
     DomainExprPtr getDomain(StmtPtr stmt);
     void addToIndxToIterMap(IndexExprPtr expr, int id);

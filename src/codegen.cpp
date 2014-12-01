@@ -7,7 +7,7 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-// #define MEM_OPTMISE
+#define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
 #else 
@@ -17,7 +17,7 @@ bool memOptmise = false;
 #ifdef PRELIM_BOUNDS
 bool prelim_bounds = true;
 #else 
-bool prelim_bounds = true;
+bool prelim_bounds = false;
 #endif
 #define PHASE2_BOUNDS
 #ifdef PHASE2_BOUNDS
@@ -2250,17 +2250,9 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
     Context cntxt;
     unordered_set<int> defSet = info->m_udmgInfo->m_defs;
     if(isIterVar(nameExpr->getId()) && defSet.find(nameExpr->getId()) != defSet.end()) {
-        ExpressionPtrVector exprVec = getLoopBounds(nameExpr->getId(), getDomain(info->m_loop), getItervars(info->m_loop));
+        ExpressionPtrVector exprVec = getLoopBounds(nameExpr->getId(), getDomain(info->m_loop), getItervars(info->m_loop),info->m_loop);
         if(exprVec.size() == 0) {
-            for(int i = 0; i < info->m_childLoops.size(); i++) {
-                exprVec = getLoopBounds(nameExpr->getId(), getDomain(info->m_childLoops[i]), getItervars(info->m_childLoops[i]));
-                if(exprVec.size() >0) {
-                    break;
-                }
-            }
-        }
-        if(exprVec.size() == 0) {
-            std::cout<<"Loop bounds not found"<<std::endl;
+            std::cout<<"Loop bounds not found "<<static_cast<ForStmtPtr>(info->m_childLoops[0])->getIterVars()[0]<<std::endl;
             exit(0);
         }
         VCompiler::LoopDirection dir  = getLoopDirectionEnum(exprVec[2]);
@@ -2283,6 +2275,7 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
                 
             } else  {
                 std::cout<<"loop direction is not known. Can not generate optimisation. String. Exiting"<<std::endl;
+                exit(0);
             }
         
             std::string exprStr = tempCntxt.getAllStmt()[0];
@@ -2292,6 +2285,7 @@ Context VCompiler::replaceNameExprWithExpr(NameExprPtr nameExpr, LoopInfo *info,
             cntxt.addStmt(exprStr);
         }
     } else  {
+        std::cout<<"name expr "<<symTable->getName(nameExpr->getId())<<" def set "<<(defSet.find(nameExpr->getId()) == defSet.end())<<std::endl;
         return nameExprCodeGen(nameExpr, symTable);
     }
     return cntxt;
@@ -2647,8 +2641,14 @@ bool VCompiler::isExprInvariant(ExpressionPtr expr,LoopInfo *info,unordered_set<
     return false;
 }
 
-ExpressionPtrVector VCompiler::getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars) {
+ExpressionPtrVector VCompiler::getLoopBounds(int iterId,ExpressionPtr expr, std::vector<int> iterVars,StmtPtr stmt) {
     DomainExprPtr dExpr = NULL;
+    LoopInfo::LoopInfoMap::iterator it = infoMap.find(stmt); 
+    LoopInfo* info;
+    if(it==infoMap.end()) {
+        return ExpressionPtrVector();
+    } 
+    info=it->second; 
     if(expr->getExprType() == Expression::DOMAIN_EXPR) {
         dExpr  = static_cast<DomainExprPtr>(expr);
     } else {
@@ -2664,7 +2664,15 @@ ExpressionPtrVector VCompiler::getLoopBounds(int iterId,ExpressionPtr expr, std:
             return exprVec;
         }
     } 
-    return ExpressionPtrVector();
+    
+    ExpressionPtrVector vec;
+    for(int i = 0; i < info->m_childLoops.size();i++) {
+        vec = getLoopBounds(iterId,getDomain(info->m_childLoops[i]), getItervars(info->m_childLoops[i]),info->m_childLoops[i]);    
+        if(vec.size() > 0) {
+            break;
+        }
+    }
+    return vec;
 }
 ExpressionPtrVector VCompiler::getLoopBounds(int iterId, LoopInfo *info) {
     if(iterId < 0) {
@@ -2673,23 +2681,14 @@ ExpressionPtrVector VCompiler::getLoopBounds(int iterId, LoopInfo *info) {
     }
     StmtPtr loopStmt = info->m_loop;
     if(loopStmt->getStmtType() == Statement::STMT_FOR) {
-        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<ForStmtPtr>(loopStmt)->getDomain(), static_cast<ForStmtPtr>(loopStmt)->getIterVars());
+        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<ForStmtPtr>(loopStmt)->getDomain(), static_cast<ForStmtPtr>(loopStmt)->getIterVars(),info->m_loop);
         if(vec.size() > 0) {
             return vec;
         }
     } else if(loopStmt->getStmtType()== Statement::STMT_PFOR) {
-        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<PforStmtPtr>(loopStmt)->getDomain(), static_cast<PforStmtPtr>(loopStmt)->getIterVars());
+        ExpressionPtrVector vec = getLoopBounds(iterId, static_cast<PforStmtPtr>(loopStmt)->getDomain(), static_cast<PforStmtPtr>(loopStmt)->getIterVars(),info->m_loop);
         if(vec.size() > 0) {
             return vec;
-        }
-    }
-    for(int i = 0; i < info->m_childLoops.size(); i++) {
-        if(infoMap.find(info->m_childLoops[i]) != infoMap.end()) {
-            LoopInfo *childInfo = infoMap.find(info->m_childLoops[i])->second;
-            ExpressionPtrVector vec = getLoopBounds(iterId,childInfo);
-            if(vec.size() > 0 ){
-                return vec;
-            }
         }
     }
     return ExpressionPtrVector();

@@ -84,7 +84,7 @@ void VrArrayF64::sliceArraySpec(VrArrayF64 *outArr, VrIndex row ,VrIndex col) {
     indices[0] = row;
     indices[1] = col;
 	dim_type *dims = dimsSliced(indices,nargs);
-    if( getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+    if(outArr->ndims==0 || getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
         *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
     } else {
         memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);
@@ -126,7 +126,7 @@ void VrArrayF64::sliceArraySpec(VrArrayF64 *outArr, VrIndex row) {
     VrIndex indices[1];
     indices[0] = row;
 	dim_type *dims = dimsSliced(indices,nargs);
-    if( getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
+    if(outArr->ndims == 0||  getNumElem(dims,nargs) > getNumElem(outArr->dims,outArr->ndims)) {
         *outArr = vrAllocArrayF64RM(nargs==1?2:nargs,0,dims);
     } else {
         memcpy(outArr->dims,dims,sizeof(dim_type)*nargs);

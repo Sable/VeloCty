@@ -273,6 +273,8 @@ void LoopCollector::casePforStmt(PforStmtPtr node){
         addToIterMap(itervars[i],domain->getStartExpr(i), domain->getStopExpr(i), domain->getStepExpr(i));  
         addToExcludeMap(itervars[i], domain->getExclude(i)); 
     }
+    caseStmt(node->getBody()); 
+    
     
 }
 

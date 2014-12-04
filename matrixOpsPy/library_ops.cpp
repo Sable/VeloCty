@@ -148,12 +148,7 @@ VrArrayPtrI32 zeros_int(int nargs,...){
     exit(0);
   } 
   
-  /* if(nargs == 1) { */
-  /*     ndims = 2; */
-  /* } */
-  /* else { */
       ndims = nargs;
-  /* } */
   dim_type *dims= (dim_type*)VR_MALLOC(sizeof(dim_type)*ndims);
   va_start(args,nargs);
   for(int i = 0; i < nargs; i++){
@@ -166,12 +161,8 @@ VrArrayPtrI32 zeros_int(int nargs,...){
       }
   }
   va_end(args);
-  /* if(nargs == 1 && !zeroFlag) { */
-  /*     dims[1] = dims[0]; */
-  /*     dims[0] = 1; */
-  /* } */
 
-  VrArrayPtrI32 c;
+ VrArrayPtrI32 c;
   if (!zeroFlag) {
      c = vrAllocArrayI32RM(ndims,0,dims);
      
@@ -204,10 +195,6 @@ VrArrayPtrF64 ones_double(int nargs,...){
       break;
     }
 	}
-  /* if (nargs == 1 && !zeroFlag) { */
-  /*   dims[1] = dims[0]; */ 
-  /*   dims[0] = 1; */
-  /* } */
   VrArrayPtrF64 c;
   if (!zeroFlag) {
     c=vrAllocArrayF64RM(ndims,1,dims);

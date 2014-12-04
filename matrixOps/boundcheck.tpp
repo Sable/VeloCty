@@ -368,3 +368,53 @@ const dim_type indexDiff = vrZeroBasedIndex ? 0:1;
   }
   return;
 }
+
+template<class T,class DataType> 
+inline void checkBounds_fixed(T* arr, bool onLhs, dim_type row, dim_type col) {
+    if(row > arr->dims[0]) {
+        if(onLhs) {
+            VrIndex indices[2];
+            indices[0] = VrIndex(row);
+            indices[1] = VrIndex(col);
+            growArray<T,DataType>(arr,2,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(row <= 0) {
+        VR_PRINT_ERR("dimensions exceeded");
+    }
+    if(col > arr->dims[0]) {
+        if(onLhs) {
+            VrIndex indices[2];
+            indices[0] = VrIndex(row);
+            indices[1] = VrIndex(col);
+            growArray<T,DataType>(arr,2,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(col <= 0) {
+        VR_PRINT_ERR("dimensions exceeded");
+    }
+    
+}
+
+template<class T,class DataType> 
+inline void checkBounds_fixed(T* arr, bool onLhs, dim_type row) {
+    if(row > arr->dims[0]) {
+        if(onLhs) {
+            VrIndex indices[1];
+            indices[0] = VrIndex(row);
+            growArray<T,DataType>(arr,1,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(row <= 0) {
+        VR_PRINT_ERR("Indices can not be negative");
+    }
+}

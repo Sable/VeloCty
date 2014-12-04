@@ -161,8 +161,12 @@ void  arraySlice(ArrayType inArr, ArrayType outArr, VrIndex *indices, DimType cu
             DimType start  = indices[0].m_val.range_val[0];
             DimType stop = indices[0].m_val.range_val[1];
             DimType step = indices[0].m_val.range_val[2];
-            for(DimType i = start -1; i <= stop - 1; i+=step) {
-                outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
+            if(step == 1) {
+                memcpy(&outArr.data[(*outoffSet)], &inArr.data[currOffset], sizeof(inArr.data[0])* (stop - start+1));
+            } else{
+                for(DimType i = start -1; i <= stop - 1; i+=step) {
+                    outArr.data[(*outoffSet)++] = inArr.data[currOffset + i];	
+                }
             }
             return;
         }

@@ -7,7 +7,7 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-#define MEM_OPTMISE
+// #define MEM_OPTMISE
 #ifdef MEM_OPTMISE
 bool memOptmise = true;
 #else 

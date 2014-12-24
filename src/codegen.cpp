@@ -13,13 +13,13 @@ bool memOptmise = true;
 #else 
 bool memOptmise = false;
 #endif
-#define PRELIM_BOUNDS
+// #define PRELIM_BOUNDS
 #ifdef PRELIM_BOUNDS
 bool prelim_bounds = true;
 #else 
 bool prelim_bounds = false;
 #endif
-#define PHASE2_BOUNDS
+// #define PHASE2_BOUNDS
 #ifdef PHASE2_BOUNDS
 bool phase2Optimise = true;
 #else 
@@ -1908,7 +1908,7 @@ string VCompiler::itoa(int num){
 }
 
 bool VCompiler::isInt(ScalarTypePtr type){
-       if (type->getScalarTag()==ScalarType::SCALAR_INT64||type->getScalarTag()==ScalarType::SCALAR_INT32) {
+       if (type->getScalarTag()==ScalarType::SCALAR_INT64 || type->getScalarTag()==ScalarType::SCALAR_INT32) {
              return true;
        }
        else {

@@ -2162,7 +2162,7 @@ Context VCompiler::indexExprCodeGen(IndexExprPtr expr , SymTable *symTable,Expre
     return cntxt;
 }
 
-std::string VCompiler::genTempVec() {
+std::string VCompiler::genTempStopIter() {
 	return tempVarStr + itoa(maxTempVecId++);
 }
 
@@ -2208,7 +2208,7 @@ Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar,
             cntxt.addStmt("{\n");
         }
         else {
-            std::string vecStr = genTempVec();
+            std::string iterStopStr = genTempStopIter();
             std::string iterStr=genIterVar();
             VTypePtr type = symTable->getType(iterVar[i]);
             Context typeCntxt;
@@ -2219,12 +2219,12 @@ Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar,
                 typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
             }
             std::string typeStr = typeCntxt.getAllStmt()[0];
-            // cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
-            //         domainVec[i]+","+domainVec[i+count]+","
-            //         + domainVec[i+2*count]+");\n");
-            std::string fixStr = "fix<long,long>((" + domainVec[i+count] + " - " + domainVec[i] + ") / "  +domainVec[i +2*count] + ")";
+            cntxt.addStmt("long " + iterStopStr + " = getStopIterValue<long>("+
+                    domainVec[i]+","+domainVec[i+count]+","
+                    + domainVec[i+2*count]+");\n");
+            // std::string fixStr = "fix<long,long>((" + domainVec[i+count] + " - " + domainVec[i] + ") / "  +domainVec[i +2*count] + ")";
             cntxt.addStmt(
-                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < " + fixStr + "; "+ iterStr + "++ )\n");
+                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < " + iterStopStr + "; "+ iterStr + "++ )\n");
             cntxt.addStmt("{\n");
             cntxt.addStmt(var + "=" + domainVec[i] + "+" + iterStr + "*" + domainVec[i+2*count]+ " ;\n");
         }

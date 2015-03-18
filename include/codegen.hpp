@@ -218,7 +218,7 @@ private:
     std::string  handleArraySlicing(IndexExprPtr expr, SymTable *symTable,ExpressionPtr lhsExpr=NULL);
     bool scalarArgs(FunCallExprPtr expr);
     bool hasArrayArg(FunCallExprPtr expr);
-    std::string genTempVec();
+    std::string genTempStopIter();
     std::string genIterVar();
     std::string genFuncStructName(VFunction * func);
     std::string genStructData();	
@@ -271,7 +271,7 @@ public:
     std::string genIndexPtrFunc() const;
     std::string genIndexPtrStr(IndexExprPtr expr, SymTable *symTable);
     std::vector<string> getIndexTemps( int n );
-    VCompiler():tempVarStr("vrTempVec"),tempIterStr("vrTempIter"),moduleName("default"){
+    VCompiler():tempVarStr("vrTempStop"),tempIterStr("vrTempIter"),moduleName("default"){
         scalSet = new set<string>();
         maxTempVecId = 0;
         maxTempIterId = 0;
@@ -280,7 +280,7 @@ public:
 
 	}
 
-    VCompiler(std::string moduleName):tempVarStr("vrTempVec"),tempIterStr("vrTempIter"),moduleName(moduleName){
+    VCompiler(std::string moduleName):tempVarStr("vrTempStop"),tempIterStr("vrTempIter"),moduleName(moduleName){
         scalSet = new set<string>();
         maxTempVecId = 0;
         maxTempIterId = 0;

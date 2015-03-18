@@ -17,6 +17,12 @@ U fix(T val) {
 	return (U) val < 0 ?-floor(abs(val)):floor(val);
 }
 
+template <class T> 
+long getStopIterValue(T start, T stop, T step) {
+    return fix<long, long>((stop - start)/step);    
+}
+
+//TODO: Remove
 template<class T>
 std::vector<T> getIterArr(T start,T stop, T step) {
         std::vector<T> loopVec;

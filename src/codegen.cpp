@@ -1583,13 +1583,17 @@ Context VCompiler::constExprCodeGen(ConstExprPtr expr, SymTable *symTable) {
             constStr = convert.str();
             if(constStr.find(".") == std::string::npos && constStr.find("E") == std::string::npos &&
                     constStr.find("e") == std::string::npos) {
-                constStr += ".0f";	
+                constStr += ".0";	
             }
             break;
         case ScalarType::SCALAR_FLOAT32:
             float32Val=expr->getFloatVal();
             convert<<float32Val;
             constStr = convert.str();
+            if(constStr.find(".") == std::string::npos && constStr.find("E") == std::string::npos &&
+                    constStr.find("e") == std::string::npos) {
+                constStr += ".0f";	
+            }
         case ScalarType::SCALAR_INT64:
             long longVal=expr->getLongVal();
             convert<<longVal;

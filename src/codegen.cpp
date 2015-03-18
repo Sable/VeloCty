@@ -2219,13 +2219,14 @@ Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar,
                 typeCntxt = scalarTypeCodeGen(static_cast<ArrayTypePtr>(type)->getElementType());
             }
             std::string typeStr = typeCntxt.getAllStmt()[0];
-            cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
-                    domainVec[i]+","+domainVec[i+count]+","
-                    + domainVec[i+2*count]+");\n");
+            // cntxt.addStmt("std::vector<"+typeStr+"> "+ vecStr + " = getIterArr<"+typeStr+">("+
+            //         domainVec[i]+","+domainVec[i+count]+","
+            //         + domainVec[i+2*count]+");\n");
+            std::string fixStr = "fix<long,long>((" + domainVec[i+count] + " - " + domainVec[i] + ") / "  +domainVec[i +2*count] + ")";
             cntxt.addStmt(
-                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < "+vecStr+".size(); "+ iterStr + "++ )\n");
+                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < " + fixStr + "; "+ iterStr + "++ )\n");
             cntxt.addStmt("{\n");
-            cntxt.addStmt(var + "=" + vecStr+"["+iterStr+"];\n");
+            cntxt.addStmt(var + "=" + domainVec[i] + "+" + iterStr + "*" + domainVec[i+2*count]+ " ;\n");
         }
     }
     Context bodyCntxt = stmtTypeCodeGen(bodyStmt, symTable);

@@ -91,6 +91,7 @@ int main(int argc,char * argv[]){
     };
     std::string fname;
     std::string outFilePath = "";
+    bool genFile =false;
     while(1) {
         int option_index = 0;
         int c = getopt_long (argc, argv, "O:f:",
@@ -100,13 +101,14 @@ int main(int argc,char * argv[]){
         }
         switch(c) {
             case 0:    
-                printf("probably should be here\n");
+                printf("probably should not be here\n");
                 break;
             case 'O':
                 setOptFlags(optarg);
                 break;
             case 'f' :
-                outFilePath = optarg;
+                outFilePath = strdup(optarg);
+                genFile = true;
                 break;
             default: 
                 break;
@@ -116,7 +118,6 @@ int main(int argc,char * argv[]){
     if(optind < argc) {
         fname  = argv[optind];      
     }
-    bool genFile =false;
     std::string optionStr="";
     initRaptor();
     fname = argv[1];
@@ -132,14 +133,17 @@ int main(int argc,char * argv[]){
     Context cntxt=vc.moduleCodeGen(m);
     PrettyPrinter pp;
 
-	vector<string> vec_cpp = pp.prettyPrint(cntxt.getAllStmt());
-	for(int i=0;i<vec_cpp.size();i++){
-		std::cout<<vec_cpp[i];
-	}
-	vector<string> vec_hpp = pp.prettyPrint(vc.getHeaderContext().getAllStmt());
-	for(int i=0;i<vec_hpp.size();i++){
-		std::cout<<vec_hpp[i];
-	}
-    writeFile(str+"Impl.cpp",vec_cpp);	
-    writeFile(str+"Impl.hpp",vec_hpp);
+    vector<string> vec_cpp = pp.prettyPrint(cntxt.getAllStmt());
+    vector<string> vec_hpp = pp.prettyPrint(vc.getHeaderContext().getAllStmt());
+    if(genFile) {
+        for(int i=0;i<vec_cpp.size();i++){
+            std::cout<<vec_cpp[i];
+        }
+        for(int i=0;i<vec_hpp.size();i++){
+            std::cout<<vec_hpp[i];
+        }
+    } else  {
+        writeFile(str+"Impl.cpp",vec_cpp);	
+        writeFile(str+"Impl.hpp",vec_hpp);
+    }
 }

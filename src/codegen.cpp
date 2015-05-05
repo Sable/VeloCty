@@ -7,27 +7,14 @@
  */
 ///Contains Methods which generate code C++ from  the VRIR
 #include <codegen.hpp>
-// #define MEM_OPTMISE
-#ifdef MEM_OPTMISE
-bool memOptmise = true;
-#else 
-bool memOptmise = false;
-#endif
-// #define PRELIM_BOUNDS
-#ifdef PRELIM_BOUNDS
-bool prelim_bounds = true;
-#else 
-bool prelim_bounds = false;
-#endif
-// #define PHASE2_BOUNDS
-#ifdef PHASE2_BOUNDS
-bool phase2Optimise = true;
-#else 
-bool phase2Optimise = false;
-#endif
 
 using namespace VRaptor;
 using namespace std;
+
+bool memOptimise = false;
+bool prelim_bounds = false;
+bool phase2Optimise = false;
+bool enableOpenMp =false;
 
 Context::Context() {
 	arrayFlag = false;
@@ -90,14 +77,11 @@ void VCompiler::initLibCallSet() {
     /* libCallSet.insert(LibCallExpr::LIB_MLDIV); */
     /* libCallSet.insert(LibCallExpr::LIB_MRDIV); */
 }
-void VCompiler::setOpenMpFlag(bool val){
-    enableOpenMP = val;
-}
+
 Context VCompiler::moduleCodeGen(VModule *vm) {
     Context cntxt;
     mapper.init();
     currModule = vm;
-    setOpenMpFlag(true);
     cntxt.addStmt("#include \""+ moduleName+"Impl.hpp\"\n ");
     vector<VFunction*> funcList = vm->getFns();
 #ifdef DEBUG
@@ -623,7 +607,7 @@ Context VCompiler::pForStmtCodeGen(PforStmtPtr stmt, SymTable *symTable) {
         }
     }
     std::string ompStr = "";
-    if(getOpenMpFlag()) {
+    if(enableOpenMp) {
         ompStr = "#pragma omp parallel for ";
         std::set<int> sharedSet = stmt->getShared();
         if( sharedSet.size() > 0){
@@ -2224,7 +2208,7 @@ Context VCompiler::loopStmtCodeGen(DomainExprPtr domainPtr, vector<int> iterVar,
                     + domainVec[i+2*count]+");\n");
             // std::string fixStr = "fix<long,long>((" + domainVec[i+count] + " - " + domainVec[i] + ") / "  +domainVec[i +2*count] + ")";
             cntxt.addStmt(
-                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " < " + iterStopStr + "; "+ iterStr + "++ )\n");
+                    "for( long " + iterStr+" = 0 "  + "; " + iterStr + " <= " + iterStopStr + "; "+ iterStr + "++ )\n");
             cntxt.addStmt("{\n");
             cntxt.addStmt(var + "=" + domainVec[i] + "+" + iterStr + "*" + domainVec[i+2*count]+ " ;\n");
         }
@@ -3050,7 +3034,7 @@ Context VCompiler::assignStmtCodeGen(AssignStmtPtr stmt, SymTable *symTable) {
     Context cntxt;
     ExpressionPtr rExpr = stmt->getRhs();
     string rStr;
-    if(memOptmise) {
+    if(memOptimise) {
         if(isScalarLibCall( stmt,  symTable)) {
             Context tmpcntxt = exprTypeCodeGen(static_cast<LibCallExprPtr>(stmt->getRhs()), symTable, stmt->getLhs()[0]); 
             cntxt.addStmt(tmpcntxt.getAllStmt()[0] + ";\n"); 
@@ -3135,16 +3119,4 @@ Context VCompiler::stmtListCodeGen(StmtListPtr stmt, SymTable *symTable) {
 		}
 	}
 	return cntxt;
-}
-
-void VCompiler::setSseFlag(bool val) {
-	enableSse = val;
-}
-
-bool VCompiler::getOpenMpFlag() {
-	return enableOpenMP;
-}
-
-bool VCompiler::getSseFlag() {
-	return enableSse;
 }

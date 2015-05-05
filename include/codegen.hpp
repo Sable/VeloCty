@@ -190,8 +190,6 @@ private:
     std::string genCblasOrder(ArrayTypePtr vtype);
     std::string genCblasTrans();
     std::string getNdims(ArrayTypePtr);
-    bool enableOpenMP;
-    bool enableSse;
     set<string> *scalSet;
     std::string itoa(int num);
     bool isInt(ExpressionPtr expr);

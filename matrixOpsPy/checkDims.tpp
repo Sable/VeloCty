@@ -5,6 +5,7 @@ inline bool checkDimStartImpl(ArrayType A,int nIndices, long *indices) {
     }
     for(int i = 0; i< nIndices; i++) {
         if(indices[i] <= -(A.dims[i] +1)) {
+            printf("checkDimStartImpl\n");
             return false;
         }
     }
@@ -17,7 +18,8 @@ inline bool checkDimStopImpl(ArrayType A, int nIndices, long *indices) {
         return false;
     }
     for(int i = 0; i< nIndices; i++) {
-        if(indices[i] >= A.dims[i]) {
+        if(indices[i] > A.dims[i]) {
+            printf("checkDimStopImpl\n");
             return false;
         }
     }

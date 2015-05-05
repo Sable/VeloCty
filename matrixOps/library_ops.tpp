@@ -13,13 +13,13 @@ T getVrArray(U data) {
 }
 
 template<class T, class U>
-U fix(T val) {
+inline U fix(T val) {
 	return (U) val < 0 ?-floor(abs(val)):floor(val);
 }
 
 template <class T> 
-long getStopIterValue(T start, T stop, T step) {
-    return fix<long, long>((stop - start)/step);    
+inline long getStopIterValue(T start, T stop, T step) {
+    return fix<T, long>((stop - start)/step);    
 }
 
 //TODO: Remove

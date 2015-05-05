@@ -418,3 +418,50 @@ inline void checkBounds_fixed(T* arr, bool onLhs, dim_type row) {
         VR_PRINT_ERR("Indices can not be negative");
     }
 }
+
+template<class T, class DataType> 
+inline void checkBounds_fixed(T* arr, bool onLhs, dim_type row, dim_type col, dim_type indx_3) {
+    if(row > arr->dims[0]) {
+        if(onLhs) {
+            VrIndex indices[2];
+            indices[0] = VrIndex(row);
+            indices[1] = VrIndex(col);
+            growArray<T,DataType>(arr,2,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(row <= 0) {
+        VR_PRINT_ERR("dimensions exceeded");
+    }
+    if(col > arr->dims[1]) {
+        if(onLhs) {
+            VrIndex indices[2];
+            indices[0] = VrIndex(row);
+            indices[1] = VrIndex(col);
+            growArray<T,DataType>(arr,2,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(col <= 0) {
+        VR_PRINT_ERR("dimensions exceeded");
+    }
+    if(indx_3 > arr->dims[2]) {
+        if(onLhs) {
+            VrIndex indices[3];
+            indices[0] = VrIndex(row);
+            indices[1] = VrIndex(col);
+            indices[2] = VrIndex(indx_3);
+            growArray<T,DataType>(arr,3,indices);
+            return;
+        } else {
+            VR_PRINT_ERR("dimensions exceeded");
+        }
+    }
+    if(indx_3 <= 0) {
+        VR_PRINT_ERR("dimensions exceeded");
+    }
+} 

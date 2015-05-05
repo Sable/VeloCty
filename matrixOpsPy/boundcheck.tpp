@@ -47,7 +47,7 @@ inline  void checkBounds(T* arr,bool onLhs,int nargs,...) {
 template<class T,class DataType> 
 inline void checkBounds_spec(T* arr,bool onLhs,VrIndex row,VrIndex col) {
     if(VR_GET_DATA_F64((*arr)) ==NULL ) {
-        VR_PRINT_ERR("Array is not allocated. Array Growth is badddd");
+        VR_PRINT_ERR("Array is not allocated.");
     }
     int nargs = 2;
     VrIndex indices[2];
@@ -101,7 +101,6 @@ inline void checkBounds_spec(T* arr,bool onLhs,dim_type row,dim_type col) {
     }
     if((row < -(arr->dims[0])) || ( col < -(arr->dims[1]))){
         VR_PRINT_ERR("Index Exceeds dimensions");
-        exit(0);
     }
     return;
 }
@@ -123,7 +122,7 @@ inline void checkBounds_spec(T* arr,bool onLhs,dim_type row,dim_type col,dim_typ
 template<class T,class DataType> 
 inline void checkBounds_spec(T* arr,bool onLhs,VrIndex row) {
     if(VR_GET_DATA_F64((*arr)) ==NULL ) {
-        VR_PRINT_ERR("Array is not allocated. Array Growth is badddd");
+        VR_PRINT_ERR("Array is not allocated.");
     }
     const int nargs = 1;
     VrIndex indices[1];

@@ -74,6 +74,9 @@ void setOptFlags(string optArg) {
     if(optArg.compare("par") == 0) {
         enableOpenMp = true;
     }
+    if(optArg.compare("all") == 0) {
+        enableOpenMp = true;
+    }
 }
      
 int main(int argc,char * argv[]){
@@ -117,10 +120,11 @@ int main(int argc,char * argv[]){
     }
     if(optind < argc) {
         fname  = argv[optind];      
+    } else  {
+        printf("atleast one input file required\n");
     }
     std::string optionStr="";
     initRaptor();
-    fname = argv[1];
     std::string fCopy = fname;
     string s =readDataIntoString(fname);
     VModule *m=NULL;
@@ -135,7 +139,7 @@ int main(int argc,char * argv[]){
 
     vector<string> vec_cpp = pp.prettyPrint(cntxt.getAllStmt());
     vector<string> vec_hpp = pp.prettyPrint(vc.getHeaderContext().getAllStmt());
-    if(genFile) {
+    if(!genFile) {
         for(int i=0;i<vec_cpp.size();i++){
             std::cout<<vec_cpp[i];
         }

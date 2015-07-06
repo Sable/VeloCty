@@ -34,19 +34,19 @@ const bool vrAutoCastMatrix = false;
 #define VR_FREE(x) GC_FREE(x)
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
+#include <numpy/arrayobject.h>
 #include <gc.h>
 #include "vr_data.hpp"
 #define VR_PRINT_ERR(str) printf(str)
-typedef VrArrayF32 VrArrayPtrF32;
-typedef VrArrayF64 VrArrayPtrF64;
-typedef VrArrayI32 VrArrayPtrI32;
-typedef VrArrayI64 VrArrayPtrI64;
-typedef VrArrayB VrArrayPtrB;
-typedef VrArrayCF32 VrArrayPtrCF32;
-typedef VrArrayCF64 VrArrayPtrCF64;
-typedef VrArrayCI32 VrArrayPtrCI32;
-typedef VrArrayCI64 VrArrayPtrCI64;
-//typedef VrArrayCB *VrArrayPtrCB;
+typedef PyObject* VrArrayPtrF32;
+typedef PyObject* VrArrayPtrF64;
+typedef PyObject*  VrArrayPtrI32;
+typedef PyArrayObject* VrArrayPtrI64;
+typedef PyObject* VrArrayPtrB;
+typedef PyObject* VrArrayPtrCF32;
+typedef PyObject* VrArrayPtrCF64;
+typedef PyObject* VrArrayPtrCI32;
+typedef PyObject* VrArrayPtrCI64;
 
 typedef long VrDimsInt_t;
 typedef long VrStrideInt_t;

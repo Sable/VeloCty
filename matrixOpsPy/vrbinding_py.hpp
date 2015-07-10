@@ -38,15 +38,15 @@ const bool vrAutoCastMatrix = false;
 #include <gc.h>
 #include "vr_data.hpp"
 #define VR_PRINT_ERR(str) printf(str)
-typedef PyObject* VrArrayPtrF32;
-typedef PyObject* VrArrayPtrF64;
-typedef PyObject*  VrArrayPtrI32;
+typedef PyArrayObject* VrArrayPtrF32;
+typedef PyArrayObject* VrArrayPtrF64;
+typedef PyArrayObject*  VrArrayPtrI32;
 typedef PyArrayObject* VrArrayPtrI64;
-typedef PyObject* VrArrayPtrB;
-typedef PyObject* VrArrayPtrCF32;
-typedef PyObject* VrArrayPtrCF64;
-typedef PyObject* VrArrayPtrCI32;
-typedef PyObject* VrArrayPtrCI64;
+typedef PyArrayObject* VrArrayPtrB;
+typedef PyArrayObject* VrArrayPtrCF32;
+typedef PyArrayObject* VrArrayPtrCF64;
+typedef PyArrayObject* VrArrayPtrCI32;
+typedef PyArrayObject* VrArrayPtrCI64;
 
 typedef long VrDimsInt_t;
 typedef long VrStrideInt_t;

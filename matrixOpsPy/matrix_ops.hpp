@@ -86,7 +86,7 @@ class BlasComplexSingle{
 	    static VrArrayPtrCF32 vec_add(int ndims, VrArrayPtrCF32 X, VrArrayPtrCF32 Y, const float complex  alpha=1,const int incx=1, int incY=1 );
 	    static float vec_dot(const int ndims, VrArrayPtrCF32 X, VrArrayPtrCF32 Y, const int incX=1, const int incY=1);
 	    static VrArrayPtrCF32 vec_copy(const int ndims, VrArrayPtrCF32 X, const int incX=1, const int incY=1);
-	    static VrArrayPtrCF32 vec_sub(const int ndims, VrArrayPtrCF32 X, VrArrayPtrCF32 Y ,const float  complex alpha=NULL, const int incX=1 , const int  incY=1);
+	    static VrArrayPtrCF32 vec_sub(const int ndims, VrArrayPtrCF32 X, VrArrayPtrCF32 Y ,const float  complex alpha=0, const int incX=1 , const int  incY=1);
 	    static VrArrayPtrCF32 scal_add(const int ndims, VrArrayPtrCF32 X, float complex scal, const int incX=1);
 	    static VrArrayPtrCF32 scal_div( VrArrayPtrCF32 A, float complex  scal);
 	    static VrArrayPtrCF32 elem_mult(VrArrayPtrCF32 A, VrArrayPtrCF32 B);

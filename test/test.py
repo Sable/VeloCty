@@ -65,6 +65,13 @@ def testIndexPtr() :
     #assert a[1] == b, 'IndexPtr failed'     
     print(a)
     print(b)
+def testSum() :
+    a = numpy.random.rand(3,3)
+    b = testPython.testSum(a);
+    print((numpy.sum(a)==b).all())
+    #print(numpy.sum(a))
+    #print('--------------')
+    #print(b)
 #testMean()
 #testMax()
 #testMin()
@@ -77,5 +84,6 @@ def testIndexPtr() :
 #testSetSlice()
 #testBasic()
 #testZeros()
-testCheckDims()
+#testCheckDims()
+testSum()
 print("all test cases passed successfully ")
